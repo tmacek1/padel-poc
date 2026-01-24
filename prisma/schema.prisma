@@ -131,6 +131,10 @@ model Match {
   leagueId         String?
   league           League?     @relation(fields: [leagueId], references: [id])
 
+  // Pravila meca
+  scoringType      String   @default("golden_point") // golden_point, classic (deuce/advantage)
+  setsToWin        Int      @default(2) // broj setova za pobjedu (standardno 2)
+
   // Bodovanje - koji tim je izgubio u tiebreaku 3. seta (dobiva 1 bod umjesto 0)
   tiebreakLossTeam Int?     // 1 ili 2, null ako nije tiebreak poraz
 

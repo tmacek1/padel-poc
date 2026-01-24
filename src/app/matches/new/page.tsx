@@ -45,6 +45,8 @@ export default function NewMatchPage() {
   const [team2Player1, setTeam2Player1] = useState('')
   const [team2Player2, setTeam2Player2] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [scoringType, setScoringType] = useState('golden_point')
+  const [isLeagueMatch, setIsLeagueMatch] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -111,6 +113,7 @@ export default function NewMatchPage() {
           locationId: locationId || null,
           notes,
           ignoreConflicts,
+          scoringType: isLeagueMatch ? 'golden_point' : scoringType,
           players: [
             { userId: team1Player1, team: 1 },
             { userId: team1Player2, team: 1 },
@@ -215,6 +218,66 @@ export default function NewMatchPage() {
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Match Type & Scoring */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold mb-4">Tip meca</h2>
+
+            <div className="space-y-4">
+              {/* League match toggle */}
+              <label className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={isLeagueMatch}
+                  onChange={(e) => setIsLeagueMatch(e.target.checked)}
+                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span>Ligaski mec</span>
+                {isLeagueMatch && (
+                  <span className="text-sm text-gray-500">(Golden Point, 2 seta za pobjedu)</span>
+                )}
+              </label>
+
+              {/* Scoring type - only for non-league matches */}
+              {!isLeagueMatch && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nacin bodovanja
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="scoringType"
+                        value="golden_point"
+                        checked={scoringType === 'golden_point'}
+                        onChange={(e) => setScoringType(e.target.value)}
+                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div>
+                        <span className="font-medium">Golden Point</span>
+                        <p className="text-xs text-gray-500">Na 40-40 odlucuje jedan poen</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="scoringType"
+                        value="classic"
+                        checked={scoringType === 'classic'}
+                        onChange={(e) => setScoringType(e.target.value)}
+                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div>
+                        <span className="font-medium">Klasicno</span>
+                        <p className="text-xs text-gray-500">Deuce/Advantage sustav</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Players */}

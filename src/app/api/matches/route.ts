@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { locationId, scheduledAt, players, notes, ignoreConflicts } = body
+    const { locationId, scheduledAt, players, notes, ignoreConflicts, scoringType } = body
 
     // Validate players (padel is 2v2, so we need 4 players)
     if (!players || players.length !== 4) {
@@ -115,6 +115,8 @@ export async function POST(request: Request) {
         scheduledAt: scheduledDate,
         notes,
         status: 'scheduled',
+        scoringType: scoringType || 'golden_point',
+        setsToWin: 2,
         players: {
           create: players.map((p: { userId: string; team: number }) => ({
             userId: p.userId,

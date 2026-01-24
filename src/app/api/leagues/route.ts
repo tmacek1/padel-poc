@@ -1,17 +1,25 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/session'
+import { getTierName } from '@/lib/leagueTiers'
 
 // GET /api/leagues - Get all leagues
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { searchParams } = new URL(request.url)
+    const seasonId = searchParams.get('seasonId')
+
     const leagues = await prisma.league.findMany({
+      where: seasonId ? { seasonId } : {},
       include: {
+        season: {
+          select: { id: true, name: true, status: true },
+        },
         teams: {
           include: {
             players: {
@@ -23,16 +31,33 @@ export async function GET() {
             },
           },
         },
+        standings: {
+          orderBy: { points: 'desc' },
+          include: {
+            leagueTeam: {
+              include: {
+                players: {
+                  include: {
+                    user: {
+                      select: { id: true, name: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
         _count: {
           select: { teams: true, matches: true },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ tierOrder: 'desc' }, { createdAt: 'desc' }],
     })
 
-    // Add isActive status based on team count
+    // Add computed fields
     const leaguesWithStatus = leagues.map((league) => ({
       ...league,
+      tierName: getTierName(league.tier),
       isActive: league.teams.length >= 5,
       teamCount: league.teams.length,
     }))
@@ -69,7 +94,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, description, startDate, endDate } = body
+    const { name, description, tier, seasonId } = body
 
     if (!name) {
       return NextResponse.json(
@@ -78,13 +103,23 @@ export async function POST(request: Request) {
       )
     }
 
+    // Get tier order
+    const tierOrders: Record<string, number> = {
+      bronze: 1,
+      silver: 2,
+      gold: 3,
+      platinum: 4,
+      diamond: 5,
+    }
+
     const league = await prisma.league.create({
       data: {
         name,
         description,
-        startDate: startDate ? new Date(startDate) : null,
-        endDate: endDate ? new Date(endDate) : null,
-        isActive: false, // Will become active when 5+ teams join
+        tier: tier || 'bronze',
+        tierOrder: tierOrders[tier] || 1,
+        seasonId: seasonId || null,
+        isActive: false,
       },
     })
 

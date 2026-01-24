@@ -66,16 +66,17 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  accounts       Account[]
-  sessions       Session[]
-  club           Club?          @relation(fields: [clubId], references: [id])
-  clubId         String?
-  locations      UserLocation[]
-  createdMatches Match[]        @relation("MatchCreator")
-  matchPlayers   MatchPlayer[]
-  leagueTeams    LeagueTeamPlayer[]
-  sentMessages   Message[]      @relation("MessageSender")
-  receivedMessages Message[]    @relation("MessageReceiver")
+  accounts         Account[]
+  sessions         Session[]
+  club             Club?          @relation(fields: [clubId], references: [id])
+  clubId           String?
+  locations        UserLocation[]
+  createdMatches   Match[]        @relation("MatchCreator")
+  matchPlayers     MatchPlayer[]
+  leagueTeams      LeagueTeamPlayer[]
+  sentMessages     Message[]      @relation("MessageSender")
+  receivedMessages Message[]      @relation("MessageReceiver")
+  standings        SeasonStanding[] @relation("PlayerStanding")
 }
 
 model Club {
@@ -127,8 +128,11 @@ model Match {
   updatedAt   DateTime    @updatedAt
 
   // Liga poveznica (opcionalno)
-  leagueId    String?
-  league      League?     @relation(fields: [leagueId], references: [id])
+  leagueId         String?
+  league           League?     @relation(fields: [leagueId], references: [id])
+
+  // Bodovanje - koji tim je izgubio u tiebreaku 3. seta (dobiva 1 bod umjesto 0)
+  tiebreakLossTeam Int?     // 1 ili 2, null ako nije tiebreak poraz
 
   creator  User          @relation("MatchCreator", fields: [creatorId], references: [id])
   location Location?     @relation(fields: [locationId], references: [id])
@@ -154,7 +158,7 @@ model MatchSet {
   setNumber   Int
   team1Score  Int    @default(0)
   team2Score  Int    @default(0)
-  team1Tiebreak Int? // ako je tiebreak
+  team1Tiebreak Int? // ako je tiebreak u setu
   team2Tiebreak Int?
 
   match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
@@ -163,31 +167,64 @@ model MatchSet {
 }
 
 // ============================================
-// League models
+// Season & League models
 // ============================================
 
+// Sezona - trajanje 2-3 mjeseca
+model Season {
+  id                String   @id @default(cuid())
+  name              String   // "Sezona 1 2024", "Proljece 2024"
+  startDate         DateTime
+  endDate           DateTime
+  status            String   @default("upcoming") // upcoming, active, completed
+  minMatches        Int      @default(8)  // minimum meceva za rangiranje
+  promotionPercent  Int      @default(25) // top 25% napreduje
+  relegationPercent Int      @default(25) // bottom 25% ispada
+
+  // Bodovni sustav
+  pointsForWin         Int @default(3)
+  pointsForTiebreakLoss Int @default(1) // poraz u tiebreaku 3. seta
+  pointsForLoss        Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  leagues   League[]
+  standings SeasonStanding[]
+}
+
+// Liga s tier sustavom
 model League {
   id          String   @id @default(cuid())
   name        String
   description String?
-  startDate   DateTime?
-  endDate     DateTime?
+
+  // Tier: bronze, silver, gold, platinum, diamond
+  tier        String   @default("bronze")
+  tierOrder   Int      @default(1) // 1=bronze, 2=silver, 3=gold, 4=platinum, 5=diamond
+
+  // Sezona
+  seasonId    String?
+  season      Season?  @relation(fields: [seasonId], references: [id])
+
   isActive    Boolean  @default(false) // aktivna tek kad ima 5+ parova
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  teams   LeagueTeam[]
-  matches Match[]
+  teams     LeagueTeam[]
+  matches   Match[]
+  standings SeasonStanding[]
 }
 
 model LeagueTeam {
   id        String   @id @default(cuid())
   leagueId  String
-  name      String?
+  name      String?  // opcionalno ime tima
   createdAt DateTime @default(now())
 
-  league  League             @relation(fields: [leagueId], references: [id], onDelete: Cascade)
-  players LeagueTeamPlayer[]
+  league    League             @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  players   LeagueTeamPlayer[]
+  standings SeasonStanding[]
 }
 
 model LeagueTeamPlayer {
@@ -199,6 +236,49 @@ model LeagueTeamPlayer {
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([leagueTeamId, userId])
+}
+
+// ============================================
+// Season Standings - rang lista
+// ============================================
+
+model SeasonStanding {
+  id             String   @id @default(cuid())
+  seasonId       String
+  leagueId       String
+
+  // Moze biti tim ili pojedinac
+  leagueTeamId   String?  // za parove
+  userId         String?  // za pojedince (opcija rangiranja pojedinaca)
+
+  // Statistika
+  points           Int @default(0)
+  matchesPlayed    Int @default(0)
+  wins             Int @default(0)
+  losses           Int @default(0)
+  tiebreakLosses   Int @default(0) // porazi u tiebreaku (daju 1 bod)
+  setsWon          Int @default(0)
+  setsLost         Int @default(0)
+  gamesWon         Int @default(0)
+  gamesLost        Int @default(0)
+
+  // Zavrsni rang na kraju sezone
+  finalRank        Int?
+
+  // Promocija/ispadanje
+  promotedToLeagueId  String? // u koju ligu je promoviran
+  relegatedToLeagueId String? // u koju ligu je ispao
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  season     Season      @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  league     League      @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  leagueTeam LeagueTeam? @relation(fields: [leagueTeamId], references: [id], onDelete: Cascade)
+  user       User?       @relation("PlayerStanding", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([seasonId, leagueId, leagueTeamId])
+  @@unique([seasonId, leagueId, userId])
 }
 
 // ============================================

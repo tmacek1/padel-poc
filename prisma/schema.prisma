@@ -1,5 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema for Padel PoC
+// Docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client"
@@ -9,4 +9,212 @@ generator client {
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
+}
+
+// ============================================
+// NextAuth.js required models
+// ============================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// Application models
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  isAdmin       Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts       Account[]
+  sessions       Session[]
+  club           Club?          @relation(fields: [clubId], references: [id])
+  clubId         String?
+  locations      UserLocation[]
+  createdMatches Match[]        @relation("MatchCreator")
+  matchPlayers   MatchPlayer[]
+  leagueTeams    LeagueTeamPlayer[]
+  sentMessages   Message[]      @relation("MessageSender")
+  receivedMessages Message[]    @relation("MessageReceiver")
+}
+
+model Club {
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  city      String?
+  createdAt DateTime @default(now())
+
+  members User[]
+}
+
+model Location {
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  city      String?
+  createdAt DateTime @default(now())
+
+  userLocations UserLocation[]
+  matches       Match[]
+}
+
+model UserLocation {
+  id         String   @id @default(cuid())
+  userId     String
+  locationId String
+  isPrimary  Boolean  @default(false)
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, locationId])
+}
+
+// ============================================
+// Match models
+// ============================================
+
+model Match {
+  id          String      @id @default(cuid())
+  creatorId   String
+  locationId  String?
+  scheduledAt DateTime?
+  playedAt    DateTime?
+  status      String      @default("scheduled") // scheduled, in_progress, completed, cancelled
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Liga poveznica (opcionalno)
+  leagueId    String?
+  league      League?     @relation(fields: [leagueId], references: [id])
+
+  creator  User          @relation("MatchCreator", fields: [creatorId], references: [id])
+  location Location?     @relation(fields: [locationId], references: [id])
+  players  MatchPlayer[]
+  sets     MatchSet[]
+}
+
+model MatchPlayer {
+  id       String @id @default(cuid())
+  matchId  String
+  userId   String
+  team     Int    // 1 or 2 (padel is 2v2)
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, userId])
+}
+
+model MatchSet {
+  id          String @id @default(cuid())
+  matchId     String
+  setNumber   Int
+  team1Score  Int    @default(0)
+  team2Score  Int    @default(0)
+  team1Tiebreak Int? // ako je tiebreak
+  team2Tiebreak Int?
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, setNumber])
+}
+
+// ============================================
+// League models
+// ============================================
+
+model League {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean  @default(false) // aktivna tek kad ima 5+ parova
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  teams   LeagueTeam[]
+  matches Match[]
+}
+
+model LeagueTeam {
+  id        String   @id @default(cuid())
+  leagueId  String
+  name      String?
+  createdAt DateTime @default(now())
+
+  league  League             @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  players LeagueTeamPlayer[]
+}
+
+model LeagueTeamPlayer {
+  id           String @id @default(cuid())
+  leagueTeamId String
+  userId       String
+
+  leagueTeam LeagueTeam @relation(fields: [leagueTeamId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([leagueTeamId, userId])
+}
+
+// ============================================
+// Messaging
+// ============================================
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  subject    String?
+  content    String
+  isRead     Boolean  @default(false)
+  sentAt     DateTime @default(now())
+  emailSent  Boolean  @default(false) // da li je poslano na email
+
+  sender   User @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
 }

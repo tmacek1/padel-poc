@@ -65,6 +65,12 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Player profile
+  profileCompleted   Boolean  @default(false) // true nakon sto popuni profil
+  gender             String?  // male, female
+  dominantHand       String?  // left, right
+  preferredCourtSide String?  // left, right
+
   // Relations
   accounts         Account[]
   sessions         Session[]

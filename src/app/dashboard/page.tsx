@@ -36,7 +36,11 @@ export default function DashboardPage() {
     if (status === 'unauthenticated') {
       router.push('/auth/login')
     }
-  }, [status, router])
+    // Redirect to profile completion if not completed
+    if (status === 'authenticated' && session?.user?.profileCompleted === false) {
+      router.push('/profile/complete')
+    }
+  }, [status, session, router])
 
   useEffect(() => {
     if (session?.user?.id) {

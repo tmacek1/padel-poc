@@ -28,13 +28,13 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!user || !user.password) {
-          throw new Error('Korisnik nije pronađen')
+          throw new Error('Korisnik nije pronaden')
         }
 
         const isValid = await bcrypt.compare(credentials.password, user.password)
 
         if (!isValid) {
-          throw new Error('Pogrešna lozinka')
+          throw new Error('Pogresna lozinka')
         }
 
         return {
@@ -50,17 +50,45 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id
+        // Fetch profile completion status
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { profileCompleted: true },
+        })
+        token.profileCompleted = dbUser?.profileCompleted ?? false
       }
+
+      // Refresh profileCompleted on update trigger
+      if (trigger === 'update' && token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { profileCompleted: true },
+        })
+        token.profileCompleted = dbUser?.profileCompleted ?? false
+      }
+
       return token
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
+        session.user.profileCompleted = token.profileCompleted as boolean
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // If url is relative, prepend baseUrl
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`
+      }
+      // If url is on the same site, allow it
+      if (url.startsWith(baseUrl)) {
+        return url
+      }
+      return baseUrl
     },
   },
   pages: {

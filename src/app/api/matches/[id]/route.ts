@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/session'
+import { getCurrentUserWithAdmin } from '@/lib/session'
 
 // GET /api/matches/[id] - Get a single match
 export async function GET(
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const user = await getCurrentUser()
+    const user = await getCurrentUserWithAdmin()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -38,47 +38,47 @@ export async function GET(
     })
 
     if (!match) {
-      return NextResponse.json({ error: 'Mec nije pronaden' }, { status: 404 })
+      return NextResponse.json({ error: 'Match nije pronađen' }, { status: 404 })
     }
 
-    // Add flag to indicate if current user can edit
-    const canEdit = match.creatorId === user.id
+    // Admin can edit any match, creator can edit their own
+    const canEdit = user.isAdmin || match.creatorId === user.id
 
     return NextResponse.json({ ...match, canEdit })
   } catch (error) {
     console.error('Error fetching match:', error)
     return NextResponse.json(
-      { error: 'Greska pri dohvacanju meca' },
+      { error: 'Greška pri dohvaćanju matcha' },
       { status: 500 }
     )
   }
 }
 
-// PUT /api/matches/[id] - Update a match (only creator can update)
+// PUT /api/matches/[id] - Update a match (creator or admin can update)
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
-    const user = await getCurrentUser()
+    const user = await getCurrentUserWithAdmin()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is the creator
+    // Check if user is the creator or admin
     const existingMatch = await prisma.match.findUnique({
       where: { id },
       select: { creatorId: true },
     })
 
     if (!existingMatch) {
-      return NextResponse.json({ error: 'Mec nije pronaden' }, { status: 404 })
+      return NextResponse.json({ error: 'Match nije pronađen' }, { status: 404 })
     }
 
-    if (existingMatch.creatorId !== user.id) {
+    if (existingMatch.creatorId !== user.id && !user.isAdmin) {
       return NextResponse.json(
-        { error: 'Samo kreator meca moze mijenjati podatke' },
+        { error: 'Samo kreator matcha ili admin može mijenjati podatke' },
         { status: 403 }
       )
     }
@@ -164,31 +164,31 @@ export async function PUT(
   }
 }
 
-// DELETE /api/matches/[id] - Delete a match (only creator can delete)
+// DELETE /api/matches/[id] - Delete a match (creator or admin can delete)
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
-    const user = await getCurrentUser()
+    const user = await getCurrentUserWithAdmin()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is the creator
+    // Check if user is the creator or admin
     const existingMatch = await prisma.match.findUnique({
       where: { id },
       select: { creatorId: true },
     })
 
     if (!existingMatch) {
-      return NextResponse.json({ error: 'Mec nije pronaden' }, { status: 404 })
+      return NextResponse.json({ error: 'Match nije pronađen' }, { status: 404 })
     }
 
-    if (existingMatch.creatorId !== user.id) {
+    if (existingMatch.creatorId !== user.id && !user.isAdmin) {
       return NextResponse.json(
-        { error: 'Samo kreator meca moze obrisati mec' },
+        { error: 'Samo kreator matcha ili admin može obrisati match' },
         { status: 403 }
       )
     }
@@ -199,7 +199,7 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting match:', error)
     return NextResponse.json(
-      { error: 'Greska pri brisanju meca' },
+      { error: 'Greška pri brisanju matcha' },
       { status: 500 }
     )
   }

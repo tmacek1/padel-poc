@@ -53,21 +53,23 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id
-        // Fetch profile completion status
+        // Fetch profile completion status and admin flag
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { profileCompleted: true },
+          select: { profileCompleted: true, isAdmin: true },
         })
         token.profileCompleted = dbUser?.profileCompleted ?? false
+        token.isAdmin = dbUser?.isAdmin ?? false
       }
 
-      // Refresh profileCompleted on update trigger
+      // Refresh on update trigger
       if (trigger === 'update' && token.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { profileCompleted: true },
+          select: { profileCompleted: true, isAdmin: true },
         })
         token.profileCompleted = dbUser?.profileCompleted ?? false
+        token.isAdmin = dbUser?.isAdmin ?? false
       }
 
       return token
@@ -76,6 +78,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string
         session.user.profileCompleted = token.profileCompleted as boolean
+        session.user.isAdmin = token.isAdmin as boolean
       }
       return session
     },

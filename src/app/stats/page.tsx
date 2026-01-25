@@ -70,7 +70,7 @@ export default function StatsPage() {
         {!stats || stats.totalMatches === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
             <p className="text-gray-500">
-              Nemas jos odigranih meceva. Statistika ce se prikazati nakon prvog zavrsenog meca.
+              Nemas jos odigranih matcheva. Statistika ce se prikazati nakon prvog zavrsenog matcha.
             </p>
           </div>
         ) : (
@@ -83,7 +83,7 @@ export default function StatsPage() {
                   <div className="text-4xl font-bold text-blue-600">
                     {stats.totalMatches}
                   </div>
-                  <div className="text-gray-500">Ukupno meceva</div>
+                  <div className="text-gray-500">Ukupno matcheva</div>
                 </div>
                 <div className="text-center">
                   <div className="text-4xl font-bold text-green-600">

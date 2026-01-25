@@ -97,12 +97,12 @@ export default function MatchesPage() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Mecevi</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Matchevi</h1>
           <Link
             href="/matches/new"
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
           >
-            + Novi mec
+            + Novi match
           </Link>
         </div>
 
@@ -143,12 +143,12 @@ export default function MatchesPage() {
         {/* Matches List */}
         {filteredMatches.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-500 mb-4">Nema meceva za prikaz</p>
+            <p className="text-gray-500 mb-4">Nema matcheva za prikaz</p>
             <Link
               href="/matches/new"
               className="text-blue-600 hover:underline"
             >
-              Kreiraj novi mec
+              Kreiraj novi match
             </Link>
           </div>
         ) : (

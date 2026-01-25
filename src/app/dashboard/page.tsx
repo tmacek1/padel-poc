@@ -102,13 +102,13 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-gray-900">
             Pozdrav, {session.user?.name || 'Igrace'}!
           </h1>
-          <p className="text-gray-600">Pregled tvojih meceva i statistike</p>
+          <p className="text-gray-600">Pregled tvojih matcheva i statistike</p>
         </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-500">Ukupno meceva</div>
+            <div className="text-sm text-gray-500">Ukupno matcheva</div>
             <div className="text-3xl font-bold text-blue-600">
               {stats?.totalMatches || 0}
             </div>
@@ -139,13 +139,13 @@ export default function DashboardPage() {
             href="/matches/new"
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
           >
-            + Novi mec
+            + Novi match
           </Link>
           <Link
             href="/matches"
             className="bg-white text-blue-600 px-6 py-3 rounded-lg hover:bg-gray-50 transition font-semibold border border-blue-600"
           >
-            Svi mecevi
+            Svi matchevi
           </Link>
         </div>
 
@@ -153,11 +153,11 @@ export default function DashboardPage() {
           {/* Upcoming Matches */}
           <div className="bg-white rounded-lg shadow">
             <div className="p-6 border-b">
-              <h2 className="text-xl font-semibold">Nadolazeci mecevi</h2>
+              <h2 className="text-xl font-semibold">Nadolazeci matchevi</h2>
             </div>
             <div className="p-6">
               {upcomingMatches.length === 0 ? (
-                <p className="text-gray-500">Nemas zakazanih meceva</p>
+                <p className="text-gray-500">Nemas zakazanih matcheva</p>
               ) : (
                 <div className="space-y-4">
                   {upcomingMatches.map((match) => (
@@ -195,11 +195,11 @@ export default function DashboardPage() {
           {/* Recent Matches */}
           <div className="bg-white rounded-lg shadow">
             <div className="p-6 border-b">
-              <h2 className="text-xl font-semibold">Nedavni mecevi</h2>
+              <h2 className="text-xl font-semibold">Nedavni matchevi</h2>
             </div>
             <div className="p-6">
               {recentMatches.length === 0 ? (
-                <p className="text-gray-500">Nemas odigranih meceva</p>
+                <p className="text-gray-500">Nemas odigranih matcheva</p>
               ) : (
                 <div className="space-y-4">
                   {recentMatches.map((match) => (

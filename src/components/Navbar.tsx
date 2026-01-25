@@ -23,7 +23,7 @@ export default function Navbar() {
                   Dashboard
                 </Link>
                 <Link href="/matches" className="hover:text-blue-200">
-                  Mecevi
+                  Matchevi
                 </Link>
                 <Link href="/leagues" className="hover:text-blue-200">
                   Lige

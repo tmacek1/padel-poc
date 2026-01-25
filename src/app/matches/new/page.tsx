@@ -48,6 +48,13 @@ export default function NewMatchPage() {
   const [scoringType, setScoringType] = useState('golden_point')
   const [isLeagueMatch, setIsLeagueMatch] = useState(false)
 
+  // New location form
+  const [showNewLocation, setShowNewLocation] = useState(false)
+  const [newLocationName, setNewLocationName] = useState('')
+  const [newLocationAddress, setNewLocationAddress] = useState('')
+  const [newLocationCity, setNewLocationCity] = useState('')
+  const [savingLocation, setSavingLocation] = useState(false)
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/login')
@@ -83,6 +90,46 @@ export default function NewMatchPage() {
     }
   }
 
+  const handleSaveNewLocation = async () => {
+    if (!newLocationName.trim()) {
+      setError('Naziv lokacije je obavezan')
+      return
+    }
+
+    setSavingLocation(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/locations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newLocationName.trim(),
+          address: newLocationAddress.trim() || null,
+          city: newLocationCity.trim() || null,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        // Add to locations and select it
+        setLocations([...locations, data])
+        setLocationId(data.id)
+        setShowNewLocation(false)
+        setNewLocationName('')
+        setNewLocationAddress('')
+        setNewLocationCity('')
+      } else {
+        setError(data.error || 'Greška pri kreiranju lokacije')
+      }
+    } catch {
+      setError('Greška pri kreiranju lokacije')
+    } finally {
+      setSavingLocation(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent, ignoreConflicts = false) => {
     e.preventDefault()
     setError('')
@@ -91,7 +138,7 @@ export default function NewMatchPage() {
     // Validate all players are selected
     const players = [team1Player1, team1Player2, team2Player1, team2Player2]
     if (players.some((p) => !p)) {
-      setError('Molimo odaberi sva 4 igraca')
+      setError('Molimo odaberi sva 4 igrača')
       setLoading(false)
       return
     }
@@ -99,7 +146,7 @@ export default function NewMatchPage() {
     // Check for duplicates
     const uniquePlayers = new Set(players)
     if (uniquePlayers.size !== 4) {
-      setError('Svaki igrac moze biti odabran samo jednom')
+      setError('Svaki igrač može biti odabran samo jednom')
       setLoading(false)
       return
     }
@@ -137,52 +184,67 @@ export default function NewMatchPage() {
       }
 
       if (!res.ok) {
-        setError(data.error || 'Greska pri kreiranju meca')
+        setError(data.error || 'Greška pri kreiranju matcha')
         setLoading(false)
         return
       }
 
       // Success - check for warnings
       if (data.warnings && data.warnings.length > 0) {
-        // Show warnings but redirect anyway
         console.log('Match created with warnings:', data.warnings)
       }
 
       router.push(`/matches/${data.match?.id || data.id}`)
     } catch {
-      setError('Greska pri kreiranju meca')
+      setError('Greška pri kreiranju matcha')
       setLoading(false)
     }
   }
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // Filter users and highlight when search matches
+  const filteredUsers = searchTerm
+    ? users.filter(
+        (user) =>
+          user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : users
+
+  // Get display name with email suffix for disambiguation
+  const getDisplayName = (user: User) => {
+    const sameName = users.filter(
+      (u) => u.name && user.name && u.name.toLowerCase() === user.name.toLowerCase() && u.id !== user.id
+    )
+    if (sameName.length > 0 && user.name) {
+      // Add email suffix for disambiguation
+      const emailPrefix = user.email.split('@')[0]
+      return `${user.name} (${emailPrefix})`
+    }
+    return user.name || user.email
+  }
 
   const getUserName = (userId: string) => {
     const user = users.find((u) => u.id === userId)
-    return user?.name || user?.email || 'Nepoznato'
+    return user ? getDisplayName(user) : 'Nepoznato'
   }
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-500">Ucitavanje...</div>
+          <div className="text-gray-600">Učitavanje...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
 
       <main className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Novi mec</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Novi match</h1>
 
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
@@ -193,49 +255,108 @@ export default function NewMatchPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Date and Time */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Datum i vrijeme</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Datum i vrijeme</h2>
             <input
               type="datetime-local"
               value={scheduledAt}
               onChange={(e) => setScheduledAt(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
               required
             />
           </div>
 
           {/* Location */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Lokacija</h2>
-            <select
-              value={locationId}
-              onChange={(e) => setLocationId(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">-- Odaberi lokaciju --</option>
-              {locations.map((loc) => (
-                <option key={loc.id} value={loc.id}>
-                  {loc.name} {loc.city ? `(${loc.city})` : ''}
-                </option>
-              ))}
-            </select>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Lokacija</h2>
+              <button
+                type="button"
+                onClick={() => setShowNewLocation(!showNewLocation)}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                {showNewLocation ? 'Otkaži' : '+ Nova lokacija'}
+              </button>
+            </div>
+
+            {showNewLocation ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Naziv padel centra *
+                  </label>
+                  <input
+                    type="text"
+                    value={newLocationName}
+                    onChange={(e) => setNewLocationName(e.target.value)}
+                    placeholder="npr. Padel Zagreb"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Adresa
+                  </label>
+                  <input
+                    type="text"
+                    value={newLocationAddress}
+                    onChange={(e) => setNewLocationAddress(e.target.value)}
+                    placeholder="npr. Ulica grada Vukovara 123"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Grad
+                  </label>
+                  <input
+                    type="text"
+                    value={newLocationCity}
+                    onChange={(e) => setNewLocationCity(e.target.value)}
+                    placeholder="npr. Zagreb"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSaveNewLocation}
+                  disabled={savingLocation}
+                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition disabled:opacity-50"
+                >
+                  {savingLocation ? 'Spremanje...' : 'Spremi lokaciju'}
+                </button>
+              </div>
+            ) : (
+              <select
+                value={locationId}
+                onChange={(e) => setLocationId(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              >
+                <option value="">-- Odaberi lokaciju --</option>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name} {loc.city ? `(${loc.city})` : ''}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* Match Type & Scoring */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Tip meca</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Tip matcha</h2>
 
             <div className="space-y-4">
               {/* League match toggle */}
-              <label className="flex items-center gap-3">
+              <label className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={isLeagueMatch}
                   onChange={(e) => setIsLeagueMatch(e.target.checked)}
                   className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
                 />
-                <span>Ligaski mec</span>
+                <span className="text-gray-800">Ligaški match</span>
                 {isLeagueMatch && (
-                  <span className="text-sm text-gray-500">(Golden Point, 2 seta za pobjedu)</span>
+                  <span className="text-sm text-gray-600">(Golden Point, 2 seta za pobjedu)</span>
                 )}
               </label>
 
@@ -243,7 +364,7 @@ export default function NewMatchPage() {
               {!isLeagueMatch && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nacin bodovanja
+                    Način bodovanja
                   </label>
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -256,8 +377,8 @@ export default function NewMatchPage() {
                         className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                       />
                       <div>
-                        <span className="font-medium">Golden Point</span>
-                        <p className="text-xs text-gray-500">Na 40-40 odlucuje jedan poen</p>
+                        <span className="font-medium text-gray-800">Golden Point</span>
+                        <p className="text-xs text-gray-600">Na 40-40 odlučuje jedan poen</p>
                       </div>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -270,8 +391,8 @@ export default function NewMatchPage() {
                         className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                       />
                       <div>
-                        <span className="font-medium">Klasicno</span>
-                        <p className="text-xs text-gray-500">Deuce/Advantage sustav</p>
+                        <span className="font-medium text-gray-800">Klasično</span>
+                        <p className="text-xs text-gray-600">Deuce/Advantage sustav</p>
                       </div>
                     </label>
                   </div>
@@ -282,82 +403,102 @@ export default function NewMatchPage() {
 
           {/* Players */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Igraci</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Igrači</h2>
 
             <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Pretraži igrače
+              </label>
               <input
                 type="text"
-                placeholder="Pretrazi igrace..."
+                placeholder="Upiši ime ili email za filtriranje..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
               />
+              {searchTerm && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Prikazano {filteredUsers.length} od {users.length} igrača
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Team 1 */}
-              <div className="border rounded-lg p-4">
-                <h3 className="font-medium mb-3 text-blue-600">Tim 1</h3>
+              <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                <h3 className="font-semibold mb-3 text-blue-700">Tim 1</h3>
                 <div className="space-y-3">
-                  <select
-                    value={team1Player1}
-                    onChange={(e) => setTeam1Player1(e.target.value)}
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="">Igrac 1</option>
-                    {filteredUsers.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.name || user.email}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={team1Player2}
-                    onChange={(e) => setTeam1Player2(e.target.value)}
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="">Igrac 2</option>
-                    {filteredUsers.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.name || user.email}
-                      </option>
-                    ))}
-                  </select>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Igrač 1</label>
+                    <select
+                      value={team1Player1}
+                      onChange={(e) => setTeam1Player1(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                      required
+                    >
+                      <option value="">-- Odaberi --</option>
+                      {filteredUsers.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {getDisplayName(user)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Igrač 2</label>
+                    <select
+                      value={team1Player2}
+                      onChange={(e) => setTeam1Player2(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                      required
+                    >
+                      <option value="">-- Odaberi --</option>
+                      {filteredUsers.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {getDisplayName(user)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
               {/* Team 2 */}
-              <div className="border rounded-lg p-4">
-                <h3 className="font-medium mb-3 text-red-600">Tim 2</h3>
+              <div className="border border-red-200 rounded-lg p-4 bg-red-50">
+                <h3 className="font-semibold mb-3 text-red-700">Tim 2</h3>
                 <div className="space-y-3">
-                  <select
-                    value={team2Player1}
-                    onChange={(e) => setTeam2Player1(e.target.value)}
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="">Igrac 1</option>
-                    {filteredUsers.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.name || user.email}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={team2Player2}
-                    onChange={(e) => setTeam2Player2(e.target.value)}
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="">Igrac 2</option>
-                    {filteredUsers.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.name || user.email}
-                      </option>
-                    ))}
-                  </select>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Igrač 1</label>
+                    <select
+                      value={team2Player1}
+                      onChange={(e) => setTeam2Player1(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                      required
+                    >
+                      <option value="">-- Odaberi --</option>
+                      {filteredUsers.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {getDisplayName(user)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Igrač 2</label>
+                    <select
+                      value={team2Player2}
+                      onChange={(e) => setTeam2Player2(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                      required
+                    >
+                      <option value="">-- Odaberi --</option>
+                      {filteredUsers.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {getDisplayName(user)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
@@ -365,13 +506,13 @@ export default function NewMatchPage() {
 
           {/* Notes */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Napomena (opcionalno)</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Napomena (opcionalno)</h2>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
               rows={3}
-              placeholder="Dodatne napomene o mecu..."
+              placeholder="Dodatne napomene o matchu..."
             />
           </div>
 
@@ -382,12 +523,12 @@ export default function NewMatchPage() {
               disabled={loading}
               className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50"
             >
-              {loading ? 'Kreiranje...' : 'Kreiraj mec'}
+              {loading ? 'Kreiranje...' : 'Kreiraj match'}
             </button>
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
             >
               Odustani
             </button>
@@ -405,9 +546,9 @@ export default function NewMatchPage() {
             <div className="space-y-3 mb-6">
               {warnings.map((warning, idx) => (
                 <div key={idx} className="bg-yellow-50 border border-yellow-200 rounded p-3">
-                  <div className="font-medium">{getUserName(warning.userId)}</div>
+                  <div className="font-medium text-gray-800">{getUserName(warning.userId)}</div>
                   {warning.conflicts.map((conflict, cidx) => (
-                    <div key={cidx} className="text-sm text-gray-600">
+                    <div key={cidx} className="text-sm text-gray-700">
                       {conflict.message}
                     </div>
                   ))}
@@ -426,7 +567,7 @@ export default function NewMatchPage() {
               </button>
               <button
                 onClick={() => setShowWarningModal(false)}
-                className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-50 transition"
+                className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition"
               >
                 Odustani
               </button>

@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Navbar from '@/components/Navbar'
+import PlayerSearch from '@/components/PlayerSearch'
 
 interface User {
   id: string
@@ -44,7 +45,6 @@ export default function NewMatchPage() {
   const [team1Player2, setTeam1Player2] = useState('')
   const [team2Player1, setTeam2Player1] = useState('')
   const [team2Player2, setTeam2Player2] = useState('')
-  const [searchTerm, setSearchTerm] = useState('')
   const [scoringType, setScoringType] = useState('golden_point')
   const [isLeagueMatch, setIsLeagueMatch] = useState(false)
 
@@ -201,31 +201,21 @@ export default function NewMatchPage() {
     }
   }
 
-  // Filter users and highlight when search matches
-  const filteredUsers = searchTerm
-    ? users.filter(
-        (user) =>
-          user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : users
+  // Get selected player IDs for exclusion
+  const selectedPlayerIds = [team1Player1, team1Player2, team2Player1, team2Player2].filter(Boolean)
 
-  // Get display name with email suffix for disambiguation
-  const getDisplayName = (user: User) => {
+  const getUserName = (userId: string) => {
+    const user = users.find((u) => u.id === userId)
+    if (!user) return 'Nepoznato'
+    // Check for same name disambiguation
     const sameName = users.filter(
       (u) => u.name && user.name && u.name.toLowerCase() === user.name.toLowerCase() && u.id !== user.id
     )
     if (sameName.length > 0 && user.name) {
-      // Add email suffix for disambiguation
       const emailPrefix = user.email.split('@')[0]
       return `${user.name} (${emailPrefix})`
     }
     return user.name || user.email
-  }
-
-  const getUserName = (userId: string) => {
-    const user = users.find((u) => u.id === userId)
-    return user ? getDisplayName(user) : 'Nepoznato'
   }
 
   if (status === 'loading') {
@@ -346,19 +336,32 @@ export default function NewMatchPage() {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Tip matcha</h2>
 
             <div className="space-y-4">
-              {/* League match toggle */}
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isLeagueMatch}
-                  onChange={(e) => setIsLeagueMatch(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <span className="text-gray-800">Ligaški match</span>
-                {isLeagueMatch && (
-                  <span className="text-sm text-gray-600">(Golden Point, 2 seta za pobjedu)</span>
-                )}
-              </label>
+              {/* Match type radio buttons */}
+              <div className="flex gap-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="matchType"
+                    checked={!isLeagueMatch}
+                    onChange={() => setIsLeagueMatch(false)}
+                    className="w-5 h-5 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-gray-800 font-medium">Regularan match</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="matchType"
+                    checked={isLeagueMatch}
+                    onChange={() => setIsLeagueMatch(true)}
+                    className="w-5 h-5 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-gray-800 font-medium">Ligaški match</span>
+                </label>
+              </div>
+              {isLeagueMatch && (
+                <p className="text-sm text-gray-600 ml-1">Golden Point, 2 seta za pobjedu</p>
+              )}
 
               {/* Scoring type - only for non-league matches */}
               {!isLeagueMatch && (
@@ -404,62 +407,31 @@ export default function NewMatchPage() {
           {/* Players */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Igrači</h2>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Pretraži igrače
-              </label>
-              <input
-                type="text"
-                placeholder="Upiši ime ili email za filtriranje..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-              />
-              {searchTerm && (
-                <p className="text-sm text-gray-600 mt-1">
-                  Prikazano {filteredUsers.length} od {users.length} igrača
-                </p>
-              )}
-            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              Započni tipkati ime ili email za pretraživanje igrača.
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Team 1 */}
               <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
                 <h3 className="font-semibold mb-3 text-blue-700">Tim 1</h3>
                 <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-1">Igrač 1</label>
-                    <select
-                      value={team1Player1}
-                      onChange={(e) => setTeam1Player1(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-                      required
-                    >
-                      <option value="">-- Odaberi --</option>
-                      {filteredUsers.map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {getDisplayName(user)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-1">Igrač 2</label>
-                    <select
-                      value={team1Player2}
-                      onChange={(e) => setTeam1Player2(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-                      required
-                    >
-                      <option value="">-- Odaberi --</option>
-                      {filteredUsers.map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {getDisplayName(user)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <PlayerSearch
+                    users={users}
+                    selectedUserId={team1Player1}
+                    onSelect={setTeam1Player1}
+                    excludeIds={selectedPlayerIds.filter(id => id !== team1Player1)}
+                    label="Igrač 1"
+                    placeholder="Pretraži igrača..."
+                  />
+                  <PlayerSearch
+                    users={users}
+                    selectedUserId={team1Player2}
+                    onSelect={setTeam1Player2}
+                    excludeIds={selectedPlayerIds.filter(id => id !== team1Player2)}
+                    label="Igrač 2"
+                    placeholder="Pretraži igrača..."
+                  />
                 </div>
               </div>
 
@@ -467,38 +439,22 @@ export default function NewMatchPage() {
               <div className="border border-red-200 rounded-lg p-4 bg-red-50">
                 <h3 className="font-semibold mb-3 text-red-700">Tim 2</h3>
                 <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-1">Igrač 1</label>
-                    <select
-                      value={team2Player1}
-                      onChange={(e) => setTeam2Player1(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-                      required
-                    >
-                      <option value="">-- Odaberi --</option>
-                      {filteredUsers.map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {getDisplayName(user)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-1">Igrač 2</label>
-                    <select
-                      value={team2Player2}
-                      onChange={(e) => setTeam2Player2(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-                      required
-                    >
-                      <option value="">-- Odaberi --</option>
-                      {filteredUsers.map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {getDisplayName(user)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <PlayerSearch
+                    users={users}
+                    selectedUserId={team2Player1}
+                    onSelect={setTeam2Player1}
+                    excludeIds={selectedPlayerIds.filter(id => id !== team2Player1)}
+                    label="Igrač 1"
+                    placeholder="Pretraži igrača..."
+                  />
+                  <PlayerSearch
+                    users={users}
+                    selectedUserId={team2Player2}
+                    onSelect={setTeam2Player2}
+                    excludeIds={selectedPlayerIds.filter(id => id !== team2Player2)}
+                    label="Igrač 2"
+                    placeholder="Pretraži igrača..."
+                  />
                 </div>
               </div>
             </div>

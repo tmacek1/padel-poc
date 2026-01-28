@@ -21,6 +21,10 @@ export async function GET(
         name: true,
         email: true,
         image: true,
+        createdAt: true,
+        gender: true,
+        dominantHand: true,
+        preferredCourtSide: true,
         club: {
           select: { id: true, name: true },
         },

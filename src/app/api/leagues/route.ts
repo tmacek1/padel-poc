@@ -58,7 +58,7 @@ export async function GET(request: Request) {
     const leaguesWithStatus = leagues.map((league) => ({
       ...league,
       tierName: getTierName(league.tier),
-      isActive: league.teams.length >= 5,
+      isActive: league.isActive,
       teamCount: league.teams.length,
     }))
 

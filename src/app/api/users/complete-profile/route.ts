@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/session'
+import { sendWelcomeEmail } from '@/lib/email'
 
 export async function POST(request: Request) {
   try {
@@ -18,6 +19,13 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
+
+    // Check if this is the first time completing profile (for welcome email)
+    const existingUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { profileCompleted: true, email: true },
+    })
+    const isFirstTimeCompletion = !existingUser?.profileCompleted
 
     // Update user profile
     const updatedUser = await prisma.user.update({
@@ -40,6 +48,13 @@ export async function POST(request: Request) {
         profileCompleted: true,
       },
     })
+
+    // Send welcome email for first-time profile completion (Google OAuth users)
+    if (isFirstTimeCompletion && updatedUser.email) {
+      sendWelcomeEmail(updatedUser.email, updatedUser.name).catch((err) => {
+        console.error('Failed to send welcome email:', err)
+      })
+    }
 
     return NextResponse.json(updatedUser)
   } catch (error) {

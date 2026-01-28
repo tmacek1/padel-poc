@@ -4,6 +4,27 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Navbar from '@/components/Navbar'
+import PlayerSearch from '@/components/PlayerSearch'
+
+interface User {
+  id: string
+  name: string | null
+  email: string
+}
+
+interface SetNumberStat {
+  setNumber: number
+  won: number
+  lost: number
+  total: number
+  winRate: number
+}
+
+interface CourtSideStat {
+  setsPlayed: number
+  setsWon: number
+  winRate: number
+}
 
 interface Stats {
   userId: string
@@ -17,6 +38,11 @@ interface Stats {
   totalGamesWon: number
   totalGamesLost: number
   gameWinRate: number
+  setNumberStats?: SetNumberStat[]
+  courtSideStats?: {
+    left: CourtSideStat
+    right: CourtSideStat
+  }
 }
 
 export default function StatsPage() {
@@ -24,6 +50,9 @@ export default function StatsPage() {
   const router = useRouter()
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [users, setUsers] = useState<User[]>([])
+  const [viewingUserId, setViewingUserId] = useState('')
+  const [viewingUserName, setViewingUserName] = useState('')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -33,13 +62,27 @@ export default function StatsPage() {
 
   useEffect(() => {
     if (session?.user?.id) {
-      fetchStats()
+      fetchStats(session.user.id)
+      fetchUsers()
     }
   }, [session])
 
-  const fetchStats = async () => {
+  const fetchUsers = async () => {
     try {
-      const res = await fetch(`/api/users/${session?.user?.id}/stats`)
+      const res = await fetch('/api/users')
+      const data = await res.json()
+      if (Array.isArray(data)) {
+        setUsers(data)
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    }
+  }
+
+  const fetchStats = async (userId: string) => {
+    try {
+      setLoading(true)
+      const res = await fetch(`/api/users/${userId}/stats`)
       const data = await res.json()
       setStats(data)
     } catch (error) {
@@ -49,12 +92,35 @@ export default function StatsPage() {
     }
   }
 
+  const handleSelectPlayer = (userId: string) => {
+    setViewingUserId(userId)
+    if (userId) {
+      const user = users.find(u => u.id === userId)
+      setViewingUserName(user?.name || user?.email || '')
+      fetchStats(userId)
+    } else {
+      // Reset to own stats
+      if (session?.user?.id) {
+        setViewingUserName('')
+        fetchStats(session.user.id)
+      }
+    }
+  }
+
+  const handleBackToMyStats = () => {
+    setViewingUserId('')
+    setViewingUserName('')
+    if (session?.user?.id) {
+      fetchStats(session.user.id)
+    }
+  }
+
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-100">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-500">Ucitavanje...</div>
+          <div className="text-gray-700">Ucitavanje...</div>
         </div>
       </div>
     )
@@ -65,50 +131,77 @@ export default function StatsPage() {
       <Navbar />
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Moja statistika</h1>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">
+            {viewingUserId ? `Statistika: ${viewingUserName}` : 'Moja statistika'}
+          </h1>
+          {viewingUserId && (
+            <button
+              onClick={handleBackToMyStats}
+              className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+            >
+              &larr; Natrag na moju statistiku
+            </button>
+          )}
+        </div>
+
+        {/* Player Search */}
+        <div className="bg-white rounded-lg shadow p-4 mb-6">
+          <div className="max-w-md">
+            <PlayerSearch
+              users={users}
+              selectedUserId={viewingUserId}
+              onSelect={handleSelectPlayer}
+              placeholder="Pretraži igrača za prikaz njegove statistike..."
+              label="Pregledaj statistiku drugog igrača"
+            />
+          </div>
+        </div>
 
         {!stats || stats.totalMatches === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-500">
-              Nemas jos odigranih matcheva. Statistika ce se prikazati nakon prvog zavrsenog matcha.
+            <p className="text-gray-700">
+              {viewingUserId
+                ? 'Ovaj igrač nema još odigranih matcheva.'
+                : 'Nemaš još odigranih matcheva. Statistika će se prikazati nakon prvog završenog matcha.'}
             </p>
           </div>
         ) : (
           <div className="space-y-6">
             {/* Overview */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-6">Pregled</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Pregled</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-blue-600">
                     {stats.totalMatches}
                   </div>
-                  <div className="text-gray-500">Ukupno matcheva</div>
+                  <div className="text-gray-700">Ukupno matcheva</div>
                 </div>
                 <div className="text-center">
                   <div className="text-4xl font-bold text-green-600">
                     {stats.wins}
                   </div>
-                  <div className="text-gray-500">Pobjede</div>
+                  <div className="text-gray-700">Pobjede</div>
                 </div>
                 <div className="text-center">
                   <div className="text-4xl font-bold text-red-600">
                     {stats.losses}
                   </div>
-                  <div className="text-gray-500">Porazi</div>
+                  <div className="text-gray-700">Porazi</div>
                 </div>
                 <div className="text-center">
                   <div className="text-4xl font-bold text-purple-600">
                     {stats.winRate}%
                   </div>
-                  <div className="text-gray-500">Uspjesnost</div>
+                  <div className="text-gray-700">Uspjesnost</div>
                 </div>
               </div>
             </div>
 
             {/* Win Rate Visual */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Postotak pobjeda</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Postotak pobjeda</h2>
               <div className="relative h-8 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className="absolute left-0 top-0 h-full bg-green-500 transition-all duration-500"
@@ -118,7 +211,7 @@ export default function StatsPage() {
                   {stats.winRate}%
                 </div>
               </div>
-              <div className="flex justify-between mt-2 text-sm text-gray-500">
+              <div className="flex justify-between mt-2 text-sm text-gray-700">
                 <span>{stats.wins} pobjeda</span>
                 <span>{stats.losses} poraza</span>
               </div>
@@ -126,53 +219,140 @@ export default function StatsPage() {
 
             {/* Set Statistics */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-6">Statistika setova</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Statistika setova</h2>
               <div className="grid grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-green-600">
                     {stats.totalSetsWon}
                   </div>
-                  <div className="text-gray-500">Dobiveni setovi</div>
+                  <div className="text-gray-700">Dobiveni setovi</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-red-600">
                     {stats.totalSetsLost}
                   </div>
-                  <div className="text-gray-500">Izgubljeni setovi</div>
+                  <div className="text-gray-700">Izgubljeni setovi</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-blue-600">
                     {stats.setWinRate}%
                   </div>
-                  <div className="text-gray-500">Uspjesnost</div>
+                  <div className="text-gray-700">Uspjesnost</div>
                 </div>
               </div>
             </div>
 
             {/* Game Statistics */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-6">Statistika gemova</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Statistika gemova</h2>
               <div className="grid grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-green-600">
                     {stats.totalGamesWon}
                   </div>
-                  <div className="text-gray-500">Dobiveni gemovi</div>
+                  <div className="text-gray-700">Dobiveni gemovi</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-red-600">
                     {stats.totalGamesLost}
                   </div>
-                  <div className="text-gray-500">Izgubljeni gemovi</div>
+                  <div className="text-gray-700">Izgubljeni gemovi</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-blue-600">
                     {stats.gameWinRate}%
                   </div>
-                  <div className="text-gray-500">Uspjesnost</div>
+                  <div className="text-gray-700">Uspjesnost</div>
                 </div>
               </div>
             </div>
+
+            {/* Set Number Statistics */}
+            {stats.setNumberStats && stats.setNumberStats.length > 0 && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Uspjesnost po broju seta</h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  Kako igraš u prvom, drugom, trećem setu...
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {stats.setNumberStats.map((setStat) => (
+                    <div
+                      key={setStat.setNumber}
+                      className="bg-gray-50 rounded-lg p-4 text-center"
+                    >
+                      <div className="text-sm text-gray-600 mb-2">
+                        {setStat.setNumber}. set
+                      </div>
+                      <div className="text-2xl font-bold text-blue-600 mb-1">
+                        {setStat.winRate}%
+                      </div>
+                      <div className="text-xs text-gray-700">
+                        {setStat.won}W / {setStat.lost}L ({setStat.total} ukupno)
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Court Side Statistics */}
+            {stats.courtSideStats && (
+              (stats.courtSideStats.left.setsPlayed > 0 ||
+                stats.courtSideStats.right.setsPlayed > 0) && (
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-6">Uspjesnost po strani terena</h2>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Usporedi kako igraš na lijevoj (reves) i desnoj (drive) strani
+                  </p>
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* Left side */}
+                    <div className="bg-purple-50 rounded-lg p-6 text-center">
+                      <div className="text-lg font-medium text-purple-800 mb-2">
+                        Lijeva strana (Reves)
+                      </div>
+                      <div className="text-4xl font-bold text-purple-600 mb-2">
+                        {stats.courtSideStats.left.winRate}%
+                      </div>
+                      <div className="text-sm text-gray-700">
+                        {stats.courtSideStats.left.setsWon} dobivenih od{' '}
+                        {stats.courtSideStats.left.setsPlayed} odigranih setova
+                      </div>
+                      {stats.courtSideStats.left.setsPlayed === 0 && (
+                        <div className="text-xs text-gray-600 mt-2">
+                          Nemas podataka za ovu stranu
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right side */}
+                    <div className="bg-orange-50 rounded-lg p-6 text-center">
+                      <div className="text-lg font-medium text-orange-800 mb-2">
+                        Desna strana (Drive)
+                      </div>
+                      <div className="text-4xl font-bold text-orange-600 mb-2">
+                        {stats.courtSideStats.right.winRate}%
+                      </div>
+                      <div className="text-sm text-gray-700">
+                        {stats.courtSideStats.right.setsWon} dobivenih od{' '}
+                        {stats.courtSideStats.right.setsPlayed} odigranih setova
+                      </div>
+                      {stats.courtSideStats.right.setsPlayed === 0 && (
+                        <div className="text-xs text-gray-600 mt-2">
+                          Nemas podataka za ovu stranu
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {stats.courtSideStats.left.setsPlayed === 0 &&
+                    stats.courtSideStats.right.setsPlayed === 0 && (
+                      <p className="text-sm text-gray-600 mt-4 text-center">
+                        Za prikaz statistike po strani terena, označi svoju poziciju u
+                        svakom setu na stranici matcha.
+                      </p>
+                    )}
+                </div>
+              )
+            )}
           </div>
         )}
       </main>

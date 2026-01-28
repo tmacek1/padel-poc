@@ -13,6 +13,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
 
+    const isAdmin = user.isAdmin === true
+
     const users = await prisma.user.findMany({
       where: search
         ? {
@@ -27,6 +29,7 @@ export async function GET(request: Request) {
         name: true,
         email: true,
         image: true,
+        ...(isAdmin ? { isAdmin: true } : {}),
         club: {
           select: { id: true, name: true },
         },

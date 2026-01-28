@@ -4,6 +4,14 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Navbar from '@/components/Navbar'
+import PlayerSearch from '@/components/PlayerSearch'
+import LeagueSchedule from '@/components/LeagueSchedule'
+
+interface User {
+  id: string
+  name: string | null
+  email: string
+}
 
 interface Standing {
   id: string
@@ -84,6 +92,20 @@ export default function LeaguesPage() {
   const [creatingLeague, setCreatingLeague] = useState(false)
   const [error, setError] = useState('')
 
+  // Team management
+  const [users, setUsers] = useState<User[]>([])
+  const [addingTeamToLeague, setAddingTeamToLeague] = useState<string | null>(null)
+  const [teamPlayer1, setTeamPlayer1] = useState('')
+  const [teamPlayer2, setTeamPlayer2] = useState('')
+  const [teamName, setTeamName] = useState('')
+  const [savingTeam, setSavingTeam] = useState(false)
+
+  // Schedule management
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [schedules, setSchedules] = useState<Record<string, any[]>>({})
+  const [generatingSchedule, setGeneratingSchedule] = useState<string | null>(null)
+  const [togglingActive, setTogglingActive] = useState<string | null>(null)
+
   const isAdmin = session?.user?.isAdmin
 
   useEffect(() => {
@@ -96,14 +118,26 @@ export default function LeaguesPage() {
     if (session) {
       fetchSeasons()
       fetchLeagues()
+      if (isAdmin) {
+        fetchUsers()
+      }
     }
-  }, [session])
+  }, [session, isAdmin])
 
   useEffect(() => {
     if (selectedSeason) {
       fetchLeagues(selectedSeason)
     }
   }, [selectedSeason])
+
+  // Fetch schedules for all leagues
+  useEffect(() => {
+    leagues.forEach((league) => {
+      if (league.isActive && !schedules[league.id]) {
+        fetchSchedule(league.id)
+      }
+    })
+  }, [leagues])
 
   const fetchSeasons = async () => {
     try {
@@ -132,6 +166,80 @@ export default function LeaguesPage() {
       console.error('Error fetching leagues:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch('/api/users')
+      const data = await res.json()
+      if (Array.isArray(data)) {
+        setUsers(data)
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    }
+  }
+
+  const handleAddTeam = async (leagueId: string) => {
+    if (!teamPlayer1 || !teamPlayer2) {
+      setError('Oba igrača su obavezna')
+      return
+    }
+
+    if (teamPlayer1 === teamPlayer2) {
+      setError('Igrači moraju biti različiti')
+      return
+    }
+
+    setSavingTeam(true)
+    setError('')
+
+    try {
+      const res = await fetch(`/api/leagues/${leagueId}/teams`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          player1Id: teamPlayer1,
+          player2Id: teamPlayer2,
+          teamName: teamName.trim() || null,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        fetchLeagues(selectedSeason || undefined)
+        setAddingTeamToLeague(null)
+        setTeamPlayer1('')
+        setTeamPlayer2('')
+        setTeamName('')
+      } else {
+        setError(data.error || 'Greška pri dodavanju tima')
+      }
+    } catch {
+      setError('Greška pri dodavanju tima')
+    } finally {
+      setSavingTeam(false)
+    }
+  }
+
+  const handleRemoveTeam = async (leagueId: string, teamId: string) => {
+    if (!confirm('Jesi li siguran da želiš ukloniti ovaj tim iz lige?')) return
+
+    try {
+      const res = await fetch(`/api/leagues/${leagueId}/teams?teamId=${teamId}`, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        fetchLeagues(selectedSeason || undefined)
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Greška pri brisanju tima')
+      }
+    } catch {
+      setError('Greška pri brisanju tima')
     }
   }
 
@@ -178,6 +286,66 @@ export default function LeaguesPage() {
 
   const getTeamName = (team: League['teams'][0]) => {
     return team.players.map((p) => p.user.name || p.user.email).join(' / ')
+  }
+
+  const handleToggleActive = async (leagueId: string, currentActive: boolean) => {
+    setTogglingActive(leagueId)
+    try {
+      const res = await fetch(`/api/leagues/${leagueId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !currentActive }),
+      })
+
+      if (res.ok) {
+        fetchLeagues(selectedSeason || undefined)
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Greska pri promjeni statusa')
+      }
+    } catch {
+      setError('Greska pri promjeni statusa')
+    } finally {
+      setTogglingActive(null)
+    }
+  }
+
+  const fetchSchedule = async (leagueId: string) => {
+    try {
+      const res = await fetch(`/api/leagues/${leagueId}/schedule`)
+      const data = await res.json()
+      if (Array.isArray(data)) {
+        setSchedules((prev) => ({ ...prev, [leagueId]: data }))
+      }
+    } catch (err) {
+      console.error('Error fetching schedule:', err)
+    }
+  }
+
+  const handleGenerateSchedule = async (leagueId: string) => {
+    if (!confirm('Generiranje novog rasporeda ce obrisati postojeci raspored. Nastaviti?')) return
+
+    setGeneratingSchedule(leagueId)
+    setError('')
+
+    try {
+      const res = await fetch(`/api/leagues/${leagueId}/schedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setSchedules((prev) => ({ ...prev, [leagueId]: data }))
+      } else {
+        setError(data.error || 'Greska pri generiranju rasporeda')
+      }
+    } catch {
+      setError('Greska pri generiranju rasporeda')
+    } finally {
+      setGeneratingSchedule(null)
+    }
   }
 
   if (status === 'loading' || loading) {
@@ -305,7 +473,7 @@ export default function LeaguesPage() {
                 </button>
               </div>
               <p className="text-sm text-gray-600">
-                Liga neće biti aktivna dok nema najmanje 5 parova.
+                Liga neće biti aktivna dok nema najmanje 2 para.
               </p>
             </form>
           </div>
@@ -333,11 +501,11 @@ export default function LeaguesPage() {
           <div className="bg-white rounded-lg shadow p-8 text-center">
             <p className="text-gray-600">Trenutno nema aktivnih liga.</p>
             {isAdmin ? (
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-700 mt-2">
                 Kao administrator, možeš kreirati novu ligu klikom na gumb &quot;+ Nova liga&quot;.
               </p>
             ) : (
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-700 mt-2">
                 Samo administrator sustava može kreirati nove lige.
               </p>
             )}
@@ -372,29 +540,48 @@ export default function LeaguesPage() {
                                 <p className="text-gray-600 mt-1">{league.description}</p>
                               )}
                               {league.season && (
-                                <p className="text-sm text-gray-500 mt-1">
+                                <p className="text-sm text-gray-700 mt-1">
                                   Sezona: {league.season.name}
                                 </p>
                               )}
                             </div>
-                            <span
-                              className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                league.isActive
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}
-                            >
-                              {league.isActive ? 'Aktivna' : 'Neaktivna'}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                  league.isActive
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-yellow-100 text-yellow-800'
+                                }`}
+                              >
+                                {league.isActive ? 'Aktivna' : 'Neaktivna'}
+                              </span>
+                              {isAdmin && (
+                                <button
+                                  onClick={() => handleToggleActive(league.id, league.isActive)}
+                                  disabled={togglingActive === league.id}
+                                  className={`text-xs px-2 py-1 rounded font-medium transition disabled:opacity-50 ${
+                                    league.isActive
+                                      ? 'text-yellow-700 hover:bg-yellow-50 border border-yellow-300'
+                                      : 'text-green-700 hover:bg-green-50 border border-green-300'
+                                  }`}
+                                >
+                                  {togglingActive === league.id
+                                    ? '...'
+                                    : league.isActive
+                                    ? 'Deaktiviraj'
+                                    : 'Aktiviraj'}
+                                </button>
+                              )}
+                            </div>
                           </div>
 
                           <div className="flex items-center gap-6 text-sm text-gray-600 mb-4">
                             <div>
-                              <span className="font-medium text-gray-900">{league.teamCount}</span> / 5
-                              parova
-                              {!league.isActive && league.teamCount < 5 && (
+                              <span className="font-medium text-gray-900">{league.teamCount}</span> / 2
+                              para
+                              {!league.isActive && league.teamCount < 2 && (
                                 <span className="ml-2 text-yellow-600">
-                                  (potrebno još {5 - league.teamCount} za aktivaciju)
+                                  (potrebno još {2 - league.teamCount} za aktivaciju)
                                 </span>
                               )}
                             </div>
@@ -445,25 +632,142 @@ export default function LeaguesPage() {
                             </div>
                           )}
 
-                          {/* Teams (if no standings yet) */}
-                          {(!league.standings || league.standings.length === 0) &&
-                            league.teams.length > 0 && (
-                              <div className="mt-4 pt-4 border-t">
-                                <div className="text-sm font-medium text-gray-800 mb-2">
-                                  Prijavljeni parovi:
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                  {league.teams.map((team) => (
-                                    <div
-                                      key={team.id}
-                                      className="bg-gray-100 rounded px-3 py-2 text-sm text-gray-800"
+                          {/* Teams section */}
+                          <div className="mt-4 pt-4 border-t">
+                            <div className="flex justify-between items-center mb-3">
+                              <div className="text-sm font-medium text-gray-800">
+                                Prijavljeni parovi ({league.teams.length}):
+                              </div>
+                              {isAdmin && addingTeamToLeague !== league.id && (
+                                <button
+                                  onClick={() => {
+                                    setAddingTeamToLeague(league.id)
+                                    setTeamPlayer1('')
+                                    setTeamPlayer2('')
+                                    setTeamName('')
+                                    setError('')
+                                  }}
+                                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                                >
+                                  + Dodaj par
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Add team form */}
+                            {isAdmin && addingTeamToLeague === league.id && (
+                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                <h4 className="font-medium text-gray-900 mb-3">Dodaj novi par</h4>
+                                {error && (
+                                  <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-3 text-sm">
+                                    {error}
+                                  </div>
+                                )}
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="block text-sm text-gray-700 mb-1">Ime tima (opcionalno)</label>
+                                    <input
+                                      type="text"
+                                      value={teamName}
+                                      onChange={(e) => setTeamName(e.target.value)}
+                                      placeholder="npr. Dream Team"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded text-gray-900 bg-white text-sm"
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <PlayerSearch
+                                      users={users}
+                                      selectedUserId={teamPlayer1}
+                                      onSelect={setTeamPlayer1}
+                                      excludeIds={teamPlayer2 ? [teamPlayer2] : []}
+                                      label="Igrač 1"
+                                      placeholder="Pretraži igrača..."
+                                    />
+                                    <PlayerSearch
+                                      users={users}
+                                      selectedUserId={teamPlayer2}
+                                      onSelect={setTeamPlayer2}
+                                      excludeIds={teamPlayer1 ? [teamPlayer1] : []}
+                                      label="Igrač 2"
+                                      placeholder="Pretraži igrača..."
+                                    />
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => handleAddTeam(league.id)}
+                                      disabled={savingTeam}
+                                      className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 disabled:opacity-50"
                                     >
-                                      {getTeamName(team)}
-                                    </div>
-                                  ))}
+                                      {savingTeam ? 'Spremanje...' : 'Dodaj par'}
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setAddingTeamToLeague(null)
+                                        setError('')
+                                      }}
+                                      className="border border-gray-300 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-50"
+                                    >
+                                      Odustani
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             )}
+
+                            {league.teams.length === 0 ? (
+                              <p className="text-sm text-gray-600">Još nema prijavljenih parova.</p>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {league.teams.map((team) => (
+                                  <div
+                                    key={team.id}
+                                    className="bg-gray-100 rounded px-3 py-2 text-sm text-gray-800 flex justify-between items-center"
+                                  >
+                                    <span>{getTeamName(team)}</span>
+                                    {isAdmin && (
+                                      <button
+                                        onClick={() => handleRemoveTeam(league.id, team.id)}
+                                        className="text-red-500 hover:text-red-700 ml-2"
+                                        title="Ukloni par"
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Schedule section */}
+                          {league.isActive && (
+                            <div className="mt-4 pt-4 border-t">
+                              <div className="flex justify-between items-center mb-3">
+                                <h3 className="font-medium text-gray-900 text-sm">Raspored</h3>
+                                {isAdmin && league.teams.length >= 2 && (
+                                  <button
+                                    onClick={() => handleGenerateSchedule(league.id)}
+                                    disabled={generatingSchedule === league.id}
+                                    className="text-sm bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 disabled:opacity-50 transition"
+                                  >
+                                    {generatingSchedule === league.id
+                                      ? 'Generiranje...'
+                                      : schedules[league.id]?.length
+                                      ? 'Regeneriraj raspored'
+                                      : 'Generiraj raspored'}
+                                  </button>
+                                )}
+                              </div>
+                              <LeagueSchedule
+                                leagueId={league.id}
+                                matchups={schedules[league.id] || []}
+                                isAdmin={!!isAdmin}
+                                onRefresh={() => fetchSchedule(league.id)}
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}

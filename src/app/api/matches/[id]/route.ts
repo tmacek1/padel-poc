@@ -30,6 +30,9 @@ export async function GET(
         },
         sets: {
           orderBy: { setNumber: 'asc' },
+          include: {
+            playerPositions: true,
+          },
         },
         league: {
           select: { id: true, name: true },
@@ -44,7 +47,10 @@ export async function GET(
     // Admin can edit any match, creator can edit their own
     const canEdit = user.isAdmin || match.creatorId === user.id
 
-    return NextResponse.json({ ...match, canEdit })
+    // Check if user is a participant (can set their court side)
+    const isParticipant = match.players.some(p => p.user.id === user.id)
+
+    return NextResponse.json({ ...match, canEdit, isParticipant })
   } catch (error) {
     console.error('Error fetching match:', error)
     return NextResponse.json(

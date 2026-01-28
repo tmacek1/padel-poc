@@ -148,6 +148,7 @@ model Match {
   location Location?     @relation(fields: [locationId], references: [id])
   players  MatchPlayer[]
   sets     MatchSet[]
+  matchups LeagueMatchup[]
 }
 
 model MatchPlayer {
@@ -171,9 +172,22 @@ model MatchSet {
   team1Tiebreak Int? // ako je tiebreak u setu
   team2Tiebreak Int?
 
-  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  match           Match               @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  playerPositions SetPlayerPosition[]
 
   @@unique([matchId, setNumber])
+}
+
+// Pozicija igrača u setu (lijevo/desno)
+model SetPlayerPosition {
+  id          String   @id @default(cuid())
+  matchSetId  String
+  userId      String
+  courtSide   String   // "left" or "right"
+
+  matchSet    MatchSet @relation(fields: [matchSetId], references: [id], onDelete: Cascade)
+
+  @@unique([matchSetId, userId])
 }
 
 // ============================================
@@ -224,6 +238,7 @@ model League {
   teams     LeagueTeam[]
   matches   Match[]
   standings SeasonStanding[]
+  matchups  LeagueMatchup[]
 }
 
 model LeagueTeam {
@@ -232,9 +247,33 @@ model LeagueTeam {
   name      String?  // opcionalno ime tima
   createdAt DateTime @default(now())
 
-  league    League             @relation(fields: [leagueId], references: [id], onDelete: Cascade)
-  players   LeagueTeamPlayer[]
-  standings SeasonStanding[]
+  league         League             @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  players        LeagueTeamPlayer[]
+  standings      SeasonStanding[]
+  homeMatchups   LeagueMatchup[]    @relation("HomeTeam")
+  awayMatchups   LeagueMatchup[]    @relation("AwayTeam")
+}
+
+// Round-robin raspored meceva u ligi
+model LeagueMatchup {
+  id          String    @id @default(cuid())
+  leagueId    String
+  round       Int       // broj kola (1, 2, 3...)
+  homeTeamId  String
+  awayTeamId  String
+  scheduledAt DateTime? // zakazano vrijeme
+  matchId     String?   // linkiran odigrani mec
+  status      String    @default("pending") // pending, scheduled, completed
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  league      League     @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  homeTeam    LeagueTeam @relation("HomeTeam", fields: [homeTeamId], references: [id], onDelete: Cascade)
+  awayTeam    LeagueTeam @relation("AwayTeam", fields: [awayTeamId], references: [id], onDelete: Cascade)
+  match       Match?     @relation(fields: [matchId], references: [id])
+
+  @@unique([leagueId, round, homeTeamId, awayTeamId])
 }
 
 model LeagueTeamPlayer {

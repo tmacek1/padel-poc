@@ -82,17 +82,17 @@ export default function MatchesPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-500">Ucitavanje...</div>
+          <div className="text-gray-700">Učitavanje...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
@@ -110,43 +110,43 @@ export default function MatchesPage() {
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg ${
+            className={`px-4 py-2 rounded-lg font-medium ${
               filter === 'all'
                 ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
             }`}
           >
             Svi
           </button>
           <button
             onClick={() => setFilter('scheduled')}
-            className={`px-4 py-2 rounded-lg ${
+            className={`px-4 py-2 rounded-lg font-medium ${
               filter === 'scheduled'
                 ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
             }`}
           >
             Zakazani
           </button>
           <button
             onClick={() => setFilter('completed')}
-            className={`px-4 py-2 rounded-lg ${
+            className={`px-4 py-2 rounded-lg font-medium ${
               filter === 'completed'
                 ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
             }`}
           >
-            Zavrseni
+            Završeni
           </button>
         </div>
 
         {/* Matches List */}
         {filteredMatches.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-500 mb-4">Nema matcheva za prikaz</p>
+            <p className="text-gray-700 mb-4">Nema matcheva za prikaz</p>
             <Link
               href="/matches/new"
-              className="text-blue-600 hover:underline"
+              className="text-blue-600 hover:underline font-medium"
             >
               Kreiraj novi match
             </Link>
@@ -162,7 +162,7 @@ export default function MatchesPage() {
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <div className="text-lg font-semibold">
+                      <div className="text-lg font-semibold text-gray-900">
                         {new Date(match.scheduledAt).toLocaleDateString('hr-HR', {
                           weekday: 'long',
                           day: 'numeric',
@@ -172,29 +172,29 @@ export default function MatchesPage() {
                           minute: '2-digit',
                         })}
                       </div>
-                      <div className="text-gray-500">
-                        {match.location?.name || 'Lokacija nije odredena'}
+                      <div className="text-gray-700">
+                        {match.location?.name || 'Lokacija nije određena'}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {match.creatorId === session?.user?.id && (
-                        <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">
-                          Tvoj mec
+                        <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded font-medium">
+                          Tvoj match
                         </span>
                       )}
                       <span
-                        className={`px-2 py-1 text-xs rounded ${
+                        className={`px-2 py-1 text-xs rounded font-medium ${
                           match.status === 'scheduled'
                             ? 'bg-blue-100 text-blue-800'
                             : match.status === 'completed'
                             ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
+                            : 'bg-gray-200 text-gray-800'
                         }`}
                       >
                         {match.status === 'scheduled'
                           ? 'Zakazan'
                           : match.status === 'completed'
-                          ? 'Zavrseno'
+                          ? 'Završeno'
                           : match.status}
                       </span>
                     </div>
@@ -202,19 +202,19 @@ export default function MatchesPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="font-medium">{getTeamPlayers(match, 1)}</div>
+                      <div className="font-semibold text-gray-900">{getTeamPlayers(match, 1)}</div>
                     </div>
                     <div className="px-6 text-center">
                       {match.status === 'completed' ? (
-                        <div className="text-2xl font-bold">
+                        <div className="text-2xl font-bold text-gray-900">
                           {getMatchScore(match)}
                         </div>
                       ) : (
-                        <div className="text-gray-400">vs</div>
+                        <div className="text-gray-600 font-medium">vs</div>
                       )}
                     </div>
                     <div className="flex-1 text-right">
-                      <div className="font-medium">{getTeamPlayers(match, 2)}</div>
+                      <div className="font-semibold text-gray-900">{getTeamPlayers(match, 2)}</div>
                     </div>
                   </div>
                 </div>

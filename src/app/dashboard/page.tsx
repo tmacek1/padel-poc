@@ -83,7 +83,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gray-100">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-500">Ucitavanje...</div>
+          <div className="text-gray-700">Ucitavanje...</div>
         </div>
       </div>
     )
@@ -108,25 +108,25 @@ export default function DashboardPage() {
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-500">Ukupno matcheva</div>
+            <div className="text-sm text-gray-700 font-medium">Ukupno matcheva</div>
             <div className="text-3xl font-bold text-blue-600">
               {stats?.totalMatches || 0}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-500">Pobjede</div>
+            <div className="text-sm text-gray-700 font-medium">Pobjede</div>
             <div className="text-3xl font-bold text-green-600">
               {stats?.wins || 0}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-500">Porazi</div>
+            <div className="text-sm text-gray-700 font-medium">Porazi</div>
             <div className="text-3xl font-bold text-red-600">
               {stats?.losses || 0}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-500">Postotak pobjeda</div>
+            <div className="text-sm text-gray-700 font-medium">Postotak pobjeda</div>
             <div className="text-3xl font-bold text-purple-600">
               {stats?.winRate || 0}%
             </div>
@@ -153,11 +153,11 @@ export default function DashboardPage() {
           {/* Upcoming Matches */}
           <div className="bg-white rounded-lg shadow">
             <div className="p-6 border-b">
-              <h2 className="text-xl font-semibold">Nadolazeci matchevi</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Nadolazeci matchevi</h2>
             </div>
             <div className="p-6">
               {upcomingMatches.length === 0 ? (
-                <p className="text-gray-500">Nemas zakazanih matcheva</p>
+                <p className="text-gray-700">Nemas zakazanih matcheva</p>
               ) : (
                 <div className="space-y-4">
                   {upcomingMatches.map((match) => (
@@ -168,7 +168,7 @@ export default function DashboardPage() {
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <div className="font-medium">
+                          <div className="font-medium text-gray-900">
                             {new Date(match.scheduledAt).toLocaleDateString('hr-HR', {
                               weekday: 'short',
                               day: 'numeric',
@@ -177,7 +177,7 @@ export default function DashboardPage() {
                               minute: '2-digit',
                             })}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-gray-700">
                             {match.location?.name || 'Lokacija nije odredena'}
                           </div>
                         </div>
@@ -195,11 +195,11 @@ export default function DashboardPage() {
           {/* Recent Matches */}
           <div className="bg-white rounded-lg shadow">
             <div className="p-6 border-b">
-              <h2 className="text-xl font-semibold">Nedavni matchevi</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Nedavni matchevi</h2>
             </div>
             <div className="p-6">
               {recentMatches.length === 0 ? (
-                <p className="text-gray-500">Nemas odigranih matcheva</p>
+                <p className="text-gray-700">Nemas odigranih matcheva</p>
               ) : (
                 <div className="space-y-4">
                   {recentMatches.map((match) => (
@@ -210,14 +210,14 @@ export default function DashboardPage() {
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <div className="font-medium">
+                          <div className="font-medium text-gray-900">
                             {new Date(match.scheduledAt).toLocaleDateString('hr-HR', {
                               day: 'numeric',
                               month: 'short',
                               year: 'numeric',
                             })}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-gray-700">
                             {match.location?.name || 'Lokacija nije odredena'}
                           </div>
                         </div>

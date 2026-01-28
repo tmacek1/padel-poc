@@ -31,6 +31,11 @@ export default function Navbar() {
                 <Link href="/stats" className="hover:text-blue-200">
                   Statistika
                 </Link>
+                {session.user?.isAdmin && (
+                  <Link href="/admin" className="hover:text-blue-200">
+                    Admin
+                  </Link>
+                )}
               </div>
 
               <div className="relative">

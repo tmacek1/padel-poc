@@ -10,6 +10,10 @@ interface UserProfile {
   name: string | null
   email: string
   image: string | null
+  createdAt: string
+  gender: string | null
+  dominantHand: string | null
+  preferredCourtSide: string | null
   club: { id: string; name: string } | null
   locations: {
     id: string
@@ -106,7 +110,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-gray-100">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-500">Ucitavanje...</div>
+          <div className="text-gray-700">Ucitavanje...</div>
         </div>
       </div>
     )
@@ -138,7 +142,7 @@ export default function ProfilePage() {
                 <div className="text-xl font-semibold">
                   {profile?.name || session?.user?.name || 'Bez imena'}
                 </div>
-                <div className="text-gray-500">{session?.user?.email}</div>
+                <div className="text-gray-700">{session?.user?.email}</div>
               </div>
             </div>
 
@@ -153,14 +157,14 @@ export default function ProfilePage() {
                     type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                   />
                 </div>
 
                 {/* Locations */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Lokacije gdje obicno igras
+                    Omiljena lokacija
                   </label>
                   <div className="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-3">
                     {locations.map((loc) => (
@@ -204,23 +208,69 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="space-y-4">
+                {/* Email */}
+                <div>
+                  <div className="text-sm text-gray-700">Email</div>
+                  <div className="font-medium text-gray-900">
+                    {profile?.email}
+                  </div>
+                </div>
+
+                {/* Dominant Hand */}
+                <div>
+                  <div className="text-sm text-gray-700">Dominantna ruka</div>
+                  <div className="font-medium text-gray-900">
+                    {profile?.dominantHand === 'left' ? 'Lijeva' : profile?.dominantHand === 'right' ? 'Desna' : 'Nije određeno'}
+                  </div>
+                </div>
+
+                {/* Preferred Court Side */}
+                <div>
+                  <div className="text-sm text-gray-700">Preferirana strana terena</div>
+                  <div className="font-medium text-gray-900">
+                    {profile?.preferredCourtSide === 'left' ? 'Lijeva (Reves)' : profile?.preferredCourtSide === 'right' ? 'Desna (Drive)' : 'Nije određeno'}
+                  </div>
+                </div>
+
+                {/* Gender */}
+                <div>
+                  <div className="text-sm text-gray-700">Spol</div>
+                  <div className="font-medium text-gray-900">
+                    {profile?.gender === 'male' ? 'Muško' : profile?.gender === 'female' ? 'Žensko' : 'Nije određeno'}
+                  </div>
+                </div>
+
                 {/* Club */}
                 <div>
-                  <div className="text-sm text-gray-500">Klub</div>
-                  <div className="font-medium">
-                    {profile?.club?.name || 'Nije uclanjen'}
+                  <div className="text-sm text-gray-700">Klub</div>
+                  <div className="font-medium text-gray-900">
+                    {profile?.club?.name || 'Nije učlanjen'}
                   </div>
                 </div>
 
                 {/* Locations */}
                 <div>
-                  <div className="text-sm text-gray-500">Lokacije</div>
-                  <div className="font-medium">
+                  <div className="text-sm text-gray-700">Omiljena lokacija</div>
+                  <div className="font-medium text-gray-900">
                     {profile?.locations && profile.locations.length > 0
                       ? profile.locations
                           .map((l) => l.location.name)
                           .join(', ')
-                      : 'Nije odredeno'}
+                      : 'Nije određeno'}
+                  </div>
+                </div>
+
+                {/* Registration date */}
+                <div>
+                  <div className="text-sm text-gray-700">Datum registracije</div>
+                  <div className="font-medium text-gray-900">
+                    {profile?.createdAt
+                      ? new Date(profile.createdAt).toLocaleDateString('hr-HR', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })
+                      : '-'}
                   </div>
                 </div>
 

@@ -74,7 +74,7 @@ export default function CompleteProfilePage() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-gray-500">Ucitavanje...</div>
+        <div className="text-gray-700">Ucitavanje...</div>
       </div>
     )
   }
@@ -84,7 +84,7 @@ export default function CompleteProfilePage() {
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-8">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Dovrsi profil</h1>
-          <p className="text-gray-500 mt-2">
+          <p className="text-gray-700 mt-2">
             Samo jos par podataka da zavrsis registraciju
           </p>
         </div>
@@ -105,7 +105,7 @@ export default function CompleteProfilePage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               placeholder="Tvoje ime i prezime"
               required
             />
@@ -126,7 +126,7 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setGender(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span>Muski</span>
+                <span className="text-gray-800">Muski</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -137,7 +137,7 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setGender(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span>Zenski</span>
+                <span className="text-gray-800">Zenski</span>
               </label>
             </div>
           </div>
@@ -157,7 +157,7 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setDominantHand(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span>Desna</span>
+                <span className="text-gray-800">Desna</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -168,7 +168,7 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setDominantHand(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span>Lijeva</span>
+                <span className="text-gray-800">Lijeva</span>
               </label>
             </div>
           </div>
@@ -188,7 +188,7 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setPreferredCourtSide(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span>Desna (Drive)</span>
+                <span className="text-gray-800">Desna (Drive)</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -199,7 +199,7 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setPreferredCourtSide(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span>Lijeva (Reves)</span>
+                <span className="text-gray-800">Lijeva (Reves)</span>
               </label>
             </div>
           </div>

@@ -13,7 +13,7 @@ export async function getCurrentUserWithAdmin() {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, email: true, name: true, isAdmin: true },
+    select: { id: true, email: true, name: true, isAdmin: true, isSuperAdmin: true },
   })
 
   return dbUser

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface Player {
   user: { id: string; name: string; email: string }
@@ -18,12 +18,21 @@ interface MatchSet {
   team2Score: number
 }
 
+interface Location {
+  id: string
+  name: string
+  address?: string | null
+  city?: string | null
+}
+
 interface Matchup {
   id: string
   round: number
   homeTeam: Team
   awayTeam: Team
   scheduledAt: string | null
+  locationId: string | null
+  location?: Location | null
   matchId: string | null
   status: string
   match?: {
@@ -42,7 +51,11 @@ interface LeagueScheduleProps {
 }
 
 function getTeamName(team: Team): string {
-  return team.name || team.players.map((p) => p.user.name || p.user.email).join(' / ')
+  const playerNames = team.players.map((p) => p.user.name || p.user.email).join(' / ')
+  if (team.name) {
+    return `${playerNames} (${team.name})`
+  }
+  return playerNames
 }
 
 function formatDate(dateStr: string): string {
@@ -57,7 +70,7 @@ function formatDate(dateStr: string): string {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  pending: { label: 'Ceka', className: 'bg-gray-100 text-gray-600' },
+  pending: { label: 'Ceka', className: 'bg-gray-100 text-gray-700' },
   scheduled: { label: 'Zakazano', className: 'bg-blue-100 text-blue-700' },
   completed: { label: 'Odigrano', className: 'bg-green-100 text-green-700' },
 }
@@ -70,9 +83,35 @@ export default function LeagueSchedule({
 }: LeagueScheduleProps) {
   const [editingMatchup, setEditingMatchup] = useState<string | null>(null)
   const [scheduledDate, setScheduledDate] = useState('')
+  const [selectedLocationId, setSelectedLocationId] = useState('')
+  const [locations, setLocations] = useState<Location[]>([])
   const [saving, setSaving] = useState(false)
   const [creatingMatch, setCreatingMatch] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [showNewLocation, setShowNewLocation] = useState(false)
+  const [newLocationName, setNewLocationName] = useState('')
+  const [newLocationAddress, setNewLocationAddress] = useState('')
+  const [newLocationCity, setNewLocationCity] = useState('')
+  const [creatingLocation, setCreatingLocation] = useState(false)
+
+  // Fetch locations for dropdown
+  useEffect(() => {
+    if (isAdmin) {
+      fetchLocations()
+    }
+  }, [isAdmin])
+
+  const fetchLocations = async () => {
+    try {
+      const res = await fetch('/api/locations')
+      if (res.ok) {
+        const data = await res.json()
+        setLocations(data)
+      }
+    } catch (err) {
+      console.error('Error fetching locations:', err)
+    }
+  }
 
   // Group matchups by round
   const rounds: Record<number, Matchup[]> = {}
@@ -85,12 +124,7 @@ export default function LeagueSchedule({
     .map(Number)
     .sort((a, b) => a - b)
 
-  const handleSetDate = async (matchupId: string) => {
-    if (!scheduledDate) {
-      setError('Datum je obavezan')
-      return
-    }
-
+  const handleSave = async (matchupId: string) => {
     setSaving(true)
     setError('')
 
@@ -100,22 +134,72 @@ export default function LeagueSchedule({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           matchupId,
-          scheduledAt: new Date(scheduledDate).toISOString(),
+          scheduledAt: scheduledDate ? new Date(scheduledDate).toISOString() : null,
+          locationId: selectedLocationId || null,
         }),
       })
 
       if (res.ok) {
         setEditingMatchup(null)
         setScheduledDate('')
+        setSelectedLocationId('')
+        setShowNewLocation(false)
         onRefresh()
       } else {
         const data = await res.json()
         setError(data.error || 'Greska')
       }
     } catch {
-      setError('Greska pri postavljanju datuma')
+      setError('Greska pri spremanju')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleCreateLocation = async () => {
+    if (!newLocationName.trim()) {
+      setError('Naziv lokacije je obavezan')
+      return
+    }
+    if (!newLocationAddress.trim()) {
+      setError('Adresa je obavezna')
+      return
+    }
+    if (!newLocationCity.trim()) {
+      setError('Grad je obavezan')
+      return
+    }
+
+    setCreatingLocation(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/locations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newLocationName.trim(),
+          address: newLocationAddress.trim(),
+          city: newLocationCity.trim(),
+        }),
+      })
+
+      if (res.ok) {
+        const newLoc = await res.json()
+        setLocations((prev) => [...prev, newLoc])
+        setSelectedLocationId(newLoc.id)
+        setShowNewLocation(false)
+        setNewLocationName('')
+        setNewLocationAddress('')
+        setNewLocationCity('')
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Greska pri kreiranju lokacije')
+      }
+    } catch {
+      setError('Greska pri kreiranju lokacije')
+    } finally {
+      setCreatingLocation(false)
     }
   }
 
@@ -143,9 +227,21 @@ export default function LeagueSchedule({
     }
   }
 
+  const startEditing = (matchup: Matchup) => {
+    setEditingMatchup(matchup.id)
+    setScheduledDate(
+      matchup.scheduledAt
+        ? new Date(matchup.scheduledAt).toISOString().slice(0, 16)
+        : ''
+    )
+    setSelectedLocationId(matchup.locationId || '')
+    setError('')
+    setShowNewLocation(false)
+  }
+
   if (matchups.length === 0) {
     return (
-      <div className="text-sm text-gray-500 py-2">
+      <div className="text-sm text-gray-600 py-2">
         Raspored jos nije generiran.
       </div>
     )
@@ -180,7 +276,7 @@ export default function LeagueSchedule({
                         <span className="font-medium text-gray-900 truncate">
                           {getTeamName(matchup.homeTeam)}
                         </span>
-                        <span className="text-gray-400 flex-shrink-0">vs</span>
+                        <span className="text-gray-500 flex-shrink-0">vs</span>
                         <span className="font-medium text-gray-900 truncate">
                           {getTeamName(matchup.awayTeam)}
                         </span>
@@ -188,7 +284,7 @@ export default function LeagueSchedule({
 
                       {/* Match result */}
                       {matchResult && matchResult.sets.length > 0 && (
-                        <div className="text-xs text-gray-600 mt-1">
+                        <div className="text-xs text-gray-700 mt-1">
                           Rezultat:{' '}
                           {matchResult.sets
                             .map((s) => `${s.team1Score}-${s.team2Score}`)
@@ -196,10 +292,18 @@ export default function LeagueSchedule({
                         </div>
                       )}
 
-                      {/* Scheduled date */}
-                      {matchup.scheduledAt && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          {formatDate(matchup.scheduledAt)}
+                      {/* Scheduled date and location */}
+                      {(matchup.scheduledAt || matchup.location) && (
+                        <div className="text-xs text-gray-600 mt-1 flex flex-wrap gap-2">
+                          {matchup.scheduledAt && (
+                            <span>{formatDate(matchup.scheduledAt)}</span>
+                          )}
+                          {matchup.location && (
+                            <span className="text-blue-600">
+                              @ {matchup.location.name}
+                              {matchup.location.city && `, ${matchup.location.city}`}
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -214,23 +318,13 @@ export default function LeagueSchedule({
 
                       {isAdmin && !matchup.matchId && (
                         <div className="flex items-center gap-1">
-                          {/* Set date button */}
+                          {/* Edit date/location button */}
                           <button
-                            onClick={() => {
-                              setEditingMatchup(matchup.id)
-                              setScheduledDate(
-                                matchup.scheduledAt
-                                  ? new Date(matchup.scheduledAt)
-                                      .toISOString()
-                                      .slice(0, 16)
-                                  : ''
-                              )
-                              setError('')
-                            }}
+                            onClick={() => startEditing(matchup)}
                             className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50"
-                            title="Postavi datum"
+                            title="Uredi termin"
                           >
-                            Datum
+                            Termin
                           </button>
 
                           {/* Create match button */}
@@ -248,38 +342,124 @@ export default function LeagueSchedule({
                       )}
 
                       {matchup.matchId && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-500">
                           Mec kreiran
                         </span>
                       )}
                     </div>
                   </div>
 
-                  {/* Date edit inline form */}
+                  {/* Edit inline form */}
                   {isAdmin && editingMatchup === matchup.id && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <input
-                        type="datetime-local"
-                        value={scheduledDate}
-                        onChange={(e) => setScheduledDate(e.target.value)}
-                        className="text-sm px-2 py-1 border border-gray-300 rounded text-gray-900 bg-white"
-                      />
-                      <button
-                        onClick={() => handleSetDate(matchup.id)}
-                        disabled={saving}
-                        className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 disabled:opacity-50"
-                      >
-                        {saving ? 'Spremanje...' : 'Spremi'}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEditingMatchup(null)
-                          setError('')
-                        }}
-                        className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
-                      >
-                        Odustani
-                      </button>
+                    <div className="mt-3 p-3 bg-blue-50 rounded-lg space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* Date/time */}
+                        <div>
+                          <label className="block text-xs text-gray-700 mb-1">Datum i vrijeme</label>
+                          <input
+                            type="datetime-local"
+                            value={scheduledDate}
+                            onChange={(e) => setScheduledDate(e.target.value)}
+                            className="w-full text-sm px-2 py-1.5 border border-gray-300 rounded text-gray-900 bg-white"
+                          />
+                        </div>
+
+                        {/* Location */}
+                        <div>
+                          <label className="block text-xs text-gray-700 mb-1">Lokacija</label>
+                          {!showNewLocation ? (
+                            <div className="flex gap-2">
+                              <select
+                                value={selectedLocationId}
+                                onChange={(e) => setSelectedLocationId(e.target.value)}
+                                className="flex-1 text-sm px-2 py-1.5 border border-gray-300 rounded text-gray-900 bg-white"
+                              >
+                                <option value="">-- Odaberi lokaciju --</option>
+                                {locations.map((loc) => (
+                                  <option key={loc.id} value={loc.id}>
+                                    {loc.name}{loc.city ? ` (${loc.city})` : ''}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => setShowNewLocation(true)}
+                                className="text-xs text-blue-600 hover:text-blue-800 px-2 whitespace-nowrap"
+                                title="Dodaj novu lokaciju"
+                              >
+                                + Nova
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <input
+                                type="text"
+                                value={newLocationName}
+                                onChange={(e) => setNewLocationName(e.target.value)}
+                                placeholder="Naziv lokacije *"
+                                className="w-full text-sm px-2 py-1.5 border border-gray-300 rounded text-gray-900 bg-white"
+                              />
+                              <input
+                                type="text"
+                                value={newLocationAddress}
+                                onChange={(e) => setNewLocationAddress(e.target.value)}
+                                placeholder="Adresa *"
+                                className="w-full text-sm px-2 py-1.5 border border-gray-300 rounded text-gray-900 bg-white"
+                              />
+                              <input
+                                type="text"
+                                value={newLocationCity}
+                                onChange={(e) => setNewLocationCity(e.target.value)}
+                                placeholder="Grad *"
+                                className="w-full text-sm px-2 py-1.5 border border-gray-300 rounded text-gray-900 bg-white"
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={handleCreateLocation}
+                                  disabled={creatingLocation}
+                                  className="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:opacity-50"
+                                >
+                                  {creatingLocation ? 'Kreiranje...' : 'Kreiraj lokaciju'}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setShowNewLocation(false)
+                                    setNewLocationName('')
+                                    setNewLocationAddress('')
+                                    setNewLocationCity('')
+                                  }}
+                                  className="text-xs text-gray-600 hover:text-gray-800 px-2"
+                                >
+                                  Odustani
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex gap-2 pt-2 border-t border-blue-100">
+                        <button
+                          onClick={() => handleSave(matchup.id)}
+                          disabled={saving}
+                          className="text-xs bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {saving ? 'Spremanje...' : 'Spremi'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingMatchup(null)
+                            setError('')
+                            setShowNewLocation(false)
+                          }}
+                          className="text-xs text-gray-600 hover:text-gray-800 px-3 py-1.5"
+                        >
+                          Odustani
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

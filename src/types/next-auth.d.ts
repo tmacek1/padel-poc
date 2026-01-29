@@ -9,6 +9,7 @@ declare module 'next-auth' {
       image?: string | null
       profileCompleted?: boolean
       isAdmin?: boolean
+      isSuperAdmin?: boolean
     }
   }
 }
@@ -18,5 +19,6 @@ declare module 'next-auth/jwt' {
     id: string
     profileCompleted?: boolean
     isAdmin?: boolean
+    isSuperAdmin?: boolean
   }
 }

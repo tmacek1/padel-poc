@@ -12,6 +12,19 @@ interface PlayerPosition {
   courtSide: string
 }
 
+interface SetPlayer {
+  id: string
+  matchSetId: string
+  userId: string
+  team: number
+  user: { id: string; name: string; email: string }
+}
+
+interface EditSetPlayer {
+  userId: string
+  team: number
+}
+
 interface MatchSet {
   id?: string
   setNumber: number
@@ -20,6 +33,7 @@ interface MatchSet {
   team1Tiebreak?: number | null
   team2Tiebreak?: number | null
   playerPositions?: PlayerPosition[]
+  setPlayers?: SetPlayer[] | EditSetPlayer[]
 }
 
 interface Match {
@@ -27,6 +41,7 @@ interface Match {
   scheduledAt: string
   playedAt: string | null
   status: string
+  scoringType: string
   notes: string | null
   creatorId: string
   canEdit: boolean
@@ -57,11 +72,20 @@ function isTiebreakScore(team1: number, team2: number): boolean {
 }
 
 function isValidTiebreakScore(winner: number, loser: number): boolean {
-  // Tiebreak must be won by 2 points, minimum 7 points to win
+  // Tiebreak rules:
+  // - Minimum 7 points to win
+  // - Must win by exactly 2 points
+  // - Valid scores: 7-0, 7-1, 7-2, 7-3, 7-4, 7-5, 8-6, 9-7, 10-8, etc.
   if (winner < 7) return false
-  if (winner - loser < 2) return false
   if (loser < 0) return false
-  return true
+
+  // If loser has less than 6 points, winner must have exactly 7
+  if (loser < 6) {
+    return winner === 7
+  }
+
+  // If loser has 6 or more, winner must be exactly loser + 2
+  return winner === loser + 2
 }
 
 function getSetScoreOptions() {
@@ -139,10 +163,19 @@ export default function MatchDetailPage() {
         if (tb1 === 0 && tb2 === 0) {
           return `Set ${set.setNumber} završio je 7-6, molimo unesite rezultat tiebreaka.`
         }
-        const winner = set.team1Score === 7 ? tb1 : tb2
-        const loser = set.team1Score === 7 ? tb2 : tb1
+
+        // The team that won the set (has 7 games) must also have won the tiebreak
+        const team1WonSet = set.team1Score === 7
+        const team1WonTiebreak = tb1 > tb2
+
+        if (team1WonSet !== team1WonTiebreak) {
+          return `Neispravan tiebreak rezultat u setu ${set.setNumber}. Tim koji je osvojio set (7 gemova) mora imati više bodova u tiebreaku.`
+        }
+
+        const winner = Math.max(tb1, tb2)
+        const loser = Math.min(tb1, tb2)
         if (!isValidTiebreakScore(winner, loser)) {
-          return `Neispravan tiebreak rezultat u setu ${set.setNumber}. Pobjednik mora imati min. 7 bodova i 2 boda prednosti.`
+          return `Neispravan tiebreak rezultat u setu ${set.setNumber}. Pobjednik mora imati min. 7 bodova i 2 boda prednosti (npr. 7-5, 8-6, 10-8).`
         }
       }
     }
@@ -152,7 +185,16 @@ export default function MatchDetailPage() {
 
   const addSet = () => {
     const newSetNumber = editSets.length + 1
-    setEditSets([...editSets, { setNumber: newSetNumber, team1Score: 0, team2Score: 0 }])
+    // Za klasični meč, dodaj defaultne igrače iz match.players
+    const defaultSetPlayers = match?.scoringType === 'classic' && match?.players
+      ? match.players.map(p => ({ userId: p.user.id, team: p.team }))
+      : undefined
+    setEditSets([...editSets, {
+      setNumber: newSetNumber,
+      team1Score: 0,
+      team2Score: 0,
+      setPlayers: defaultSetPlayers,
+    }])
   }
 
   const removeSet = (index: number) => {
@@ -294,6 +336,35 @@ export default function MatchDetailPage() {
     setEditSets(newSets)
   }
 
+  const updateSetPlayer = (setIndex: number, team: number, playerIndex: number, userId: string) => {
+    const newSets = [...editSets]
+    const currentSetPlayers = (newSets[setIndex].setPlayers || []) as EditSetPlayer[]
+
+    // Find existing players for this team
+    const teamPlayers = currentSetPlayers.filter(sp => sp.team === team)
+    const otherTeamPlayers = currentSetPlayers.filter(sp => sp.team !== team)
+
+    // Update or add player
+    if (teamPlayers[playerIndex]) {
+      teamPlayers[playerIndex] = { userId, team }
+    } else {
+      teamPlayers.push({ userId, team })
+    }
+
+    newSets[setIndex] = {
+      ...newSets[setIndex],
+      setPlayers: [...otherTeamPlayers, ...teamPlayers],
+    }
+    setEditSets(newSets)
+  }
+
+  const getSetPlayersForTeam = (set: MatchSet, team: number): string[] => {
+    if (!set.setPlayers) return []
+    return (set.setPlayers as Array<SetPlayer | EditSetPlayer>)
+      .filter(sp => sp.team === team)
+      .map(sp => sp.userId)
+  }
+
   const getTeamPlayers = (team: number) => {
     return match?.players
       .filter((p) => p.team === team)
@@ -344,12 +415,6 @@ export default function MatchDetailPage() {
       <Navbar />
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-            {error}
-          </div>
-        )}
-
         {/* Header */}
         <div className="bg-white rounded-lg shadow mb-6">
           <div className="p-6">
@@ -376,15 +441,23 @@ export default function MatchDetailPage() {
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
                     match.status === 'scheduled'
                       ? 'bg-blue-100 text-blue-800'
+                      : match.status === 'in_progress'
+                      ? 'bg-yellow-100 text-yellow-800'
                       : match.status === 'completed'
                       ? 'bg-green-100 text-green-800'
+                      : match.status === 'cancelled'
+                      ? 'bg-red-100 text-red-800'
                       : 'bg-gray-200 text-gray-700'
                   }`}
                 >
                   {match.status === 'scheduled'
                     ? 'Zakazan'
+                    : match.status === 'in_progress'
+                    ? 'U tijeku'
                     : match.status === 'completed'
                     ? 'Završeno'
+                    : match.status === 'cancelled'
+                    ? 'Otkazano'
                     : match.status}
                 </span>
               </div>
@@ -475,6 +548,11 @@ export default function MatchDetailPage() {
               <p className="text-sm text-gray-600 mb-4">
                 Odaberi na kojoj si strani terena igrao u svakom setu (lijeva/desna).
               </p>
+              {error && !editing && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                  {error}
+                </div>
+              )}
               <div className="space-y-4">
                 {match.sets.map((set) => {
                   const myPosition = getMyPositionForSet(set)
@@ -629,10 +707,72 @@ export default function MatchDetailPage() {
                               </div>
                             </div>
                           )}
+
+                          {/* Set players selection - only for classic matches */}
+                          {match.scoringType === 'classic' && (
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <label className="block text-xs text-gray-700 font-medium mb-2">
+                                Igrači za ovaj set (klasični meč - različiti parovi po setu)
+                              </label>
+                              <div className="grid grid-cols-2 gap-4">
+                                {/* Team 1 players */}
+                                <div>
+                                  <p className="text-xs text-gray-600 mb-1">Tim 1:</p>
+                                  {[0, 1].map((playerIdx) => {
+                                    const currentPlayers = getSetPlayersForTeam(set, 1)
+                                    return (
+                                      <select
+                                        key={playerIdx}
+                                        value={currentPlayers[playerIdx] || ''}
+                                        onChange={(e) => updateSetPlayer(idx, 1, playerIdx, e.target.value)}
+                                        className="w-full mb-1 px-2 py-1 text-sm border border-gray-300 rounded text-gray-900 bg-white"
+                                      >
+                                        <option value="">-- Odaberi igrača --</option>
+                                        {match.players.map((p) => (
+                                          <option key={p.user.id} value={p.user.id}>
+                                            {p.user.name || p.user.email}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    )
+                                  })}
+                                </div>
+                                {/* Team 2 players */}
+                                <div>
+                                  <p className="text-xs text-gray-600 mb-1">Tim 2:</p>
+                                  {[0, 1].map((playerIdx) => {
+                                    const currentPlayers = getSetPlayersForTeam(set, 2)
+                                    return (
+                                      <select
+                                        key={playerIdx}
+                                        value={currentPlayers[playerIdx] || ''}
+                                        onChange={(e) => updateSetPlayer(idx, 2, playerIdx, e.target.value)}
+                                        className="w-full mb-1 px-2 py-1 text-sm border border-gray-300 rounded text-gray-900 bg-white"
+                                      >
+                                        <option value="">-- Odaberi igrača --</option>
+                                        {match.players.map((p) => (
+                                          <option key={p.user.id} value={p.user.id}>
+                                            {p.user.name || p.user.email}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
                   </div>
+
+                  {/* Error message */}
+                  {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                      {error}
+                    </div>
+                  )}
 
                   {/* Save/Cancel buttons */}
                   <div className="flex gap-3">
@@ -644,7 +784,10 @@ export default function MatchDetailPage() {
                       {saving ? 'Spremanje...' : 'Spremi'}
                     </button>
                     <button
-                      onClick={() => setEditing(false)}
+                      onClick={() => {
+                        setEditing(false)
+                        setError('')
+                      }}
                       className="border border-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-50 transition"
                     >
                       Odustani

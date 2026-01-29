@@ -35,6 +35,7 @@ interface League {
   tierName: string
   isActive: boolean
   teamCount: number
+  creator?: { id: string; name: string | null; email: string } | null
   season?: { id: string; name: string; status: string }
   teams: {
     id: string
@@ -105,8 +106,10 @@ export default function LeaguesPage() {
   const [schedules, setSchedules] = useState<Record<string, any[]>>({})
   const [generatingSchedule, setGeneratingSchedule] = useState<string | null>(null)
   const [togglingActive, setTogglingActive] = useState<string | null>(null)
+  const [deletingLeague, setDeletingLeague] = useState<string | null>(null)
 
   const isAdmin = session?.user?.isAdmin
+  const isSuperAdmin = session?.user?.isSuperAdmin
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -288,7 +291,26 @@ export default function LeaguesPage() {
     return team.players.map((p) => p.user.name || p.user.email).join(' / ')
   }
 
-  const handleToggleActive = async (leagueId: string, currentActive: boolean) => {
+  // Get all player IDs already in teams for a specific league
+  const getPlayersInLeague = (league: League): string[] => {
+    const playerIds: string[] = []
+    league.teams.forEach((team) => {
+      team.players.forEach((p) => {
+        playerIds.push(p.user.id)
+      })
+    })
+    return playerIds
+  }
+
+  const handleToggleActive = async (leagueId: string, currentActive: boolean, teamCount: number) => {
+    // Upozorenje ako aktiviramo ligu bez dovoljno parova
+    if (!currentActive && teamCount < 2) {
+      const confirmed = confirm(
+        `Liga ima samo ${teamCount} par(ova). Potrebno je minimalno 2 para za generiranje rasporeda.\n\nŽeliš li svejedno aktivirati ligu?`
+      )
+      if (!confirmed) return
+    }
+
     setTogglingActive(leagueId)
     try {
       const res = await fetch(`/api/leagues/${leagueId}`, {
@@ -307,6 +329,33 @@ export default function LeaguesPage() {
       setError('Greska pri promjeni statusa')
     } finally {
       setTogglingActive(null)
+    }
+  }
+
+  const handleDeleteLeague = async (leagueId: string, leagueName: string) => {
+    const confirmed = confirm(
+      `Jesi li siguran da želiš obrisati ligu "${leagueName}"?\n\nOva akcija je nepovratna i obrisat će sve timove, raspored i rezultate vezane uz ovu ligu.`
+    )
+    if (!confirmed) return
+
+    setDeletingLeague(leagueId)
+    setError('')
+
+    try {
+      const res = await fetch(`/api/leagues/${leagueId}`, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        fetchLeagues(selectedSeason || undefined)
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Greška pri brisanju lige')
+      }
+    } catch {
+      setError('Greška pri brisanju lige')
+    } finally {
+      setDeletingLeague(null)
     }
   }
 
@@ -544,6 +593,11 @@ export default function LeaguesPage() {
                                   Sezona: {league.season.name}
                                 </p>
                               )}
+                              {league.creator && (
+                                <p className="text-sm text-gray-600 mt-1">
+                                  Kreator: {league.creator.name || league.creator.email}
+                                </p>
+                              )}
                             </div>
                             <div className="flex items-center gap-2">
                               <span
@@ -557,7 +611,7 @@ export default function LeaguesPage() {
                               </span>
                               {isAdmin && (
                                 <button
-                                  onClick={() => handleToggleActive(league.id, league.isActive)}
+                                  onClick={() => handleToggleActive(league.id, league.isActive, league.teamCount)}
                                   disabled={togglingActive === league.id}
                                   className={`text-xs px-2 py-1 rounded font-medium transition disabled:opacity-50 ${
                                     league.isActive
@@ -570,6 +624,16 @@ export default function LeaguesPage() {
                                     : league.isActive
                                     ? 'Deaktiviraj'
                                     : 'Aktiviraj'}
+                                </button>
+                              )}
+                              {/* Delete button - visible to creator or superadmin */}
+                              {(isSuperAdmin || league.creator?.id === session?.user?.id) && (
+                                <button
+                                  onClick={() => handleDeleteLeague(league.id, league.name)}
+                                  disabled={deletingLeague === league.id}
+                                  className="text-xs px-2 py-1 rounded font-medium transition disabled:opacity-50 text-red-700 hover:bg-red-50 border border-red-300"
+                                >
+                                  {deletingLeague === league.id ? '...' : 'Obriši'}
                                 </button>
                               )}
                             </div>
@@ -679,7 +743,7 @@ export default function LeaguesPage() {
                                       users={users}
                                       selectedUserId={teamPlayer1}
                                       onSelect={setTeamPlayer1}
-                                      excludeIds={teamPlayer2 ? [teamPlayer2] : []}
+                                      excludeIds={[...getPlayersInLeague(league), ...(teamPlayer2 ? [teamPlayer2] : [])]}
                                       label="Igrač 1"
                                       placeholder="Pretraži igrača..."
                                     />
@@ -687,7 +751,7 @@ export default function LeaguesPage() {
                                       users={users}
                                       selectedUserId={teamPlayer2}
                                       onSelect={setTeamPlayer2}
-                                      excludeIds={teamPlayer1 ? [teamPlayer1] : []}
+                                      excludeIds={[...getPlayersInLeague(league), ...(teamPlayer1 ? [teamPlayer1] : [])]}
                                       label="Igrač 2"
                                       placeholder="Pretraži igrača..."
                                     />

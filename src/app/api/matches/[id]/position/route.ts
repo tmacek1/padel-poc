@@ -75,6 +75,33 @@ export async function POST(
       },
     })
 
+    // Find partner (same team, different user) and set opposite side
+    const currentPlayer = match.players.find(p => p.userId === session.user.id)
+    if (currentPlayer) {
+      const partner = match.players.find(
+        p => p.team === currentPlayer.team && p.userId !== session.user.id
+      )
+      if (partner) {
+        const oppositeSide = courtSide === 'left' ? 'right' : 'left'
+        await prisma.setPlayerPosition.upsert({
+          where: {
+            matchSetId_userId: {
+              matchSetId: setId,
+              userId: partner.userId,
+            },
+          },
+          update: {
+            courtSide: oppositeSide,
+          },
+          create: {
+            matchSetId: setId,
+            userId: partner.userId,
+            courtSide: oppositeSide,
+          },
+        })
+      }
+    }
+
     return NextResponse.json(position)
   } catch (error) {
     console.error('Error setting player position:', error)

@@ -40,6 +40,9 @@ export async function GET(
             },
           },
         },
+        location: {
+          select: { id: true, name: true, address: true, city: true },
+        },
         match: {
           select: {
             id: true,
@@ -201,7 +204,7 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { matchupId, scheduledAt } = body
+    const { matchupId, scheduledAt, locationId } = body
 
     if (!matchupId) {
       return NextResponse.json(
@@ -222,11 +225,86 @@ export async function PATCH(
       )
     }
 
+    // If locationId provided, verify it exists
+    if (locationId) {
+      const location = await prisma.location.findUnique({
+        where: { id: locationId },
+      })
+      if (!location) {
+        return NextResponse.json(
+          { error: 'Lokacija nije pronadjena' },
+          { status: 404 }
+        )
+      }
+    }
+
+    // If scheduledAt is provided and no match exists yet, create the match automatically
+    let matchId = matchup.matchId
+    if (scheduledAt && !matchup.matchId) {
+      // Get team players
+      const matchupWithTeams = await prisma.leagueMatchup.findUnique({
+        where: { id: matchupId },
+        include: {
+          homeTeam: {
+            include: {
+              players: {
+                include: { user: { select: { id: true } } },
+              },
+            },
+          },
+          awayTeam: {
+            include: {
+              players: {
+                include: { user: { select: { id: true } } },
+              },
+            },
+          },
+        },
+      })
+
+      if (matchupWithTeams) {
+        const homePlayers = matchupWithTeams.homeTeam.players.map((p) => ({
+          userId: p.user.id,
+          team: 1,
+        }))
+        const awayPlayers = matchupWithTeams.awayTeam.players.map((p) => ({
+          userId: p.user.id,
+          team: 2,
+        }))
+        const allPlayers = [...homePlayers, ...awayPlayers]
+
+        if (allPlayers.length === 4) {
+          const newMatch = await prisma.match.create({
+            data: {
+              creatorId: user.id,
+              leagueId,
+              locationId: locationId || null,
+              scheduledAt: new Date(scheduledAt),
+              status: 'scheduled',
+              setsToWin: 2,
+              scoringType: 'golden_point',
+              players: {
+                create: allPlayers,
+              },
+            },
+          })
+          matchId = newMatch.id
+        }
+      }
+    }
+
     const updated = await prisma.leagueMatchup.update({
       where: { id: matchupId },
       data: {
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+        locationId: locationId || null,
         status: scheduledAt ? 'scheduled' : 'pending',
+        matchId: matchId,
+      },
+      include: {
+        location: {
+          select: { id: true, name: true, address: true, city: true },
+        },
       },
     })
 

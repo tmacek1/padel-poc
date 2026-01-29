@@ -12,6 +12,9 @@ interface Match {
   playedAt: string | null
   status: string
   creatorId: string
+  leagueId: string | null
+  durationMinutes: number | null
+  league?: { id: string; name: string; tier: string } | null
   location?: { name: string }
   players: {
     team: number
@@ -172,11 +175,29 @@ export default function MatchesPage() {
                           minute: '2-digit',
                         })}
                       </div>
-                      <div className="text-gray-700">
-                        {match.location?.name || 'Lokacija nije određena'}
+                      <div className="text-gray-700 flex items-center gap-3">
+                        <span>{match.location?.name || 'Lokacija nije određena'}</span>
+                        {match.durationMinutes && (
+                          <span className="inline-flex items-center gap-1 text-sm text-gray-600">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {match.durationMinutes} min
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      {/* Liga badge */}
+                      {match.leagueId ? (
+                        <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 border border-orange-300 rounded font-medium">
+                          Liga
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 text-xs bg-teal-100 text-teal-800 border border-teal-300 rounded font-medium">
+                          Regular
+                        </span>
+                      )}
                       {match.creatorId === session?.user?.id && (
                         <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded font-medium">
                           Tvoj match
@@ -186,15 +207,23 @@ export default function MatchesPage() {
                         className={`px-2 py-1 text-xs rounded font-medium ${
                           match.status === 'scheduled'
                             ? 'bg-blue-100 text-blue-800'
+                            : match.status === 'in_progress'
+                            ? 'bg-yellow-100 text-yellow-800'
                             : match.status === 'completed'
                             ? 'bg-green-100 text-green-800'
+                            : match.status === 'cancelled'
+                            ? 'bg-red-100 text-red-800'
                             : 'bg-gray-200 text-gray-800'
                         }`}
                       >
                         {match.status === 'scheduled'
                           ? 'Zakazan'
+                          : match.status === 'in_progress'
+                          ? 'U tijeku'
                           : match.status === 'completed'
                           ? 'Završeno'
+                          : match.status === 'cancelled'
+                          ? 'Otkazano'
                           : match.status}
                       </span>
                     </div>

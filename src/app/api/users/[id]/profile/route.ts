@@ -31,7 +31,7 @@ export async function GET(
         locations: {
           include: {
             location: {
-              select: { id: true, name: true, city: true },
+              select: { id: true, name: true, address: true, city: true },
             },
           },
         },
@@ -70,32 +70,48 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { name, clubId, locationIds } = body
+    const { clubName, locationId, dominantHand, preferredCourtSide } = body
+
+    // Resolve club by name: find existing or create new
+    let clubId: string | null = null
+    if (clubName !== undefined) {
+      if (clubName) {
+        const trimmed = clubName.trim()
+        let club = await prisma.club.findFirst({
+          where: { name: { equals: trimmed, mode: 'insensitive' } },
+        })
+        if (!club) {
+          club = await prisma.club.create({ data: { name: trimmed } })
+        }
+        clubId = club.id
+      }
+    }
 
     // Update user
     await prisma.user.update({
       where: { id },
       data: {
-        ...(name !== undefined ? { name } : {}),
-        ...(clubId !== undefined ? { clubId } : {}),
+        ...(clubName !== undefined ? { clubId } : {}),
+        ...(dominantHand !== undefined ? { dominantHand: dominantHand || null } : {}),
+        ...(preferredCourtSide !== undefined ? { preferredCourtSide: preferredCourtSide || null } : {}),
       },
     })
 
-    // Update locations if provided
-    if (locationIds !== undefined) {
+    // Update location if provided (single location)
+    if (locationId !== undefined) {
       // Remove existing locations
       await prisma.userLocation.deleteMany({
         where: { userId: id },
       })
 
-      // Add new locations
-      if (locationIds.length > 0) {
-        await prisma.userLocation.createMany({
-          data: locationIds.map((locationId: string, index: number) => ({
+      // Add new location
+      if (locationId) {
+        await prisma.userLocation.create({
+          data: {
             userId: id,
             locationId,
-            isPrimary: index === 0,
-          })),
+            isPrimary: true,
+          },
         })
       }
     }
@@ -108,13 +124,15 @@ export async function PUT(
         name: true,
         email: true,
         image: true,
+        dominantHand: true,
+        preferredCourtSide: true,
         club: {
           select: { id: true, name: true },
         },
         locations: {
           include: {
             location: {
-              select: { id: true, name: true, city: true },
+              select: { id: true, name: true, address: true, city: true },
             },
           },
         },

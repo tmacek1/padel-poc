@@ -29,12 +29,18 @@ export async function POST(request: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
+    // Check if this is the superadmin email
+    const superadminEmail = process.env.SUPERADMIN_EMAIL
+    const isSuperAdmin = superadminEmail === email
+
     // Create user
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
+        isSuperAdmin,
+        isAdmin: isSuperAdmin, // superadmin is also admin
       },
     })
 

@@ -31,6 +31,7 @@ interface Stats {
   totalMatches: number
   wins: number
   losses: number
+  draws: number
   winRate: number
   totalSetsWon: number
   totalSetsLost: number
@@ -171,7 +172,7 @@ export default function StatsPage() {
             {/* Overview */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">Pregled</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-blue-600">
                     {stats.totalMatches}
@@ -190,11 +191,19 @@ export default function StatsPage() {
                   </div>
                   <div className="text-gray-700">Porazi</div>
                 </div>
+                {stats.draws > 0 && (
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-yellow-600">
+                      {stats.draws}
+                    </div>
+                    <div className="text-gray-700">Neriješeno</div>
+                  </div>
+                )}
                 <div className="text-center">
                   <div className="text-4xl font-bold text-purple-600">
                     {stats.winRate}%
                   </div>
-                  <div className="text-gray-700">Uspjesnost</div>
+                  <div className="text-gray-700">Uspješnost</div>
                 </div>
               </div>
             </div>
@@ -213,6 +222,7 @@ export default function StatsPage() {
               </div>
               <div className="flex justify-between mt-2 text-sm text-gray-700">
                 <span>{stats.wins} pobjeda</span>
+                {stats.draws > 0 && <span>{stats.draws} neriješeno</span>}
                 <span>{stats.losses} poraza</span>
               </div>
             </div>

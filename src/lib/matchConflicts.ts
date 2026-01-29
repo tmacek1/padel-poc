@@ -7,9 +7,30 @@ export interface MatchConflict {
   message: string
 }
 
+/**
+ * Check if two time ranges overlap
+ * @param start1 Start time of first range
+ * @param duration1 Duration in minutes of first range
+ * @param start2 Start time of second range
+ * @param duration2 Duration in minutes of second range
+ */
+function timeRangesOverlap(
+  start1: Date,
+  duration1: number,
+  start2: Date,
+  duration2: number
+): boolean {
+  const end1 = new Date(start1.getTime() + duration1 * 60 * 1000)
+  const end2 = new Date(start2.getTime() + duration2 * 60 * 1000)
+
+  // Overlap exists if one range starts before the other ends
+  return start1 < end2 && start2 < end1
+}
+
 export async function checkMatchConflicts(
   userId: string,
   scheduledAt: Date,
+  newMatchDuration: number = 90, // default 90 minutes
   excludeMatchId?: string
 ): Promise<MatchConflict[]> {
   const conflicts: MatchConflict[] = []
@@ -40,34 +61,26 @@ export async function checkMatchConflicts(
     select: {
       id: true,
       scheduledAt: true,
+      durationMinutes: true,
     },
   })
 
   for (const match of userMatches) {
     if (!match.scheduledAt) continue
 
-    const timeDiff = Math.abs(
-      scheduledAt.getTime() - match.scheduledAt.getTime()
-    )
-    const hoursDiff = timeDiff / (1000 * 60 * 60)
+    const existingMatchDuration = match.durationMinutes || 90 // default 90 if not set
 
-    if (hoursDiff < 2) {
-      // Within 2 hours - critical conflict
+    // Check if the time ranges actually overlap
+    if (timeRangesOverlap(scheduledAt, newMatchDuration, match.scheduledAt, existingMatchDuration)) {
+      // Time ranges overlap - critical conflict
       conflicts.push({
         type: 'same_time',
         matchId: match.id,
         scheduledAt: match.scheduledAt,
-        message: `Vec imas mec zakazan u ${match.scheduledAt.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' })}. Mec se preklapa!`,
-      })
-    } else {
-      // Same day - warning
-      conflicts.push({
-        type: 'same_day',
-        matchId: match.id,
-        scheduledAt: match.scheduledAt,
-        message: `Vec imas mec zakazan za ${match.scheduledAt.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' })} istog dana.`,
+        message: `Već imaš meč zakazan u ${match.scheduledAt.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' })}. Mečevi se vremenski preklapaju!`,
       })
     }
+    // No "same_day" warning if there's no overlap - matches can be on the same day without conflict
   }
 
   return conflicts
@@ -76,12 +89,13 @@ export async function checkMatchConflicts(
 export async function checkAllPlayersConflicts(
   playerIds: string[],
   scheduledAt: Date,
+  newMatchDuration: number = 90,
   excludeMatchId?: string
 ): Promise<Map<string, MatchConflict[]>> {
   const result = new Map<string, MatchConflict[]>()
 
   for (const playerId of playerIds) {
-    const conflicts = await checkMatchConflicts(playerId, scheduledAt, excludeMatchId)
+    const conflicts = await checkMatchConflicts(playerId, scheduledAt, newMatchDuration, excludeMatchId)
     if (conflicts.length > 0) {
       result.set(playerId, conflicts)
     }

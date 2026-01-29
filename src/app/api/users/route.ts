@@ -12,15 +12,17 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
+    const limit = searchParams.get('limit')
+    const sortBy = searchParams.get('sortBy') // 'name' or 'createdAt'
 
-    const isAdmin = user.isAdmin === true
+    const isAdminOrSuper = user.isAdmin === true || user.isSuperAdmin === true
 
     const users = await prisma.user.findMany({
       where: search
         ? {
             OR: [
-              { name: { contains: search } },
-              { email: { contains: search } },
+              { name: { contains: search, mode: 'insensitive' } },
+              { email: { contains: search, mode: 'insensitive' } },
             ],
           }
         : {},
@@ -29,13 +31,14 @@ export async function GET(request: Request) {
         name: true,
         email: true,
         image: true,
-        ...(isAdmin ? { isAdmin: true } : {}),
+        createdAt: true,
+        ...(isAdminOrSuper ? { isAdmin: true, isSuperAdmin: true } : {}),
         club: {
           select: { id: true, name: true },
         },
       },
-      orderBy: { name: 'asc' },
-      take: 50,
+      orderBy: sortBy === 'createdAt' ? { createdAt: 'desc' } : { name: 'asc' },
+      take: limit ? parseInt(limit) : 50,
     })
 
     return NextResponse.json(users)

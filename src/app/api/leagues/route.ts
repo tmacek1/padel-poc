@@ -17,6 +17,9 @@ export async function GET(request: Request) {
     const leagues = await prisma.league.findMany({
       where: seasonId ? { seasonId } : {},
       include: {
+        creator: {
+          select: { id: true, name: true, email: true },
+        },
         season: {
           select: { id: true, name: true, status: true },
         },
@@ -119,7 +122,13 @@ export async function POST(request: Request) {
         tier: tier || 'bronze',
         tierOrder: tierOrders[tier] || 1,
         seasonId: seasonId || null,
+        creatorId: user.id,
         isActive: false,
+      },
+      include: {
+        creator: {
+          select: { id: true, name: true, email: true },
+        },
       },
     })
 

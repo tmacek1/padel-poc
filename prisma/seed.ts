@@ -1,3 +1,6 @@
+import { config } from 'dotenv'
+config() // Load .env file
+
 import { PrismaClient } from '../src/generated/prisma/client'
 import bcrypt from 'bcryptjs'
 
@@ -9,7 +12,7 @@ async function main() {
   // Hash password for all test users
   const hashedPassword = await bcrypt.hash('Test1234!', 10)
 
-  // Create 4 test users
+  // Create 10 test users (1 admin + 9 regular)
   const users = [
     {
       email: 'admin@padel.test',
@@ -50,6 +53,67 @@ async function main() {
       gender: 'female',
       dominantHand: 'left',
       preferredCourtSide: 'left',
+    },
+    // 6 additional dummy users for league testing
+    {
+      email: 'marko@padel.test',
+      name: 'Marko Babić',
+      password: hashedPassword,
+      isAdmin: false,
+      profileCompleted: true,
+      gender: 'male',
+      dominantHand: 'right',
+      preferredCourtSide: 'right',
+    },
+    {
+      email: 'ana@padel.test',
+      name: 'Ana Jurić',
+      password: hashedPassword,
+      isAdmin: false,
+      profileCompleted: true,
+      gender: 'female',
+      dominantHand: 'right',
+      preferredCourtSide: 'left',
+    },
+    {
+      email: 'tomislav@padel.test',
+      name: 'Tomislav Knežević',
+      password: hashedPassword,
+      isAdmin: false,
+      profileCompleted: true,
+      gender: 'male',
+      dominantHand: 'left',
+      preferredCourtSide: 'left',
+    },
+    {
+      email: 'lucija@padel.test',
+      name: 'Lucija Šimić',
+      password: hashedPassword,
+      isAdmin: false,
+      profileCompleted: true,
+      gender: 'female',
+      dominantHand: 'right',
+      preferredCourtSide: 'right',
+    },
+    {
+      email: 'luka@padel.test',
+      name: 'Luka Matić',
+      password: hashedPassword,
+      isAdmin: false,
+      profileCompleted: true,
+      gender: 'male',
+      dominantHand: 'right',
+      preferredCourtSide: 'left',
+    },
+    {
+      email: 'maja@padel.test',
+      name: 'Maja Perić',
+      password: hashedPassword,
+      isAdmin: false,
+      profileCompleted: true,
+      gender: 'female',
+      dominantHand: 'left',
+      preferredCourtSide: 'right',
     },
   ]
 

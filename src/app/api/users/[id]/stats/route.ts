@@ -34,6 +34,7 @@ export async function GET(
 
     let wins = 0
     let losses = 0
+    let draws = 0
     let totalSetsWon = 0
     let totalSetsLost = 0
     let totalGamesWon = 0
@@ -107,8 +108,10 @@ export async function GET(
 
         if (team1Sets > team2Sets) {
           wins++
-        } else {
+        } else if (team2Sets > team1Sets) {
           losses++
+        } else {
+          draws++ // Match ended in a draw (e.g., 1-1 in sets)
         }
       } else {
         totalSetsWon += team2Sets
@@ -118,13 +121,15 @@ export async function GET(
 
         if (team2Sets > team1Sets) {
           wins++
-        } else {
+        } else if (team1Sets > team2Sets) {
           losses++
+        } else {
+          draws++ // Match ended in a draw (e.g., 1-1 in sets)
         }
       }
     }
 
-    const totalMatches = wins + losses
+    const totalMatches = wins + losses + draws
     const winRate = totalMatches > 0 ? (wins / totalMatches) * 100 : 0
     const totalSets = totalSetsWon + totalSetsLost
     const setWinRate = totalSets > 0 ? (totalSetsWon / totalSets) * 100 : 0
@@ -167,6 +172,7 @@ export async function GET(
       totalMatches,
       wins,
       losses,
+      draws,
       winRate: Math.round(winRate * 10) / 10,
       totalSetsWon,
       totalSetsLost,

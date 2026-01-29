@@ -31,6 +31,9 @@ export async function GET(request: Request) {
           select: { id: true, name: true, email: true, image: true },
         },
         location: true,
+        league: {
+          select: { id: true, name: true, tier: true },
+        },
         players: {
           include: {
             user: {
@@ -64,7 +67,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { locationId, scheduledAt, players, notes, ignoreConflicts, scoringType } = body
+    const { locationId, scheduledAt, players, notes, ignoreConflicts, scoringType, durationMinutes } = body
 
     // Validate players (padel is 2v2, so we need 4 players)
     if (!players || players.length !== 4) {
@@ -74,10 +77,13 @@ export async function POST(request: Request) {
       )
     }
 
+    // Set duration: use provided value for regular matches, default 90 for league matches
+    const matchDuration = durationMinutes || 90
+
     // Check for conflicts for all players
     const scheduledDate = new Date(scheduledAt)
     const playerIds = players.map((p: { userId: string }) => p.userId)
-    const conflictsMap = await checkAllPlayersConflicts(playerIds, scheduledDate)
+    const conflictsMap = await checkAllPlayersConflicts(playerIds, scheduledDate, matchDuration)
 
     // Check for critical conflicts (same time)
     const criticalConflicts: { userId: string; conflicts: unknown[] }[] = []
@@ -117,6 +123,7 @@ export async function POST(request: Request) {
         status: 'scheduled',
         scoringType: scoringType || 'golden_point',
         setsToWin: 2,
+        durationMinutes: matchDuration,
         players: {
           create: players.map((p: { userId: string; team: number }) => ({
             userId: p.userId,

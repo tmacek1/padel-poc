@@ -42,6 +42,20 @@ export async function POST(request: Request) {
       )
     }
 
+    if (!address) {
+      return NextResponse.json(
+        { error: 'Adresa je obavezna' },
+        { status: 400 }
+      )
+    }
+
+    if (!city) {
+      return NextResponse.json(
+        { error: 'Grad je obavezan' },
+        { status: 400 }
+      )
+    }
+
     const location = await prisma.location.create({
       data: { name, address, city },
     })

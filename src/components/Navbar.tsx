@@ -7,6 +7,7 @@ import { useState } from 'react'
 export default function Navbar() {
   const { data: session } = useSession()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
   return (
     <nav className="bg-blue-600 text-white shadow-lg">
@@ -43,11 +44,13 @@ export default function Navbar() {
                   onClick={() => setMenuOpen(!menuOpen)}
                   className="flex items-center space-x-2 hover:text-blue-200"
                 >
-                  {session.user?.image ? (
+                  {session.user?.image && !imageError ? (
                     <img
                       src={session.user.image}
                       alt=""
                       className="w-8 h-8 rounded-full"
+                      onError={() => setImageError(true)}
+                      referrerPolicy="no-referrer"
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">

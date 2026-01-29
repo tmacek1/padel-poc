@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/session'
 
-// PATCH /api/users/[id]/admin - Toggle admin status (admin only)
+// PATCH /api/users/[id]/admin - Toggle admin status
+// - Admin i superadmin mogu dati admin prava
+// - Samo superadmin može maknuti admin prava s admina
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -14,8 +16,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if current user is admin
-    if (!currentUser.isAdmin) {
+    // Must be admin or superadmin
+    if (!currentUser.isAdmin && !currentUser.isSuperAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -29,7 +31,28 @@ export async function PATCH(
       )
     }
 
-    // Prevent admin from removing their own admin status
+    // Get target user
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, isAdmin: true, isSuperAdmin: true },
+    })
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { error: 'Korisnik nije pronaden' },
+        { status: 404 }
+      )
+    }
+
+    // Cannot modify superadmin status through this endpoint
+    if (targetUser.isSuperAdmin) {
+      return NextResponse.json(
+        { error: 'Ne mozete mijenjati status superadmina' },
+        { status: 403 }
+      )
+    }
+
+    // Prevent removing own admin status
     if (currentUser.id === id && !isAdmin) {
       return NextResponse.json(
         { error: 'Ne mozete sami sebi maknuti admin status' },
@@ -37,16 +60,11 @@ export async function PATCH(
       )
     }
 
-    // Check if target user exists
-    const targetUser = await prisma.user.findUnique({
-      where: { id },
-      select: { id: true },
-    })
-
-    if (!targetUser) {
+    // Only superadmin can remove admin rights from an admin
+    if (targetUser.isAdmin && !isAdmin && !currentUser.isSuperAdmin) {
       return NextResponse.json(
-        { error: 'Korisnik nije pronaden' },
-        { status: 404 }
+        { error: 'Samo superadmin moze maknuti admin prava s admina' },
+        { status: 403 }
       )
     }
 
@@ -59,6 +77,7 @@ export async function PATCH(
         name: true,
         email: true,
         isAdmin: true,
+        isSuperAdmin: true,
       },
     })
 

@@ -62,6 +62,7 @@ model User {
   image         String?
   password      String?
   isAdmin       Boolean   @default(false)
+  isSuperAdmin  Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -83,6 +84,8 @@ model User {
   sentMessages     Message[]      @relation("MessageSender")
   receivedMessages Message[]      @relation("MessageReceiver")
   standings        SeasonStanding[] @relation("PlayerStanding")
+  setPlayers       SetPlayer[]
+  createdLeagues   League[]       @relation("LeagueCreator")
 }
 
 model Club {
@@ -102,8 +105,9 @@ model Location {
   city      String?
   createdAt DateTime @default(now())
 
-  userLocations UserLocation[]
-  matches       Match[]
+  userLocations   UserLocation[]
+  matches         Match[]
+  leagueMatchups  LeagueMatchup[]
 }
 
 model UserLocation {
@@ -140,6 +144,7 @@ model Match {
   // Pravila meca
   scoringType      String   @default("golden_point") // golden_point, classic (deuce/advantage)
   setsToWin        Int      @default(2) // broj setova za pobjedu (standardno 2)
+  durationMinutes  Int      @default(90) // trajanje meča u minutama (60-120 za regular, 90 za liga)
 
   // Bodovanje - koji tim je izgubio u tiebreaku 3. seta (dobiva 1 bod umjesto 0)
   tiebreakLossTeam Int?     // 1 ili 2, null ako nije tiebreak poraz
@@ -174,6 +179,7 @@ model MatchSet {
 
   match           Match               @relation(fields: [matchId], references: [id], onDelete: Cascade)
   playerPositions SetPlayerPosition[]
+  setPlayers      SetPlayer[]
 
   @@unique([matchId, setNumber])
 }
@@ -186,6 +192,19 @@ model SetPlayerPosition {
   courtSide   String   // "left" or "right"
 
   matchSet    MatchSet @relation(fields: [matchSetId], references: [id], onDelete: Cascade)
+
+  @@unique([matchSetId, userId])
+}
+
+// Igrači u setu (za classic match gdje se mogu mijenjati parovi po setovima)
+model SetPlayer {
+  id          String   @id @default(cuid())
+  matchSetId  String
+  userId      String
+  team        Int      // 1 or 2
+
+  matchSet    MatchSet @relation(fields: [matchSetId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([matchSetId, userId])
 }
@@ -235,6 +254,10 @@ model League {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Kreator lige
+  creatorId   String?
+  creator     User?    @relation("LeagueCreator", fields: [creatorId], references: [id])
+
   teams     LeagueTeam[]
   matches   Match[]
   standings SeasonStanding[]
@@ -268,10 +291,13 @@ model LeagueMatchup {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  locationId  String?
+
   league      League     @relation(fields: [leagueId], references: [id], onDelete: Cascade)
   homeTeam    LeagueTeam @relation("HomeTeam", fields: [homeTeamId], references: [id], onDelete: Cascade)
   awayTeam    LeagueTeam @relation("AwayTeam", fields: [awayTeamId], references: [id], onDelete: Cascade)
   match       Match?     @relation(fields: [matchId], references: [id])
+  location    Location?  @relation(fields: [locationId], references: [id])
 
   @@unique([leagueId, round, homeTeamId, awayTeamId])
 }

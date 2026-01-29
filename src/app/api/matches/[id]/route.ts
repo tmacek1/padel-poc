@@ -32,6 +32,13 @@ export async function GET(
           orderBy: { setNumber: 'asc' },
           include: {
             playerPositions: true,
+            setPlayers: {
+              include: {
+                user: {
+                  select: { id: true, name: true, email: true },
+                },
+              },
+            },
           },
         },
         league: {
@@ -44,11 +51,18 @@ export async function GET(
       return NextResponse.json({ error: 'Match nije pronađen' }, { status: 404 })
     }
 
-    // Admin can edit any match, creator can edit their own
-    const canEdit = user.isAdmin || match.creatorId === user.id
-
-    // Check if user is a participant (can set their court side)
+    // Check if user is a participant
     const isParticipant = match.players.some(p => p.user.id === user.id)
+
+    // Check if match is completed and has results
+    const isCompletedWithResults = match.status === 'completed' && match.sets.length > 0
+
+    // Edit permissions:
+    // - If match is completed with results: only admin can edit
+    // - Otherwise: any participant can edit (to enter results)
+    const canEdit = isCompletedWithResults
+      ? user.isAdmin === true
+      : isParticipant || user.isAdmin === true
 
     return NextResponse.json({ ...match, canEdit, isParticipant })
   } catch (error) {
@@ -72,21 +86,39 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is the creator or admin
+    // Check match and user permissions
     const existingMatch = await prisma.match.findUnique({
       where: { id },
-      select: { creatorId: true },
+      include: {
+        players: { select: { userId: true } },
+        sets: { select: { id: true } },
+      },
     })
 
     if (!existingMatch) {
       return NextResponse.json({ error: 'Match nije pronađen' }, { status: 404 })
     }
 
-    if (existingMatch.creatorId !== user.id && !user.isAdmin) {
-      return NextResponse.json(
-        { error: 'Samo kreator matcha ili admin može mijenjati podatke' },
-        { status: 403 }
-      )
+    const isParticipant = existingMatch.players.some(p => p.userId === user.id)
+    const isCompletedWithResults = existingMatch.status === 'completed' && existingMatch.sets.length > 0
+
+    // Permission check:
+    // - If match is completed with results: only admin can edit
+    // - Otherwise: any participant can edit
+    if (isCompletedWithResults) {
+      if (!user.isAdmin) {
+        return NextResponse.json(
+          { error: 'Završeni meč s upisanim rezultatom može mijenjati samo administrator' },
+          { status: 403 }
+        )
+      }
+    } else {
+      if (!isParticipant && !user.isAdmin) {
+        return NextResponse.json(
+          { error: 'Samo sudionici meča ili admin mogu upisati rezultat' },
+          { status: 403 }
+        )
+      }
     }
 
     const body = await request.json()
@@ -126,7 +158,7 @@ export async function PUT(
       await prisma.matchSet.deleteMany({ where: { matchId: id } })
 
       for (const set of sets) {
-        await prisma.matchSet.create({
+        const createdSet = await prisma.matchSet.create({
           data: {
             matchId: id,
             setNumber: set.setNumber,
@@ -136,6 +168,19 @@ export async function PUT(
             team2Tiebreak: set.team2Tiebreak || null,
           },
         })
+
+        // Create set players if provided (for classic matches with different players per set)
+        if (set.setPlayers && Array.isArray(set.setPlayers)) {
+          for (const sp of set.setPlayers) {
+            await prisma.setPlayer.create({
+              data: {
+                matchSetId: createdSet.id,
+                userId: sp.userId,
+                team: sp.team,
+              },
+            })
+          }
+        }
       }
     }
 
@@ -156,6 +201,15 @@ export async function PUT(
         },
         sets: {
           orderBy: { setNumber: 'asc' },
+          include: {
+            setPlayers: {
+              include: {
+                user: {
+                  select: { id: true, name: true, email: true },
+                },
+              },
+            },
+          },
         },
       },
     })

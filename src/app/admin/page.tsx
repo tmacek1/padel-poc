@@ -33,6 +33,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [deletingLocationId, setDeletingLocationId] = useState<string | null>(null)
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
 
@@ -275,6 +276,28 @@ export default function AdminPage() {
     }
   }
 
+  async function deleteUser(userId: string, userName: string | null, userEmail: string) {
+    if (!confirm(`Jesi li siguran da želiš obrisati korisnika ${userName || userEmail}?`)) return
+
+    setDeletingUserId(userId)
+    setError(null)
+    try {
+      const res = await fetch(`/api/users/${userId}`, { method: 'DELETE' })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Greška pri brisanju korisnika')
+      }
+
+      setRecentUsers((prev) => prev.filter((u) => u.id !== userId))
+      setSearchResults((prev) => prev.filter((u) => u.id !== userId))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nepoznata greška')
+    } finally {
+      setDeletingUserId(null)
+    }
+  }
+
   // Helper to format date
   function formatDate(dateStr?: string) {
     if (!dateStr) return '-'
@@ -386,13 +409,22 @@ export default function AdminPage() {
                       {user.id === session.user.id ? (
                         <span className="text-gray-600 text-sm font-medium">Vi</span>
                       ) : (
-                        <button
-                          onClick={() => toggleAdmin(user.id, !!user.isAdmin)}
-                          disabled={togglingId === user.id}
-                          className={`px-3 py-1 rounded text-sm font-medium ${user.isAdmin ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'} disabled:opacity-50`}
-                        >
-                          {togglingId === user.id ? '...' : user.isAdmin ? 'Ukloni admina' : 'Postavi admina'}
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => toggleAdmin(user.id, !!user.isAdmin)}
+                            disabled={togglingId === user.id}
+                            className={`px-3 py-1 rounded text-sm font-medium ${user.isAdmin ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'} disabled:opacity-50`}
+                          >
+                            {togglingId === user.id ? '...' : user.isAdmin ? 'Ukloni admina' : 'Postavi admina'}
+                          </button>
+                          <button
+                            onClick={() => deleteUser(user.id, user.name, user.email)}
+                            disabled={deletingUserId === user.id}
+                            className="px-3 py-1 rounded text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50"
+                          >
+                            {deletingUserId === user.id ? '...' : 'Obriši'}
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>

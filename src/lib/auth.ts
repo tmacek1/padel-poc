@@ -57,8 +57,9 @@ export const authOptions: NextAuthOptions = {
         // Fetch profile completion status and admin flag
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { profileCompleted: true, isAdmin: true },
+          select: { name: true, profileCompleted: true, isAdmin: true },
         })
+        token.name = dbUser?.name ?? token.name
         token.profileCompleted = dbUser?.profileCompleted ?? false
         token.isAdmin = dbUser?.isAdmin ?? false
       }
@@ -67,8 +68,9 @@ export const authOptions: NextAuthOptions = {
       if (trigger === 'update' && token.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { profileCompleted: true, isAdmin: true },
+          select: { name: true, profileCompleted: true, isAdmin: true },
         })
+        token.name = dbUser?.name ?? token.name
         token.profileCompleted = dbUser?.profileCompleted ?? false
         token.isAdmin = dbUser?.isAdmin ?? false
       }

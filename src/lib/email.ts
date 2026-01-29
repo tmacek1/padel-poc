@@ -16,7 +16,7 @@ const createTransporter = () => {
     secure: process.env.SMTP_SECURE === 'true',
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      pass: process.env.SMTP_PASSWORD,
     },
   })
 }
@@ -39,7 +39,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions): 
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || '"Padel PoC" <noreply@padel-poc.local>',
+      from: process.env.SMTP_FROM || `"Padel PoC" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,

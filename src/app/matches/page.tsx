@@ -403,10 +403,12 @@ export default function MatchesPage() {
                       <div className="font-semibold text-gray-900">{getTeamPlayers(match, 1)}</div>
                     </div>
                     <div className="px-6 text-center">
-                      {match.status === 'completed' ? (
+                      {match.status === 'completed' && !match.pairRotation ? (
                         <div className="text-2xl font-bold text-gray-900">
                           {getMatchScore(match)}
                         </div>
+                      ) : match.status === 'completed' && match.pairRotation ? (
+                        <div className="text-sm text-indigo-600 font-medium">rotacija</div>
                       ) : (
                         <div className="text-gray-600 font-medium">vs</div>
                       )}

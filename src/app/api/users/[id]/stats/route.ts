@@ -14,15 +14,18 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get all completed matches where user participated
+    // Get all completed matches where user participated (exclude league matches)
     const matches = await prisma.match.findMany({
       where: {
         status: 'completed',
+        leagueId: null, // Exclude league matches - they are counted separately
         players: {
           some: { userId: id },
         },
       },
-      include: {
+      select: {
+        id: true,
+        pairRotation: true,
         players: true,
         sets: {
           include: {
@@ -114,13 +117,20 @@ export async function GET(
       totalGamesWon += userGamesWon
       totalGamesLost += userGamesLost
 
-      // Determine match winner based on sets won
-      if (userSetsWon > userSetsLost) {
-        wins++
-      } else if (userSetsLost > userSetsWon) {
-        losses++
+      // Determine wins/losses based on match type
+      if (match.pairRotation) {
+        // Rotation match: each set won = win, each set lost = loss
+        wins += userSetsWon
+        losses += userSetsLost
       } else {
-        draws++ // Match ended in a draw (e.g., 1-1 in sets)
+        // Regular match: win/loss based on overall match result
+        if (userSetsWon > userSetsLost) {
+          wins++
+        } else if (userSetsLost > userSetsWon) {
+          losses++
+        } else {
+          draws++ // Match ended in a draw (e.g., 1-1 in sets)
+        }
       }
     }
 

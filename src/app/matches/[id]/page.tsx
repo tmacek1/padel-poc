@@ -961,12 +961,14 @@ export default function MatchDetailPage() {
                       key={setConfig.setNumber}
                       className={`border rounded-lg p-3 ${hasResult ? 'bg-white border-gray-300' : 'bg-gray-50 border-gray-200'}`}
                     >
-                      <div className="text-center font-semibold text-gray-700 mb-2 pb-2 border-b">
-                        Set {setConfig.setNumber}
+                      <div className="text-center mb-2 pb-2 border-b">
+                        <div className="font-semibold text-gray-700">
+                          Set {setConfig.setNumber}
+                        </div>
                         {hasResult && (
-                          <span className="ml-2 text-lg">
+                          <div className="text-lg font-bold text-gray-900">
                             {setResult.team1Score} : {setResult.team2Score}
-                          </span>
+                          </div>
                         )}
                       </div>
                       <div className="space-y-2">

@@ -373,6 +373,7 @@ export default function AdminPage() {
             <div className="px-4 py-3 bg-blue-50 border-b border-blue-100">
               <h3 className="font-medium text-gray-900">Rezultati pretrage ({searchResults.length})</h3>
             </div>
+            <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -431,6 +432,7 @@ export default function AdminPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
 
@@ -445,6 +447,7 @@ export default function AdminPage() {
           <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
             <h3 className="font-medium text-gray-900">Zadnje registrirani korisnici</h3>
           </div>
+          <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -481,19 +484,29 @@ export default function AdminPage() {
                     {user.id === session.user.id ? (
                       <span className="text-gray-600 text-sm font-medium">Vi</span>
                     ) : (
-                      <button
-                        onClick={() => toggleAdmin(user.id, !!user.isAdmin)}
-                        disabled={togglingId === user.id}
-                        className={`px-3 py-1 rounded text-sm font-medium ${user.isAdmin ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'} disabled:opacity-50`}
-                      >
-                        {togglingId === user.id ? '...' : user.isAdmin ? 'Ukloni admina' : 'Postavi admina'}
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => toggleAdmin(user.id, !!user.isAdmin)}
+                          disabled={togglingId === user.id}
+                          className={`px-3 py-1 rounded text-sm font-medium ${user.isAdmin ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'} disabled:opacity-50`}
+                        >
+                          {togglingId === user.id ? '...' : user.isAdmin ? 'Ukloni admina' : 'Postavi admina'}
+                        </button>
+                        <button
+                          onClick={() => deleteUser(user.id, user.name, user.email)}
+                          disabled={deletingUserId === user.id}
+                          className="px-3 py-1 rounded text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50"
+                        >
+                          {deletingUserId === user.id ? '...' : 'Obriši'}
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* Locations Management Section */}
@@ -560,6 +573,7 @@ export default function AdminPage() {
               Nema lokacija. Klikni &quot;+ Nova lokacija&quot; za dodavanje.
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -658,6 +672,7 @@ export default function AdminPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

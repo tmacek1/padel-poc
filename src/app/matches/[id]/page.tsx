@@ -956,6 +956,15 @@ export default function MatchDetailPage() {
                   const team1Won = setResult && setResult.team1Score > setResult.team2Score
                   const team2Won = setResult && setResult.team2Score > setResult.team1Score
 
+                  // Use actual SetPlayer records if available, otherwise fall back to original schedule
+                  const hasSetPlayers = setResult?.setPlayers && setResult.setPlayers.length > 0
+                  const team1Players = hasSetPlayers
+                    ? setResult.setPlayers.filter(sp => sp.team === 1).map(sp => sp.user?.name?.split(' ')[0] || '?').join(' / ')
+                    : setConfig.team1.map((p: { name: string }) => p.name.split(' ')[0]).join(' / ')
+                  const team2Players = hasSetPlayers
+                    ? setResult.setPlayers.filter(sp => sp.team === 2).map(sp => sp.user?.name?.split(' ')[0] || '?').join(' / ')
+                    : setConfig.team2.map((p: { name: string }) => p.name.split(' ')[0]).join(' / ')
+
                   return (
                     <div
                       key={setConfig.setNumber}
@@ -980,7 +989,7 @@ export default function MatchDetailPage() {
                             )}
                           </div>
                           <div className="text-sm text-gray-800 font-medium">
-                            {setConfig.team1.map((p: { name: string }) => p.name.split(' ')[0]).join(' / ')}
+                            {team1Players}
                           </div>
                         </div>
                         <div className="text-center text-gray-400 text-xs">vs</div>
@@ -992,7 +1001,7 @@ export default function MatchDetailPage() {
                             )}
                           </div>
                           <div className="text-sm text-gray-800 font-medium">
-                            {setConfig.team2.map((p: { name: string }) => p.name.split(' ')[0]).join(' / ')}
+                            {team2Players}
                           </div>
                         </div>
                       </div>

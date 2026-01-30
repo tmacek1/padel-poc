@@ -37,6 +37,10 @@ interface Match {
     setNumber: number
     team1Score: number
     team2Score: number
+    setPlayers?: {
+      team: number
+      user: { id: string; name: string } | null
+    }[]
   }[]
 }
 
@@ -431,6 +435,15 @@ export default function MatchesPage() {
                           const team1Won = setResult && setResult.team1Score > setResult.team2Score
                           const team2Won = setResult && setResult.team2Score > setResult.team1Score
 
+                          // Use actual SetPlayer records if available, otherwise fall back to original schedule
+                          const hasSetPlayers = setResult?.setPlayers && setResult.setPlayers.length > 0
+                          const team1Players = hasSetPlayers
+                            ? setResult.setPlayers.filter(sp => sp.team === 1).map(sp => sp.user?.name?.split(' ')[0] || '?').join(' / ')
+                            : setConfig.team1.map(p => p.name.split(' ')[0]).join(' / ')
+                          const team2Players = hasSetPlayers
+                            ? setResult.setPlayers.filter(sp => sp.team === 2).map(sp => sp.user?.name?.split(' ')[0] || '?').join(' / ')
+                            : setConfig.team2.map(p => p.name.split(' ')[0]).join(' / ')
+
                           return (
                             <div
                               key={setConfig.setNumber}
@@ -445,12 +458,12 @@ export default function MatchesPage() {
                                 </div>
                               )}
                               <div className={`text-xs ${team1Won ? 'text-green-700 font-bold' : 'text-gray-700'}`}>
-                                <span className="font-medium">{setConfig.team1.map(p => p.name.split(' ')[0]).join(' / ')}</span>
+                                <span className="font-medium">{team1Players}</span>
                                 {team1Won && ' ✓'}
                               </div>
                               <div className="text-xs text-gray-500 my-0.5">vs</div>
                               <div className={`text-xs ${team2Won ? 'text-green-700 font-bold' : 'text-gray-700'}`}>
-                                <span className="font-medium">{setConfig.team2.map(p => p.name.split(' ')[0]).join(' / ')}</span>
+                                <span className="font-medium">{team2Players}</span>
                                 {team2Won && ' ✓'}
                               </div>
                             </div>

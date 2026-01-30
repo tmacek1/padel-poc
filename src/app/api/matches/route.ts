@@ -44,6 +44,15 @@ export async function GET(request: Request) {
         },
         sets: {
           orderBy: { setNumber: 'asc' },
+          include: {
+            setPlayers: {
+              include: {
+                user: {
+                  select: { id: true, name: true },
+                },
+              },
+            },
+          },
         },
       },
       orderBy: { scheduledAt: 'desc' },

@@ -11,7 +11,7 @@ interface MatchResult {
   tiebreakLossTeam: number | null
 }
 
-// Izracunaj rezultat meca iz setova
+// Izračunaj rezultat meca iz setova
 export function calculateMatchResult(sets: { team1Score: number; team2Score: number }[]): MatchResult {
   let team1Wins = 0
   let team2Wins = 0
@@ -70,7 +70,7 @@ export async function updateTeamStandings(
     pointsForLoss: number
   }
 ) {
-  // Izracunaj bodove
+  // Izračunaj bodove
   let pointsEarned = 0
   if (matchResult.isWinner) {
     pointsEarned = season.pointsForWin
@@ -124,7 +124,7 @@ export async function updateTeamStandings(
   }
 }
 
-// Izracunaj promocije i ispadanja na kraju sezone
+// Izračunaj promocije i ispadanja na kraju sezone
 export async function calculatePromotionsAndRelegations(seasonId: string) {
   const season = await prisma.season.findUnique({
     where: { id: seasonId },

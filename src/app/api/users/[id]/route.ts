@@ -30,7 +30,7 @@ export async function DELETE(
 
     if (!targetUser) {
       return NextResponse.json(
-        { error: 'Korisnik nije pronaden' },
+        { error: 'Korisnik nije pronađen' },
         { status: 404 }
       )
     }
@@ -38,7 +38,7 @@ export async function DELETE(
     // Cannot delete yourself
     if (currentUser.id === id) {
       return NextResponse.json(
-        { error: 'Ne mozete obrisati vlastiti racun' },
+        { error: 'Ne možete obrisati vlastiti račun' },
         { status: 400 }
       )
     }
@@ -46,7 +46,7 @@ export async function DELETE(
     // Cannot delete superadmin
     if (targetUser.isSuperAdmin) {
       return NextResponse.json(
-        { error: 'Ne mozete obrisati superadmina' },
+        { error: 'Ne možete obrisati superadmina' },
         { status: 403 }
       )
     }
@@ -54,21 +54,38 @@ export async function DELETE(
     // Only superadmin can delete admins
     if (targetUser.isAdmin && !currentUser.isSuperAdmin) {
       return NextResponse.json(
-        { error: 'Samo superadmin moze brisati admine' },
+        { error: 'Samo superadmin može brisati admine' },
         { status: 403 }
       )
     }
 
-    // Delete user (cascade will handle related records)
-    await prisma.user.delete({
+    // Soft delete - označimo korisnika kao obrisanog ali ga ne brišemo
+    // Tako se čuvaju statistike matcheva
+    await prisma.user.update({
       where: { id },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+        // Anonimiziraj osobne podatke
+        name: 'Obrisani korisnik',
+        email: `deleted_${id}@deleted.local`,
+        image: null,
+        password: null,
+        // Ukloni admin prava
+        isAdmin: false,
+        isSuperAdmin: false,
+      },
     })
+
+    // Obriši sessions i accounts (za sigurnost)
+    await prisma.session.deleteMany({ where: { userId: id } })
+    await prisma.account.deleteMany({ where: { userId: id } })
 
     return NextResponse.json({ success: true, message: 'Korisnik obrisan' })
   } catch (error) {
     console.error('Error deleting user:', error)
     return NextResponse.json(
-      { error: 'Greska pri brisanju korisnika' },
+      { error: 'Greška pri brisanju korisnika' },
       { status: 500 }
     )
   }

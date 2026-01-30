@@ -83,7 +83,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gray-100">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-700">Ucitavanje...</div>
+          <div className="text-gray-700">Učitavanje...</div>
         </div>
       </div>
     )
@@ -100,7 +100,7 @@ export default function DashboardPage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Pozdrav, {session.user?.name || 'Igrace'}!
+            Pozdrav, {session.user?.name || 'Igrače'}!
           </h1>
           <p className="text-gray-600">Pregled tvojih matcheva i statistike</p>
         </div>
@@ -153,11 +153,11 @@ export default function DashboardPage() {
           {/* Upcoming Matches */}
           <div className="bg-white rounded-lg shadow">
             <div className="p-6 border-b">
-              <h2 className="text-xl font-semibold text-gray-900">Nadolazeci matchevi</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Nadolazeći matchevi</h2>
             </div>
             <div className="p-6">
               {upcomingMatches.length === 0 ? (
-                <p className="text-gray-700">Nemas zakazanih matcheva</p>
+                <p className="text-gray-700">Nemaš zakazanih matcheva</p>
               ) : (
                 <div className="space-y-4">
                   {upcomingMatches.map((match) => (
@@ -178,7 +178,7 @@ export default function DashboardPage() {
                             })}
                           </div>
                           <div className="text-sm text-gray-700">
-                            {match.location?.name || 'Lokacija nije odredena'}
+                            {match.location?.name || 'Lokacija nije određena'}
                           </div>
                         </div>
                         <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
@@ -199,7 +199,7 @@ export default function DashboardPage() {
             </div>
             <div className="p-6">
               {recentMatches.length === 0 ? (
-                <p className="text-gray-700">Nemas odigranih matcheva</p>
+                <p className="text-gray-700">Nemaš odigranih matcheva</p>
               ) : (
                 <div className="space-y-4">
                   {recentMatches.map((match) => (
@@ -218,11 +218,11 @@ export default function DashboardPage() {
                             })}
                           </div>
                           <div className="text-sm text-gray-700">
-                            {match.location?.name || 'Lokacija nije odredena'}
+                            {match.location?.name || 'Lokacija nije određena'}
                           </div>
                         </div>
                         <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
-                          Zavrseno
+                          Završeno
                         </span>
                       </div>
                     </Link>

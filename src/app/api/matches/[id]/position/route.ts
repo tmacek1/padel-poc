@@ -57,6 +57,11 @@ export async function POST(
       )
     }
 
+    // Get SetPlayer records for this set (for rotation matches)
+    const setPlayers = await prisma.setPlayer.findMany({
+      where: { matchSetId: setId },
+    })
+
     // Upsert the player position
     const position = await prisma.setPlayerPosition.upsert({
       where: {
@@ -75,19 +80,39 @@ export async function POST(
       },
     })
 
-    // Find partner (same team, different user) and set opposite side
-    const currentPlayer = match.players.find(p => p.userId === session.user.id)
-    if (currentPlayer) {
-      const partner = match.players.find(
-        p => p.team === currentPlayer.team && p.userId !== session.user.id
-      )
-      if (partner) {
+    // Find partner (same team in THIS SET, different user) and set opposite side
+    // For rotation matches, use SetPlayer team; otherwise fall back to MatchPlayer team
+    const currentSetPlayer = setPlayers.find(sp => sp.userId === session.user.id)
+    const currentMatchPlayer = match.players.find(p => p.userId === session.user.id)
+
+    // Determine user's team for this set
+    const userTeamInThisSet = currentSetPlayer?.team ?? currentMatchPlayer?.team
+
+    if (userTeamInThisSet) {
+      // Find partner: same team in this set, different user
+      let partnerUserId: string | null = null
+
+      if (setPlayers.length > 0) {
+        // Rotation match: find partner from SetPlayer records
+        const partnerSetPlayer = setPlayers.find(
+          sp => sp.team === userTeamInThisSet && sp.userId !== session.user.id
+        )
+        partnerUserId = partnerSetPlayer?.userId ?? null
+      } else {
+        // Normal match: find partner from MatchPlayer records
+        const partnerMatchPlayer = match.players.find(
+          p => p.team === userTeamInThisSet && p.userId !== session.user.id && p.userId !== null
+        )
+        partnerUserId = partnerMatchPlayer?.userId ?? null
+      }
+
+      if (partnerUserId) {
         const oppositeSide = courtSide === 'left' ? 'right' : 'left'
         await prisma.setPlayerPosition.upsert({
           where: {
             matchSetId_userId: {
               matchSetId: setId,
-              userId: partner.userId,
+              userId: partnerUserId,
             },
           },
           update: {
@@ -95,7 +120,7 @@ export async function POST(
           },
           create: {
             matchSetId: setId,
-            userId: partner.userId,
+            userId: partnerUserId,
             courtSide: oppositeSide,
           },
         })

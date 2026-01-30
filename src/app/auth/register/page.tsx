@@ -7,7 +7,8 @@ import Link from 'next/link'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [name, setName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -35,7 +36,7 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ firstName, lastName, email, password }),
       })
 
       const data = await res.json()
@@ -95,18 +96,33 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Ime i prezime
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                Ime
+              </label>
+              <input
+                type="text"
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                Prezime
+              </label>
+              <input
+                type="text"
+                id="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                required
+              />
+            </div>
           </div>
 
           <div>

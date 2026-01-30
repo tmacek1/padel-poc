@@ -19,6 +19,9 @@ export async function GET(
       select: {
         id: true,
         name: true,
+        firstName: true,
+        lastName: true,
+        handle: true,
         email: true,
         image: true,
         createdAt: true,
@@ -39,14 +42,14 @@ export async function GET(
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'Korisnik nije pronaden' }, { status: 404 })
+      return NextResponse.json({ error: 'Korisnik nije pronađen' }, { status: 404 })
     }
 
     return NextResponse.json(user)
   } catch (error) {
     console.error('Error fetching profile:', error)
     return NextResponse.json(
-      { error: 'Greska pri dohvacanju profila' },
+      { error: 'Greška pri dohvaćanju profila' },
       { status: 500 }
     )
   }
@@ -143,7 +146,7 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating profile:', error)
     return NextResponse.json(
-      { error: 'Greska pri azuriranju profila' },
+      { error: 'Greška pri ažuriranju profila' },
       { status: 500 }
     )
   }

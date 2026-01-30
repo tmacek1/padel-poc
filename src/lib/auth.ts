@@ -5,6 +5,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 import { sendWelcomeEmail } from './email'
+import { generateUniqueHandle } from './handleGenerator'
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
@@ -29,13 +30,13 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!user || !user.password) {
-          throw new Error('Korisnik nije pronaden')
+          throw new Error('Korisnik nije pronađen')
         }
 
         const isValid = await bcrypt.compare(credentials.password, user.password)
 
         if (!isValid) {
-          throw new Error('Pogresna lozinka')
+          throw new Error('Pogrešna lozinka')
         }
 
         return {
@@ -54,25 +55,27 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id
-        // Fetch profile completion status and admin flag
+        // Fetch profile completion status and admin flags
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { name: true, profileCompleted: true, isAdmin: true },
+          select: { name: true, profileCompleted: true, isAdmin: true, isSuperAdmin: true },
         })
         token.name = dbUser?.name ?? token.name
         token.profileCompleted = dbUser?.profileCompleted ?? false
         token.isAdmin = dbUser?.isAdmin ?? false
+        token.isSuperAdmin = dbUser?.isSuperAdmin ?? false
       }
 
       // Refresh on update trigger
       if (trigger === 'update' && token.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { name: true, profileCompleted: true, isAdmin: true },
+          select: { name: true, profileCompleted: true, isAdmin: true, isSuperAdmin: true },
         })
         token.name = dbUser?.name ?? token.name
         token.profileCompleted = dbUser?.profileCompleted ?? false
         token.isAdmin = dbUser?.isAdmin ?? false
+        token.isSuperAdmin = dbUser?.isSuperAdmin ?? false
       }
 
       return token
@@ -82,6 +85,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.profileCompleted = token.profileCompleted as boolean
         session.user.isAdmin = token.isAdmin as boolean
+        session.user.isSuperAdmin = token.isSuperAdmin as boolean
       }
       return session
     },
@@ -100,7 +104,32 @@ export const authOptions: NextAuthOptions = {
   events: {
     async createUser({ user }) {
       // Send welcome email when a new user is created via OAuth
-      if (user.email) {
+      // Check if user has password - if yes, they registered via email form
+      // and welcome email was already sent from /api/auth/register
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { password: true, handle: true },
+      })
+
+      // Generiraj handle za OAuth korisnike ako ga nemaju
+      if (!dbUser?.handle && user.name) {
+        const nameParts = user.name.split(' ')
+        const firstName = nameParts[0] || null
+        const lastName = nameParts.slice(1).join(' ') || null
+        const handle = await generateUniqueHandle(firstName, lastName)
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            handle,
+            firstName,
+            lastName,
+          },
+        })
+      }
+
+      // Only send for OAuth users (no password)
+      if (user.email && !dbUser?.password) {
         sendWelcomeEmail(user.email, user.name ?? null).catch((err) => {
           console.error('Failed to send welcome email:', err)
         })

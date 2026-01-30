@@ -18,7 +18,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching locations:', error)
     return NextResponse.json(
-      { error: 'Greska pri dohvacanju lokacija' },
+      { error: 'Greška pri dohvaćanju lokacija' },
       { status: 500 }
     )
   }
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error creating location:', error)
     return NextResponse.json(
-      { error: 'Greska pri kreiranju lokacije' },
+      { error: 'Greška pri kreiranju lokacije' },
       { status: 500 }
     )
   }

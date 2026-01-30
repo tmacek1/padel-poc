@@ -69,7 +69,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching leagues:', error)
     return NextResponse.json(
-      { error: 'Greska pri dohvacanju liga' },
+      { error: 'Greška pri dohvaćanju liga' },
       { status: 500 }
     )
   }
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
 
     if (!dbUser?.isAdmin) {
       return NextResponse.json(
-        { error: 'Samo administrator moze kreirati lige' },
+        { error: 'Samo administrator može kreirati lige' },
         { status: 403 }
       )
     }
@@ -136,7 +136,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error creating league:', error)
     return NextResponse.json(
-      { error: 'Greska pri kreiranju lige' },
+      { error: 'Greška pri kreiranju lige' },
       { status: 500 }
     )
   }

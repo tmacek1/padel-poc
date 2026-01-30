@@ -39,7 +39,7 @@ export async function PATCH(
 
     if (!targetUser) {
       return NextResponse.json(
-        { error: 'Korisnik nije pronaden' },
+        { error: 'Korisnik nije pronađen' },
         { status: 404 }
       )
     }
@@ -47,7 +47,7 @@ export async function PATCH(
     // Cannot modify superadmin status through this endpoint
     if (targetUser.isSuperAdmin) {
       return NextResponse.json(
-        { error: 'Ne mozete mijenjati status superadmina' },
+        { error: 'Ne možete mijenjati status superadmina' },
         { status: 403 }
       )
     }
@@ -55,7 +55,7 @@ export async function PATCH(
     // Prevent removing own admin status
     if (currentUser.id === id && !isAdmin) {
       return NextResponse.json(
-        { error: 'Ne mozete sami sebi maknuti admin status' },
+        { error: 'Ne možete sami sebi maknuti admin status' },
         { status: 400 }
       )
     }
@@ -63,7 +63,7 @@ export async function PATCH(
     // Only superadmin can remove admin rights from an admin
     if (targetUser.isAdmin && !isAdmin && !currentUser.isSuperAdmin) {
       return NextResponse.json(
-        { error: 'Samo superadmin moze maknuti admin prava s admina' },
+        { error: 'Samo superadmin može maknuti admin prava s admina' },
         { status: 403 }
       )
     }
@@ -85,7 +85,7 @@ export async function PATCH(
   } catch (error) {
     console.error('Error updating admin status:', error)
     return NextResponse.json(
-      { error: 'Greska pri azuriranju admin statusa' },
+      { error: 'Greška pri ažuriranju admin statusa' },
       { status: 500 }
     )
   }

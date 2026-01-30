@@ -45,7 +45,7 @@ export const POINTS = {
   LOSS: 0,
 }
 
-// Izracunaj bodove za mec
+// Izračunaj bodove za meč
 export function calculateMatchPoints(
   isWinner: boolean,
   isTiebreakLoss: boolean

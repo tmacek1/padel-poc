@@ -52,7 +52,7 @@ export async function GET(
     }
 
     // Check if user is a participant
-    const isParticipant = match.players.some(p => p.user.id === user.id)
+    const isParticipant = match.players.some(p => p.user?.id === user.id)
 
     // Check if match is completed and has results
     const isCompletedWithResults = match.status === 'completed' && match.sets.length > 0
@@ -64,7 +64,17 @@ export async function GET(
       ? user.isAdmin === true
       : isParticipant || user.isAdmin === true
 
-    return NextResponse.json({ ...match, canEdit, isParticipant })
+    // Parse pairRotationSchedule if exists
+    const pairRotationSchedule = match.pairRotationSchedule
+      ? JSON.parse(match.pairRotationSchedule)
+      : null
+
+    return NextResponse.json({
+      ...match,
+      pairRotationSchedule,
+      canEdit,
+      isParticipant,
+    })
   } catch (error) {
     console.error('Error fetching match:', error)
     return NextResponse.json(
@@ -92,6 +102,16 @@ export async function PUT(
       include: {
         players: { select: { userId: true } },
         sets: { select: { id: true } },
+      },
+      // Also select rotation fields
+    })
+
+    // Re-fetch with rotation fields if needed
+    const matchWithRotation = await prisma.match.findUnique({
+      where: { id },
+      select: {
+        pairRotation: true,
+        pairRotationSchedule: true,
       },
     })
 
@@ -157,6 +177,16 @@ export async function PUT(
       // Delete existing sets and recreate
       await prisma.matchSet.deleteMany({ where: { matchId: id } })
 
+      // Get rotation schedule if this is a rotation match
+      let rotationSchedule: { setNumber: number; team1: { odUserId: string }[]; team2: { odUserId: string }[] }[] | null = null
+      if (matchWithRotation?.pairRotation && matchWithRotation?.pairRotationSchedule) {
+        try {
+          rotationSchedule = JSON.parse(matchWithRotation.pairRotationSchedule)
+        } catch {
+          // Ignore parse errors
+        }
+      }
+
       for (const set of sets) {
         const createdSet = await prisma.matchSet.create({
           data: {
@@ -169,16 +199,48 @@ export async function PUT(
           },
         })
 
-        // Create set players if provided (for classic matches with different players per set)
-        if (set.setPlayers && Array.isArray(set.setPlayers)) {
+        // Priority: Use manually provided setPlayers if available
+        if (set.setPlayers && Array.isArray(set.setPlayers) && set.setPlayers.length > 0) {
+          // Create set players from the provided data (manual override or user-defined teams)
           for (const sp of set.setPlayers) {
-            await prisma.setPlayer.create({
-              data: {
-                matchSetId: createdSet.id,
-                userId: sp.userId,
-                team: sp.team,
-              },
-            })
+            if (sp.userId) {
+              await prisma.setPlayer.create({
+                data: {
+                  matchSetId: createdSet.id,
+                  userId: sp.userId,
+                  team: sp.team,
+                },
+              })
+            }
+          }
+        } else if (rotationSchedule) {
+          // Fall back to rotation schedule if no manual setPlayers provided
+          const setConfig = rotationSchedule.find(s => s.setNumber === set.setNumber)
+          if (setConfig) {
+            // Create SetPlayer records for team 1
+            for (const player of setConfig.team1) {
+              if (player.odUserId) {
+                await prisma.setPlayer.create({
+                  data: {
+                    matchSetId: createdSet.id,
+                    userId: player.odUserId,
+                    team: 1,
+                  },
+                })
+              }
+            }
+            // Create SetPlayer records for team 2
+            for (const player of setConfig.team2) {
+              if (player.odUserId) {
+                await prisma.setPlayer.create({
+                  data: {
+                    matchSetId: createdSet.id,
+                    userId: player.odUserId,
+                    team: 2,
+                  },
+                })
+              }
+            }
           }
         }
       }
@@ -218,7 +280,7 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating match:', error)
     return NextResponse.json(
-      { error: 'Greska pri azuriranju meca' },
+      { error: 'Greška pri ažuriranju meča' },
       { status: 500 }
     )
   }

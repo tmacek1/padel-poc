@@ -70,7 +70,7 @@ function formatDate(dateStr: string): string {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  pending: { label: 'Ceka', className: 'bg-gray-100 text-gray-700' },
+  pending: { label: 'Čeka', className: 'bg-gray-100 text-gray-700' },
   scheduled: { label: 'Zakazano', className: 'bg-blue-100 text-blue-700' },
   completed: { label: 'Odigrano', className: 'bg-green-100 text-green-700' },
 }
@@ -147,10 +147,10 @@ export default function LeagueSchedule({
         onRefresh()
       } else {
         const data = await res.json()
-        setError(data.error || 'Greska')
+        setError(data.error || 'Greška')
       }
     } catch {
-      setError('Greska pri spremanju')
+      setError('Greška pri spremanju')
     } finally {
       setSaving(false)
     }
@@ -194,10 +194,10 @@ export default function LeagueSchedule({
         setNewLocationCity('')
       } else {
         const data = await res.json()
-        setError(data.error || 'Greska pri kreiranju lokacije')
+        setError(data.error || 'Greška pri kreiranju lokacije')
       }
     } catch {
-      setError('Greska pri kreiranju lokacije')
+      setError('Greška pri kreiranju lokacije')
     } finally {
       setCreatingLocation(false)
     }
@@ -218,10 +218,10 @@ export default function LeagueSchedule({
         onRefresh()
       } else {
         const data = await res.json()
-        setError(data.error || 'Greska pri kreiranju meca')
+        setError(data.error || 'Greška pri kreiranju meča')
       }
     } catch {
-      setError('Greska pri kreiranju meca')
+      setError('Greška pri kreiranju meča')
     } finally {
       setCreatingMatch(null)
     }
@@ -242,7 +242,7 @@ export default function LeagueSchedule({
   if (matchups.length === 0) {
     return (
       <div className="text-sm text-gray-600 py-2">
-        Raspored jos nije generiran.
+        Raspored još nije generiran.
       </div>
     )
   }

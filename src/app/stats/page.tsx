@@ -61,16 +61,21 @@ export default function StatsPage() {
     }
   }, [status, router])
 
+  // Use session.user.id as dependency to avoid re-fetching when session object changes
+  const userId = session?.user?.id
+
   useEffect(() => {
-    if (session?.user?.id) {
-      fetchStats(session.user.id)
+    if (userId) {
+      fetchStats(userId)
       fetchUsers()
     }
-  }, [session])
+  }, [userId])
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('/api/users')
+      const res = await fetch('/api/users', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
       const data = await res.json()
       if (Array.isArray(data)) {
         setUsers(data)
@@ -121,7 +126,7 @@ export default function StatsPage() {
       <div className="min-h-screen bg-gray-100">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-700">Ucitavanje...</div>
+          <div className="text-gray-700">Učitavanje...</div>
         </div>
       </div>
     )

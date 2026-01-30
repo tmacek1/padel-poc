@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { sendWelcomeEmail } from '@/lib/email'
+import { generateUniqueHandle } from '@/lib/handleGenerator'
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json()
+    const { firstName, lastName, email, password } = await request.json()
 
     if (!email || !password) {
       return NextResponse.json(
@@ -13,6 +14,19 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
+
+    if (!firstName || !lastName) {
+      return NextResponse.json(
+        { error: 'Ime i prezime su obavezni' },
+        { status: 400 }
+      )
+    }
+
+    // Kombinira ime i prezime za NextAuth kompatibilnost
+    const fullName = `${firstName.trim()} ${lastName.trim()}`
+
+    // Generiraj jedinstveni handle
+    const handle = await generateUniqueHandle(firstName.trim(), lastName.trim())
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -36,7 +50,10 @@ export async function POST(request: Request) {
     // Create user
     const user = await prisma.user.create({
       data: {
-        name,
+        name: fullName,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        handle,
         email,
         password: hashedPassword,
         isSuperAdmin,
@@ -45,7 +62,7 @@ export async function POST(request: Request) {
     })
 
     // Send welcome email (don't wait, fire and forget)
-    sendWelcomeEmail(email, name).catch((err) => {
+    sendWelcomeEmail(email, fullName).catch((err) => {
       console.error('Failed to send welcome email:', err)
     })
 

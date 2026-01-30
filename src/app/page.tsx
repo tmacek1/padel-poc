@@ -6,7 +6,7 @@ export default function Home() {
       <div className="text-center text-white">
         <h1 className="text-5xl font-bold mb-4">Padel PoC</h1>
         <p className="text-xl mb-8 opacity-90">
-          Prati svoje meceve, statistiku i lige
+          Prati svoje matcheve, statistiku i lige
         </p>
 
         <div className="space-x-4">
@@ -28,8 +28,8 @@ export default function Home() {
       <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl px-4">
         <div className="bg-white/10 backdrop-blur rounded-lg p-6 text-white text-center">
           <div className="text-3xl mb-3">*</div>
-          <h3 className="font-semibold mb-2">Evidencija meceva</h3>
-          <p className="text-sm opacity-80">Kreiraj i prati sve svoje padel meceve</p>
+          <h3 className="font-semibold mb-2">Evidencija matcheva</h3>
+          <p className="text-sm opacity-80">Kreiraj i prati sve svoje padel matcheve</p>
         </div>
 
         <div className="bg-white/10 backdrop-blur rounded-lg p-6 text-white text-center">

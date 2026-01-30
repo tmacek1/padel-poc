@@ -64,12 +64,14 @@ export default function AdminPage() {
   async function fetchUsers() {
     try {
       // Fetch 5 most recently registered users
-      const res = await fetch('/api/users?limit=5&sortBy=createdAt')
-      if (!res.ok) throw new Error('Greska pri dohvacanju korisnika')
+      const res = await fetch('/api/users?limit=5&sortBy=createdAt', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+      if (!res.ok) throw new Error('Greška pri dohvaćanju korisnika')
       const data = await res.json()
       setRecentUsers(data)
     } catch {
-      setError('Greska pri dohvacanju korisnika')
+      setError('Greška pri dohvaćanju korisnika')
     } finally {
       setLoading(false)
     }
@@ -83,12 +85,14 @@ export default function AdminPage() {
 
     setSearching(true)
     try {
-      const res = await fetch(`/api/users?search=${encodeURIComponent(query)}&limit=20`)
-      if (!res.ok) throw new Error('Greska pri pretrazi')
+      const res = await fetch(`/api/users?search=${encodeURIComponent(query)}&limit=20`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+      if (!res.ok) throw new Error('Greška pri pretrazi')
       const data = await res.json()
       setSearchResults(data)
     } catch {
-      setError('Greska pri pretrazi korisnika')
+      setError('Greška pri pretrazi korisnika')
     } finally {
       setSearching(false)
     }
@@ -105,7 +109,7 @@ export default function AdminPage() {
   async function fetchLocations() {
     try {
       const res = await fetch('/api/locations')
-      if (!res.ok) throw new Error('Greska pri dohvacanju lokacija')
+      if (!res.ok) throw new Error('Greška pri dohvaćanju lokacija')
       const data = await res.json()
       setLocations(data)
     } catch {
@@ -258,7 +262,7 @@ export default function AdminPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || 'Greska pri promjeni admin statusa')
+        throw new Error(data.error || 'Greška pri promjeni admin statusa')
       }
 
       const updatedUser = await res.json()
@@ -270,7 +274,7 @@ export default function AdminPage() {
       setRecentUsers(updateUserInList)
       setSearchResults(updateUserInList)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nepoznata greska')
+      setError(err instanceof Error ? err.message : 'Nepoznata greška')
     } finally {
       setTogglingId(null)
     }
@@ -313,7 +317,7 @@ export default function AdminPage() {
       <div className="min-h-screen bg-gray-100">
         <Navbar />
         <div className="max-w-4xl mx-auto p-6">
-          <p className="text-gray-700">Ucitavanje...</p>
+          <p className="text-gray-700">Učitavanje...</p>
         </div>
       </div>
     )

@@ -25,10 +25,28 @@ export async function DELETE() {
       )
     }
 
-    // Delete user (cascade will handle related records)
-    await prisma.user.delete({
-      where: { id: currentUser.id },
+    // Soft delete - označimo korisnika kao obrisanog ali ga ne brišemo
+    // Tako se čuvaju statistike matcheva
+    const odUserId = currentUser.id
+    await prisma.user.update({
+      where: { id: odUserId },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+        // Anonimiziraj osobne podatke
+        name: 'Obrisani korisnik',
+        email: `deleted_${odUserId}@deleted.local`,
+        image: null,
+        password: null,
+        // Ukloni admin prava
+        isAdmin: false,
+        isSuperAdmin: false,
+      },
     })
+
+    // Obriši sessions i accounts (za sigurnost)
+    await prisma.session.deleteMany({ where: { userId: odUserId } })
+    await prisma.account.deleteMany({ where: { userId: odUserId } })
 
     return NextResponse.json({ success: true, message: 'Račun uspješno obrisan' })
   } catch (error) {

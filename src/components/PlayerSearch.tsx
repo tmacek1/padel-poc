@@ -6,6 +6,8 @@ interface User {
   id: string
   name: string | null
   email: string
+  handle?: string | null
+  createdAt?: string
 }
 
 interface PlayerSearchProps {
@@ -31,7 +33,7 @@ export default function PlayerSearch({
   const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Get display name with email suffix for disambiguation
+  // Get display name with handle for disambiguation
   const getDisplayName = (user: User) => {
     const sameName = users.filter(
       (u) =>
@@ -40,25 +42,34 @@ export default function PlayerSearch({
         u.name.toLowerCase() === user.name.toLowerCase() &&
         u.id !== user.id
     )
-    if (sameName.length > 0 && user.name) {
-      const emailPrefix = user.email.split('@')[0]
-      return `${user.name} (${emailPrefix})`
+    if (sameName.length > 0 && user.name && user.handle) {
+      return `${user.name} (@${user.handle})`
     }
-    return user.name || user.email
+    return user.name || (user.handle ? `@${user.handle}` : 'Nepoznato ime')
   }
 
   const MAX_RESULTS = 20
+  const RECENT_PLAYERS_COUNT = 5
+
+  // Get recent players (sorted by createdAt desc) - show when no search term
+  const recentPlayers = users
+    .filter((user) => !excludeIds.includes(user.id))
+    .sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
+    .slice(0, RECENT_PLAYERS_COUNT)
 
   // Filter users based on search term and exclusions
-  const filteredUsers = users.filter((user) => {
+  const searchResults = users.filter((user) => {
     if (excludeIds.includes(user.id)) return false
-    if (!searchTerm) return false // Don't show all users, require typing
+    if (!searchTerm) return false
     const searchLower = searchTerm.toLowerCase()
-    return (
-      user.name?.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower)
-    )
+    return user.name?.toLowerCase().includes(searchLower)
   })
+
+  // Show recent players when no search, otherwise show search results
+  const filteredUsers = searchTerm ? searchResults : recentPlayers
 
   // Get selected user display name
   const selectedUser = users.find((u) => u.id === selectedUserId)
@@ -178,15 +189,17 @@ export default function PlayerSearch({
         >
           {filteredUsers.length === 0 ? (
             <div className="px-4 py-3 text-gray-600">
-              {searchTerm ? 'Nema rezultata' : 'Počni tipkati za pretragu...'}
+              {searchTerm ? 'Nema rezultata' : 'Nema dostupnih igrača'}
             </div>
           ) : (
             <>
               <div className="px-3 py-2 text-xs text-gray-600 bg-gray-50 border-b">
-                {filteredUsers.length} igrača pronađeno
-                {filteredUsers.length > MAX_RESULTS && ` (prikazano prvih ${MAX_RESULTS})`}
+                {searchTerm
+                  ? `${filteredUsers.length} igrača pronađeno${filteredUsers.length > MAX_RESULTS ? ` (prikazano prvih ${MAX_RESULTS})` : ''}`
+                  : 'Nedavno registrirani igrači'
+                }
               </div>
-              {filteredUsers.slice(0, MAX_RESULTS).map((user, index) => (
+              {filteredUsers.slice(0, searchTerm ? MAX_RESULTS : RECENT_PLAYERS_COUNT).map((user, index) => (
                 <button
                   key={user.id}
                   type="button"
@@ -196,13 +209,13 @@ export default function PlayerSearch({
                     index === highlightedIndex ? 'bg-blue-100' : ''
                   }`}
                 >
-                  <div className="font-medium text-gray-900">{user.name || user.email}</div>
-                  {user.name && (
-                    <div className="text-sm text-gray-600">{user.email}</div>
+                  <div className="font-medium text-gray-900">{user.name || 'Nepoznato ime'}</div>
+                  {user.handle && (
+                    <div className="text-sm text-gray-500">@{user.handle}</div>
                   )}
                 </button>
               ))}
-              {filteredUsers.length > MAX_RESULTS && (
+              {searchTerm && filteredUsers.length > MAX_RESULTS && (
                 <div className="px-4 py-2 text-sm text-gray-600 bg-gray-50 border-t">
                   Suzi pretragu za prikaz ostalih rezultata.
                 </div>

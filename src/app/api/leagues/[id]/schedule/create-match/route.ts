@@ -16,7 +16,7 @@ export async function POST(
 
     if (!user.isAdmin) {
       return NextResponse.json(
-        { error: 'Samo administrator moze kreirati mec iz rasporeda' },
+        { error: 'Samo administrator može kreirati meč iz rasporeda' },
         { status: 403 }
       )
     }
@@ -61,7 +61,7 @@ export async function POST(
 
     if (matchup.matchId) {
       return NextResponse.json(
-        { error: 'Mec je vec kreiran za ovaj matchup' },
+        { error: 'Meč je već kreiran za ovaj matchup' },
         { status: 400 }
       )
     }
@@ -121,7 +121,7 @@ export async function POST(
   } catch (error) {
     console.error('Error creating match from matchup:', error)
     return NextResponse.json(
-      { error: 'Greska pri kreiranju meca' },
+      { error: 'Greška pri kreiranju meča' },
       { status: 500 }
     )
   }

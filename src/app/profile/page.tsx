@@ -8,6 +8,9 @@ import Navbar from '@/components/Navbar'
 interface UserProfile {
   id: string
   name: string | null
+  firstName: string | null
+  lastName: string | null
+  handle: string | null
   email: string
   image: string | null
   createdAt: string
@@ -203,7 +206,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-gray-100">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-700">Ucitavanje...</div>
+          <div className="text-gray-700">Učitavanje...</div>
         </div>
       </div>
     )
@@ -237,6 +240,9 @@ export default function ProfilePage() {
                 <div className="text-xl font-semibold text-gray-900">
                   {profile?.name || session?.user?.name || 'Bez imena'}
                 </div>
+                {profile?.handle && (
+                  <div className="text-blue-600 font-medium">@{profile.handle}</div>
+                )}
                 <div className="text-gray-700">{session?.user?.email}</div>
               </div>
             </div>
@@ -417,7 +423,7 @@ export default function ProfilePage() {
                 <div>
                   <div className="text-sm text-gray-700">Spol</div>
                   <div className="font-medium text-gray-900">
-                    {profile?.gender === 'male' ? 'Muško' : profile?.gender === 'female' ? 'Žensko' : 'Nije određeno'}
+                    {profile?.gender === 'male' ? 'Muški' : profile?.gender === 'female' ? 'Ženski' : 'Nije određeno'}
                   </div>
                 </div>
 

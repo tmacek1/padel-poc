@@ -66,7 +66,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching schedule:', error)
     return NextResponse.json(
-      { error: 'Greska pri dohvacanju rasporeda' },
+      { error: 'Greška pri dohvaćanju rasporeda' },
       { status: 500 }
     )
   }
@@ -86,7 +86,7 @@ export async function POST(
 
     if (!user.isAdmin) {
       return NextResponse.json(
-        { error: 'Samo administrator moze generirati raspored' },
+        { error: 'Samo administrator može generirati raspored' },
         { status: 403 }
       )
     }
@@ -178,7 +178,7 @@ export async function POST(
   } catch (error) {
     console.error('Error generating schedule:', error)
     return NextResponse.json(
-      { error: 'Greska pri generiranju rasporeda' },
+      { error: 'Greška pri generiranju rasporeda' },
       { status: 500 }
     )
   }
@@ -198,7 +198,7 @@ export async function PATCH(
 
     if (!user.isAdmin) {
       return NextResponse.json(
-        { error: 'Samo administrator moze azurirati raspored' },
+        { error: 'Samo administrator može ažurirati raspored' },
         { status: 403 }
       )
     }
@@ -312,7 +312,7 @@ export async function PATCH(
   } catch (error) {
     console.error('Error updating matchup:', error)
     return NextResponse.json(
-      { error: 'Greska pri azuriranju matchupa' },
+      { error: 'Greška pri ažuriranju matchupa' },
       { status: 500 }
     )
   }

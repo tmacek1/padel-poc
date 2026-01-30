@@ -47,7 +47,10 @@ export default function NewMatchPage() {
   const [team2Player2, setTeam2Player2] = useState('')
   const [scoringType, setScoringType] = useState('golden_point')
   const [isLeagueMatch, setIsLeagueMatch] = useState(false)
+  const [isSingles, setIsSingles] = useState(false)
   const [durationMinutes, setDurationMinutes] = useState(90)
+  const [isLookingForPlayers, setIsLookingForPlayers] = useState(false)
+  const [pairRotation, setPairRotation] = useState(false)
 
   // New location form
   const [showNewLocation, setShowNewLocation] = useState(false)
@@ -67,9 +70,18 @@ export default function NewMatchPage() {
     fetchLocations()
   }, [])
 
+  // Auto-select current user as first player
+  useEffect(() => {
+    if (session?.user?.id && !team1Player1) {
+      setTeam1Player1(session.user.id)
+    }
+  }, [session?.user?.id])
+
   const fetchUsers = async () => {
     try {
-      const res = await fetch('/api/users')
+      const res = await fetch('/api/users', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
       const data = await res.json()
       if (Array.isArray(data)) {
         setUsers(data)
@@ -144,17 +156,60 @@ export default function NewMatchPage() {
     setError('')
     setLoading(true)
 
-    // Validate all players are selected
-    const players = [team1Player1, team1Player2, team2Player1, team2Player2]
-    if (players.some((p) => !p)) {
-      setError('Molimo odaberi sva 4 igrača')
-      setLoading(false)
-      return
+    // Build players array - filter out empty selections
+    const playersData: { userId: string; team: number }[] = []
+
+    if (isSingles) {
+      if (team1Player1) playersData.push({ userId: team1Player1, team: 1 })
+      if (team2Player1) playersData.push({ userId: team2Player1, team: 2 })
+    } else {
+      if (team1Player1) playersData.push({ userId: team1Player1, team: 1 })
+      if (team1Player2) playersData.push({ userId: team1Player2, team: 1 })
+      if (team2Player1) playersData.push({ userId: team2Player1, team: 2 })
+      if (team2Player2) playersData.push({ userId: team2Player2, team: 2 })
     }
 
-    // Check for duplicates
-    const uniquePlayers = new Set(players)
-    if (uniquePlayers.size !== 4) {
+    // Validate based on mode
+    if (isLookingForPlayers) {
+      // Za "tražim igrače" treba barem 1 igrač
+      if (playersData.length === 0) {
+        setError('Molimo odaberi barem jednog igrača')
+        setLoading(false)
+        return
+      }
+    } else {
+      // Standardna validacija - svi igrači potrebni
+      if (isSingles) {
+        if (!team1Player1 || !team2Player1) {
+          setError('Molimo odaberi oba igrača')
+          setLoading(false)
+          return
+        }
+        if (team1Player1 === team2Player1) {
+          setError('Igrači moraju biti različiti')
+          setLoading(false)
+          return
+        }
+      } else {
+        const players = [team1Player1, team1Player2, team2Player1, team2Player2]
+        if (players.some((p) => !p)) {
+          setError('Molimo odaberi sva 4 igrača')
+          setLoading(false)
+          return
+        }
+        // Check for duplicates
+        const uniquePlayers = new Set(players)
+        if (uniquePlayers.size !== 4) {
+          setError('Svaki igrač može biti odabran samo jednom')
+          setLoading(false)
+          return
+        }
+      }
+    }
+
+    // Check for duplicates in selected players
+    const selectedIds = playersData.map(p => p.userId)
+    if (new Set(selectedIds).size !== selectedIds.length) {
       setError('Svaki igrač može biti odabran samo jednom')
       setLoading(false)
       return
@@ -165,18 +220,17 @@ export default function NewMatchPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          scheduledAt,
+          // Konvertiraj lokalno vrijeme u ISO string s timezone info
+          scheduledAt: new Date(scheduledAt).toISOString(),
           locationId: locationId || null,
           notes,
           ignoreConflicts,
           scoringType: isLeagueMatch ? 'golden_point' : scoringType,
           durationMinutes: isLeagueMatch ? 90 : durationMinutes,
-          players: [
-            { userId: team1Player1, team: 1 },
-            { userId: team1Player2, team: 1 },
-            { userId: team2Player1, team: 2 },
-            { userId: team2Player2, team: 2 },
-          ],
+          isSingles,
+          isLookingForPlayers,
+          pairRotation: !isSingles && !isLeagueMatch && pairRotation,
+          players: playersData,
         }),
       })
 
@@ -212,7 +266,9 @@ export default function NewMatchPage() {
   }
 
   // Get selected player IDs for exclusion
-  const selectedPlayerIds = [team1Player1, team1Player2, team2Player1, team2Player2].filter(Boolean)
+  const selectedPlayerIds = isSingles
+    ? [team1Player1, team2Player1].filter(Boolean)
+    : [team1Player1, team1Player2, team2Player1, team2Player2].filter(Boolean)
 
   const getUserName = (userId: string) => {
     const user = users.find((u) => u.id === userId)
@@ -245,12 +301,6 @@ export default function NewMatchPage() {
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Novi match</h1>
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Date and Time */}
@@ -376,6 +426,69 @@ export default function NewMatchPage() {
               {/* Scoring type and duration - only for non-league matches */}
               {!isLeagueMatch && (
                 <>
+                  {/* Looking for players toggle */}
+                  <div className="flex items-center gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <input
+                      type="checkbox"
+                      id="lookingForPlayers"
+                      checked={isLookingForPlayers}
+                      onChange={(e) => {
+                        setIsLookingForPlayers(e.target.checked)
+                        // Reset pair rotation when enabling "looking for players"
+                        if (e.target.checked) {
+                          setPairRotation(false)
+                        }
+                      }}
+                      className="w-5 h-5 text-yellow-600 focus:ring-yellow-500 rounded"
+                    />
+                    <label htmlFor="lookingForPlayers" className="cursor-pointer">
+                      <span className="font-medium text-gray-800">Tražim igrače</span>
+                      <p className="text-xs text-gray-600">Kreiraj match s manjim brojem igrača - drugi se mogu prijaviti</p>
+                    </label>
+                  </div>
+
+                  {/* Singles/Doubles toggle */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Format igre
+                    </label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="gameFormat"
+                          checked={!isSingles}
+                          onChange={() => {
+                            setIsSingles(false)
+                          }}
+                          className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                        />
+                        <div>
+                          <span className="font-medium text-gray-800">Parovi (2v2)</span>
+                          <p className="text-xs text-gray-600">Standardni padel format</p>
+                        </div>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="gameFormat"
+                          checked={isSingles}
+                          onChange={() => {
+                            setIsSingles(true)
+                            // Clear second players when switching to singles
+                            setTeam1Player2('')
+                            setTeam2Player2('')
+                          }}
+                          className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                        />
+                        <div>
+                          <span className="font-medium text-gray-800">Pojedinačno (1v1)</span>
+                          <p className="text-xs text-gray-600">Jedan igrač protiv jednog</p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Način bodovanja
@@ -417,25 +530,44 @@ export default function NewMatchPage() {
                       Trajanje meča
                     </label>
                     <div className="flex items-center gap-4">
-                      <input
-                        type="range"
-                        min="60"
-                        max="120"
-                        step="15"
-                        value={durationMinutes}
-                        onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                        className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                      />
+                      <div className="flex-1">
+                        <input
+                          type="range"
+                          min="60"
+                          max="120"
+                          step="30"
+                          value={durationMinutes}
+                          onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1 px-0.5">
+                          <span>60 min</span>
+                          <span>90 min</span>
+                          <span>120 min</span>
+                        </div>
+                      </div>
                       <span className="text-lg font-semibold text-gray-900 min-w-[80px] text-center">
                         {durationMinutes} min
                       </span>
                     </div>
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
-                      <span>60 min</span>
-                      <span>90 min</span>
-                      <span>120 min</span>
-                    </div>
                   </div>
+
+                  {/* Pair rotation - only for 2v2 matches when not looking for players */}
+                  {!isSingles && !isLookingForPlayers && (
+                    <div className="flex items-center gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                      <input
+                        type="checkbox"
+                        id="pairRotation"
+                        checked={pairRotation}
+                        onChange={(e) => setPairRotation(e.target.checked)}
+                        className="w-5 h-5 text-purple-600 focus:ring-purple-500 rounded"
+                      />
+                      <label htmlFor="pairRotation" className="cursor-pointer">
+                        <span className="font-medium text-gray-800">Rotacija parova po setu</span>
+                        <p className="text-xs text-gray-600">Svaki igrač igra s svakim - generira se raspored za 5 setova</p>
+                      </label>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -449,49 +581,57 @@ export default function NewMatchPage() {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Team 1 */}
+              {/* Team 1 / Player 1 */}
               <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
-                <h3 className="font-semibold mb-3 text-blue-700">Tim 1</h3>
+                <h3 className="font-semibold mb-3 text-blue-700">
+                  {isSingles ? 'Igrač 1' : 'Tim 1'}
+                </h3>
                 <div className="space-y-3">
                   <PlayerSearch
                     users={users}
                     selectedUserId={team1Player1}
                     onSelect={setTeam1Player1}
                     excludeIds={selectedPlayerIds.filter(id => id !== team1Player1)}
-                    label="Igrač 1"
+                    label={isSingles ? 'Igrač' : 'Igrač 1'}
                     placeholder="Pretraži igrača..."
                   />
-                  <PlayerSearch
-                    users={users}
-                    selectedUserId={team1Player2}
-                    onSelect={setTeam1Player2}
-                    excludeIds={selectedPlayerIds.filter(id => id !== team1Player2)}
-                    label="Igrač 2"
-                    placeholder="Pretraži igrača..."
-                  />
+                  {!isSingles && (
+                    <PlayerSearch
+                      users={users}
+                      selectedUserId={team1Player2}
+                      onSelect={setTeam1Player2}
+                      excludeIds={selectedPlayerIds.filter(id => id !== team1Player2)}
+                      label="Igrač 2"
+                      placeholder="Pretraži igrača..."
+                    />
+                  )}
                 </div>
               </div>
 
-              {/* Team 2 */}
+              {/* Team 2 / Player 2 */}
               <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-                <h3 className="font-semibold mb-3 text-red-700">Tim 2</h3>
+                <h3 className="font-semibold mb-3 text-red-700">
+                  {isSingles ? 'Igrač 2' : 'Tim 2'}
+                </h3>
                 <div className="space-y-3">
                   <PlayerSearch
                     users={users}
                     selectedUserId={team2Player1}
                     onSelect={setTeam2Player1}
                     excludeIds={selectedPlayerIds.filter(id => id !== team2Player1)}
-                    label="Igrač 1"
+                    label={isSingles ? 'Igrač' : 'Igrač 1'}
                     placeholder="Pretraži igrača..."
                   />
-                  <PlayerSearch
-                    users={users}
-                    selectedUserId={team2Player2}
-                    onSelect={setTeam2Player2}
-                    excludeIds={selectedPlayerIds.filter(id => id !== team2Player2)}
-                    label="Igrač 2"
-                    placeholder="Pretraži igrača..."
-                  />
+                  {!isSingles && (
+                    <PlayerSearch
+                      users={users}
+                      selectedUserId={team2Player2}
+                      onSelect={setTeam2Player2}
+                      excludeIds={selectedPlayerIds.filter(id => id !== team2Player2)}
+                      label="Igrač 2"
+                      placeholder="Pretraži igrača..."
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -508,6 +648,13 @@ export default function NewMatchPage() {
               placeholder="Dodatne napomene o matchu..."
             />
           </div>
+
+          {/* Error message - visible near submit button */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
 
           {/* Submit */}
           <div className="flex gap-4">

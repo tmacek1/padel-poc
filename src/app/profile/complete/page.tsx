@@ -55,7 +55,7 @@ export default function CompleteProfilePage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || 'Greska pri spremanju profila')
+        setError(data.error || 'Greška pri spremanju profila')
         setLoading(false)
         return
       }
@@ -66,7 +66,7 @@ export default function CompleteProfilePage() {
       // Redirect to dashboard
       router.push('/dashboard')
     } catch {
-      setError('Greska pri spremanju profila')
+      setError('Greška pri spremanju profila')
       setLoading(false)
     }
   }
@@ -74,7 +74,7 @@ export default function CompleteProfilePage() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-gray-700">Ucitavanje...</div>
+        <div className="text-gray-700">Učitavanje...</div>
       </div>
     )
   }
@@ -83,9 +83,9 @@ export default function CompleteProfilePage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-500 to-blue-700 py-12 px-4">
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Dovrsi profil</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Dovrši profil</h1>
           <p className="text-gray-700 mt-2">
-            Samo jos par podataka da zavrsis registraciju
+            Samo još par podataka da završiš registraciju
           </p>
         </div>
 
@@ -126,7 +126,7 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setGender(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span className="text-gray-800">Muski</span>
+                <span className="text-gray-800">Muški</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -137,7 +137,7 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setGender(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span className="text-gray-800">Zenski</span>
+                <span className="text-gray-800">Ženski</span>
               </label>
             </div>
           </div>
@@ -210,7 +210,7 @@ export default function CompleteProfilePage() {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50"
           >
-            {loading ? 'Spremanje...' : 'Zavrsi registraciju'}
+            {loading ? 'Spremanje...' : 'Završi registraciju'}
           </button>
         </form>
       </div>

@@ -48,3 +48,5 @@ prisma/dev.db
 # debug scripts
 debug-auth.js
 nul
+
+.vercel

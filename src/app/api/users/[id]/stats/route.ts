@@ -27,6 +27,7 @@ export async function GET(
         sets: {
           include: {
             playerPositions: true,
+            setPlayers: true, // Include per-set team assignments (for rotation matches)
           },
         },
       },
@@ -50,25 +51,37 @@ export async function GET(
     }
 
     for (const match of matches) {
-      // Find which team the user is on
+      // Find which team the user is on (default/original team)
       const userPlayer = match.players.find((p) => p.userId === id)
       if (!userPlayer) continue
 
-      const userTeam = userPlayer.team
+      const defaultUserTeam = userPlayer.team
 
       // Calculate set scores
-      let team1Sets = 0
-      let team2Sets = 0
-      let team1Games = 0
-      let team2Games = 0
+      let userSetsWon = 0
+      let userSetsLost = 0
+      let userGamesWon = 0
+      let userGamesLost = 0
 
       for (const set of match.sets) {
-        team1Games += set.team1Score
-        team2Games += set.team2Score
+        // For rotation matches, check SetPlayer to get user's team for this specific set
+        // If no SetPlayer record exists, fall back to original MatchPlayer team
+        const setPlayerRecord = set.setPlayers?.find((sp) => sp.userId === id)
+        const userTeamInThisSet = setPlayerRecord ? setPlayerRecord.team : defaultUserTeam
 
+        // Calculate if user won this set based on their team IN THIS SET
         const userWonSet =
-          (userTeam === 1 && set.team1Score > set.team2Score) ||
-          (userTeam === 2 && set.team2Score > set.team1Score)
+          (userTeamInThisSet === 1 && set.team1Score > set.team2Score) ||
+          (userTeamInThisSet === 2 && set.team2Score > set.team1Score)
+
+        // Track games won/lost based on user's team in this set
+        if (userTeamInThisSet === 1) {
+          userGamesWon += set.team1Score
+          userGamesLost += set.team2Score
+        } else {
+          userGamesWon += set.team2Score
+          userGamesLost += set.team1Score
+        }
 
         // Track by set number
         if (!setStatsByNumber[set.setNumber]) {
@@ -76,8 +89,10 @@ export async function GET(
         }
         if (userWonSet) {
           setStatsByNumber[set.setNumber].won++
+          userSetsWon++
         } else if (set.team1Score !== set.team2Score) {
           setStatsByNumber[set.setNumber].lost++
+          userSetsLost++
         }
 
         // Track by court side
@@ -91,41 +106,21 @@ export async function GET(
             }
           }
         }
-
-        if (set.team1Score > set.team2Score) {
-          team1Sets++
-        } else if (set.team2Score > set.team1Score) {
-          team2Sets++
-        }
       }
 
-      // Determine winner
-      if (userTeam === 1) {
-        totalSetsWon += team1Sets
-        totalSetsLost += team2Sets
-        totalGamesWon += team1Games
-        totalGamesLost += team2Games
+      // Update totals
+      totalSetsWon += userSetsWon
+      totalSetsLost += userSetsLost
+      totalGamesWon += userGamesWon
+      totalGamesLost += userGamesLost
 
-        if (team1Sets > team2Sets) {
-          wins++
-        } else if (team2Sets > team1Sets) {
-          losses++
-        } else {
-          draws++ // Match ended in a draw (e.g., 1-1 in sets)
-        }
+      // Determine match winner based on sets won
+      if (userSetsWon > userSetsLost) {
+        wins++
+      } else if (userSetsLost > userSetsWon) {
+        losses++
       } else {
-        totalSetsWon += team2Sets
-        totalSetsLost += team1Sets
-        totalGamesWon += team2Games
-        totalGamesLost += team1Games
-
-        if (team2Sets > team1Sets) {
-          wins++
-        } else if (team1Sets > team2Sets) {
-          losses++
-        } else {
-          draws++ // Match ended in a draw (e.g., 1-1 in sets)
-        }
+        draws++ // Match ended in a draw (e.g., 1-1 in sets)
       }
     }
 
@@ -187,7 +182,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching user stats:', error)
     return NextResponse.json(
-      { error: 'Greska pri dohvacanju statistike' },
+      { error: 'Greška pri dohvaćanju statistike' },
       { status: 500 }
     )
   }

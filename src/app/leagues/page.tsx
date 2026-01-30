@@ -174,7 +174,9 @@ export default function LeaguesPage() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('/api/users')
+      const res = await fetch('/api/users', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
       const data = await res.json()
       if (Array.isArray(data)) {
         setUsers(data)
@@ -323,10 +325,10 @@ export default function LeaguesPage() {
         fetchLeagues(selectedSeason || undefined)
       } else {
         const data = await res.json()
-        setError(data.error || 'Greska pri promjeni statusa')
+        setError(data.error || 'Greška pri promjeni statusa')
       }
     } catch {
-      setError('Greska pri promjeni statusa')
+      setError('Greška pri promjeni statusa')
     } finally {
       setTogglingActive(null)
     }
@@ -372,7 +374,7 @@ export default function LeaguesPage() {
   }
 
   const handleGenerateSchedule = async (leagueId: string) => {
-    if (!confirm('Generiranje novog rasporeda ce obrisati postojeci raspored. Nastaviti?')) return
+    if (!confirm('Generiranje novog rasporeda će obrisati postojeći raspored. Nastaviti?')) return
 
     setGeneratingSchedule(leagueId)
     setError('')
@@ -388,10 +390,10 @@ export default function LeaguesPage() {
       if (res.ok) {
         setSchedules((prev) => ({ ...prev, [leagueId]: data }))
       } else {
-        setError(data.error || 'Greska pri generiranju rasporeda')
+        setError(data.error || 'Greška pri generiranju rasporeda')
       }
     } catch {
-      setError('Greska pri generiranju rasporeda')
+      setError('Greška pri generiranju rasporeda')
     } finally {
       setGeneratingSchedule(null)
     }

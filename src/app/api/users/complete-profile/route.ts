@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error completing profile:', error)
     return NextResponse.json(
-      { error: 'Greska pri spremanju profila' },
+      { error: 'Greška pri spremanju profila' },
       { status: 500 }
     )
   }

@@ -35,7 +35,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching seasons:', error)
     return NextResponse.json(
-      { error: 'Greska pri dohvacanju sezona' },
+      { error: 'Greška pri dohvaćanju sezona' },
       { status: 500 }
     )
   }
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
     if (!dbUser?.isAdmin) {
       return NextResponse.json(
-        { error: 'Samo administrator moze kreirati sezone' },
+        { error: 'Samo administrator može kreirati sezone' },
         { status: 403 }
       )
     }
@@ -136,7 +136,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error creating season:', error)
     return NextResponse.json(
-      { error: 'Greska pri kreiranju sezone' },
+      { error: 'Greška pri kreiranju sezone' },
       { status: 500 }
     )
   }

@@ -436,14 +436,14 @@ export default function MatchesPage() {
                               key={setConfig.setNumber}
                               className={`rounded-lg p-2 text-center ${hasResult ? 'bg-white border border-indigo-200' : 'bg-indigo-50'}`}
                             >
-                              <div className="text-xs font-bold text-indigo-800 mb-1">
+                              <div className="text-xs font-bold text-indigo-800">
                                 Set {setConfig.setNumber}
-                                {hasResult && (
-                                  <span className="ml-1 text-gray-900">
-                                    ({setResult.team1Score}:{setResult.team2Score})
-                                  </span>
-                                )}
                               </div>
+                              {hasResult && (
+                                <div className="text-sm font-bold text-gray-900 mb-1">
+                                  {setResult.team1Score} : {setResult.team2Score}
+                                </div>
+                              )}
                               <div className={`text-xs ${team1Won ? 'text-green-700 font-bold' : 'text-gray-700'}`}>
                                 <span className="font-medium">{setConfig.team1.map(p => p.name.split(' ')[0]).join(' / ')}</span>
                                 {team1Won && ' ✓'}

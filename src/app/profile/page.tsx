@@ -1,6 +1,6 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Navbar from '@/components/Navbar'
@@ -52,6 +52,7 @@ export default function ProfilePage() {
   const [newLocationCity, setNewLocationCity] = useState('')
   const [savingLocation, setSavingLocation] = useState(false)
   const [locationError, setLocationError] = useState('')
+  const [deletingAccount, setDeletingAccount] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -118,6 +119,34 @@ export default function ProfilePage() {
       console.error('Error saving profile:', error)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Jesi li siguran/na da želiš obrisati svoj račun? Ova radnja je nepovratna i svi tvoji podaci će biti trajno obrisani.'
+    )
+    if (!confirmed) return
+
+    const doubleConfirm = window.confirm(
+      'POSLJEDNJE UPOZORENJE: Račun i svi povezani podaci bit će trajno obrisani. Nastavi?'
+    )
+    if (!doubleConfirm) return
+
+    setDeletingAccount(true)
+    try {
+      const res = await fetch('/api/users/me', { method: 'DELETE' })
+      if (res.ok) {
+        await signOut({ callbackUrl: '/' })
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Greška pri brisanju računa')
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error)
+      alert('Greška pri brisanju računa')
+    } finally {
+      setDeletingAccount(false)
     }
   }
 
@@ -431,12 +460,29 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setEditing(true)}
-                  className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                  Uredi profil
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Uredi profil
+                  </button>
+                </div>
+
+                {/* Delete account section */}
+                <div className="mt-12 pt-6 border-t border-gray-200">
+                  <h3 className="text-lg font-medium text-red-600 mb-2">Opasna zona</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Brisanje računa je trajno i nepovratno. Svi tvoji podaci, uključujući matcheve i statistiku, bit će obrisani.
+                  </p>
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={deletingAccount}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+                  >
+                    {deletingAccount ? 'Brisanje...' : 'Obriši moj račun'}
+                  </button>
+                </div>
               </div>
             )}
           </div>

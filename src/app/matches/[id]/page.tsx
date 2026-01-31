@@ -991,8 +991,6 @@ export default function MatchDetailPage() {
                   // Find the corresponding set result
                   const setResult = match.sets.find(s => s.setNumber === setConfig.setNumber)
                   const hasResult = setResult && (setResult.team1Score > 0 || setResult.team2Score > 0)
-                  const team1Won = setResult && setResult.team1Score > setResult.team2Score
-                  const team2Won = setResult && setResult.team2Score > setResult.team1Score
 
                   // Use actual SetPlayer records if available, otherwise fall back to original schedule
                   // Cast to SetPlayer[] since API response includes user data
@@ -1008,7 +1006,7 @@ export default function MatchDetailPage() {
                   return (
                     <div
                       key={setConfig.setNumber}
-                      className={`border rounded-lg p-3 ${hasResult ? 'bg-white border-gray-300' : 'bg-gray-50 border-gray-200'}`}
+                      className="border rounded-lg p-3 bg-white border-gray-200"
                     >
                       <div className="text-center mb-2 pb-2 border-b">
                         <div className="font-semibold text-gray-700">
@@ -1021,35 +1019,20 @@ export default function MatchDetailPage() {
                         )}
                       </div>
                       <div className="space-y-2">
-                        <div className={`rounded p-2 ${team1Won ? 'bg-green-100 ring-2 ring-green-400' : 'bg-blue-50'}`}>
-                          <div className="flex items-center justify-between">
-                            <div className="text-xs text-blue-600 font-medium">Tim A</div>
-                            {team1Won && (
-                              <span className="text-xs font-bold text-green-600">POBJEDA</span>
-                            )}
-                          </div>
+                        <div className="rounded p-2 bg-blue-50">
+                          <div className="text-xs text-blue-600 font-medium">Tim A</div>
                           <div className="text-sm text-gray-800 font-medium">
                             {team1Players}
                           </div>
                         </div>
                         <div className="text-center text-gray-400 text-xs">vs</div>
-                        <div className={`rounded p-2 ${team2Won ? 'bg-green-100 ring-2 ring-green-400' : 'bg-red-50'}`}>
-                          <div className="flex items-center justify-between">
-                            <div className="text-xs text-red-600 font-medium">Tim B</div>
-                            {team2Won && (
-                              <span className="text-xs font-bold text-green-600">POBJEDA</span>
-                            )}
-                          </div>
+                        <div className="rounded p-2 bg-red-50">
+                          <div className="text-xs text-red-600 font-medium">Tim B</div>
                           <div className="text-sm text-gray-800 font-medium">
                             {team2Players}
                           </div>
                         </div>
                       </div>
-                      {!hasResult && (
-                        <div className="text-center text-xs text-gray-400 mt-2 pt-2 border-t">
-                          Nije odigrano
-                        </div>
-                      )}
                     </div>
                   )
                 })}

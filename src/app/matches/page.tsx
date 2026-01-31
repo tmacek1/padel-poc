@@ -432,8 +432,6 @@ export default function MatchesPage() {
                         {parseRotationSchedule(match)!.map((setConfig) => {
                           const setResult = match.sets.find(s => s.setNumber === setConfig.setNumber)
                           const hasResult = setResult && (setResult.team1Score > 0 || setResult.team2Score > 0)
-                          const team1Won = setResult && setResult.team1Score > setResult.team2Score
-                          const team2Won = setResult && setResult.team2Score > setResult.team1Score
 
                           // Use actual SetPlayer records if available, otherwise fall back to original schedule
                           const setPlayers = setResult?.setPlayers || []
@@ -448,7 +446,7 @@ export default function MatchesPage() {
                           return (
                             <div
                               key={setConfig.setNumber}
-                              className={`rounded-lg p-2 text-center ${hasResult ? 'bg-white border border-indigo-200' : 'bg-indigo-50'}`}
+                              className="rounded-lg p-2 text-center bg-white border border-indigo-200"
                             >
                               <div className="text-xs font-bold text-indigo-800">
                                 Set {setConfig.setNumber}
@@ -458,14 +456,12 @@ export default function MatchesPage() {
                                   {setResult.team1Score} : {setResult.team2Score}
                                 </div>
                               )}
-                              <div className={`text-xs ${team1Won ? 'text-green-700 font-bold' : 'text-gray-700'}`}>
+                              <div className="text-xs text-gray-700">
                                 <span className="font-medium">{team1Players}</span>
-                                {team1Won && ' ✓'}
                               </div>
                               <div className="text-xs text-gray-500 my-0.5">vs</div>
-                              <div className={`text-xs ${team2Won ? 'text-green-700 font-bold' : 'text-gray-700'}`}>
+                              <div className="text-xs text-gray-700">
                                 <span className="font-medium">{team2Players}</span>
-                                {team2Won && ' ✓'}
                               </div>
                             </div>
                           )

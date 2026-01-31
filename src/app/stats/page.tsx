@@ -195,7 +195,7 @@ export default function StatsPage() {
             {stats.regularStats && stats.regularStats.matches > 0 && (
               <div className="bg-white rounded-lg shadow p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                  Regularni mečevi
+                  Regularni matchevi
                   <span className="ml-2 text-sm font-normal text-gray-500">(pobjeda/poraz po meču)</span>
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
@@ -203,7 +203,7 @@ export default function StatsPage() {
                     <div className="text-4xl font-bold text-blue-600">
                       {stats.regularStats.matches}
                     </div>
-                    <div className="text-gray-700">Mečevi</div>
+                    <div className="text-gray-700">Matchevi</div>
                   </div>
                   <div className="text-center">
                     <div className="text-4xl font-bold text-green-600">
@@ -251,7 +251,7 @@ export default function StatsPage() {
             {stats.rotationStats && stats.rotationStats.totalSets > 0 && (
               <div className="bg-white rounded-lg shadow p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                  Rotacijski mečevi
+                  Rotacijski matchevi
                   <span className="ml-2 text-sm font-normal text-gray-500">(pobjeda/poraz po setu)</span>
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -259,19 +259,19 @@ export default function StatsPage() {
                     <div className="text-4xl font-bold text-blue-600">
                       {stats.rotationStats.totalSets}
                     </div>
-                    <div className="text-gray-700">Ukupno setova</div>
+                    <div className="text-gray-700">Ukupno matcheva</div>
                   </div>
                   <div className="text-center">
                     <div className="text-4xl font-bold text-green-600">
                       {stats.rotationStats.setsWon}
                     </div>
-                    <div className="text-gray-700">Dobiveni setovi</div>
+                    <div className="text-gray-700">Dobiveni matchevi</div>
                   </div>
                   <div className="text-center">
                     <div className="text-4xl font-bold text-red-600">
                       {stats.rotationStats.setsLost}
                     </div>
-                    <div className="text-gray-700">Izgubljeni setovi</div>
+                    <div className="text-gray-700">Izgubljeni matchevi</div>
                   </div>
                   <div className="text-center">
                     <div className="text-4xl font-bold text-purple-600">
@@ -299,7 +299,7 @@ export default function StatsPage() {
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
                 Ukupna statistika
-                <span className="ml-2 text-sm font-normal text-gray-500">(svi mečevi zajedno)</span>
+                <span className="ml-2 text-sm font-normal text-gray-500">(svi matchevi zajedno)</span>
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="text-center">
@@ -351,7 +351,7 @@ export default function StatsPage() {
                   <div className="text-3xl font-bold text-blue-600">
                     {stats.setWinRate}%
                   </div>
-                  <div className="text-gray-700">Uspjesnost</div>
+                  <div className="text-gray-700">Uspješnost</div>
                 </div>
               </div>
             </div>
@@ -376,7 +376,7 @@ export default function StatsPage() {
                   <div className="text-3xl font-bold text-blue-600">
                     {stats.gameWinRate}%
                   </div>
-                  <div className="text-gray-700">Uspjesnost</div>
+                  <div className="text-gray-700">Uspješnost</div>
                 </div>
               </div>
             </div>
@@ -384,7 +384,7 @@ export default function StatsPage() {
             {/* Set Number Statistics */}
             {stats.setNumberStats && stats.setNumberStats.length > 0 && (
               <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">Uspjesnost po broju seta</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Uspješnost po broju seta</h2>
                 <p className="text-sm text-gray-600 mb-4">
                   Kako igraš u prvom, drugom, trećem setu...
                 </p>
@@ -414,7 +414,7 @@ export default function StatsPage() {
               (stats.courtSideStats.left.setsPlayed > 0 ||
                 stats.courtSideStats.right.setsPlayed > 0) && (
                 <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-6">Uspjesnost po strani terena</h2>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-6">Uspješnost po strani terena</h2>
                   <p className="text-sm text-gray-600 mb-4">
                     Usporedi kako igraš na lijevoj (reves) i desnoj (drive) strani
                   </p>

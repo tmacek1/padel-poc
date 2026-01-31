@@ -62,7 +62,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching matches:', error)
     return NextResponse.json(
-      { error: 'Greška pri dohvaćanju mečeva' },
+      { error: 'Greška pri dohvaćanju matcheva' },
       { status: 500 }
     )
   }

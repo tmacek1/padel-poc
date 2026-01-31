@@ -483,7 +483,10 @@ export default function MatchesPage() {
 
                   {/* Rotation Schedule with Results - Collapsible */}
                   {parseRotationSchedule(match) && (
-                    <details className="mt-4 pt-4 border-t border-gray-200">
+                    <details
+                      className="mt-4 pt-4 border-t border-gray-200"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <summary className="text-sm font-medium text-indigo-700 cursor-pointer hover:text-indigo-900">
                         Prikaži raspored rotacije parova
                       </summary>

@@ -1281,16 +1281,6 @@ export default function MatchDetailPage() {
                             />
                           </div>
 
-                          {/* Status indicator */}
-                          {(set.team1Score > 0 || set.team2Score > 0) && (
-                            <div className="text-center mt-2">
-                              {isFinishedSetScore(set.team1Score, set.team2Score) ? (
-                                <span className="text-xs text-green-600 font-medium">Završen</span>
-                              ) : (
-                                <span className="text-xs text-orange-500 font-medium">U tijeku</span>
-                              )}
-                            </div>
-                          )}
                           {/* Tiebreak input for 7-6 scores */}
                           {isTiebreakScore(set.team1Score, set.team2Score) && (
                             <div className="mt-2 pt-2 border-t border-gray-200">

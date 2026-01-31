@@ -84,6 +84,7 @@ export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'scheduled' | 'completed'>('all')
+  const [matchType, setMatchType] = useState<'all' | 'regular' | 'rotation' | 'league'>('all')
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all')
@@ -104,7 +105,7 @@ export default function MatchesPage() {
   // Reset to page 1 when filter or page size changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [filter, pageSize, selectedYear, selectedMonth])
+  }, [filter, matchType, pageSize, selectedYear, selectedMonth])
 
   // Reset month when year changes
   useEffect(() => {
@@ -129,8 +130,19 @@ export default function MatchesPage() {
   const { years: availableYears, monthsByYear } = getAvailableYearsAndMonths(matches)
 
   const filteredMatches = matches.filter((match) => {
+    // Only show matches where logged-in user participated
+    const isParticipant = match.players.some(p => p.user?.id === session?.user?.id)
+    if (!isParticipant) return false
+
     // Status filter
     if (filter !== 'all' && match.status !== filter) return false
+
+    // Match type filter
+    if (matchType !== 'all') {
+      if (matchType === 'league' && !match.leagueId) return false
+      if (matchType === 'rotation' && (!match.pairRotation || match.leagueId)) return false
+      if (matchType === 'regular' && (match.pairRotation || match.leagueId)) return false
+    }
 
     // Year filter
     if (selectedYear !== 'all') {
@@ -220,37 +232,84 @@ export default function MatchesPage() {
 
         {/* Filters and Page Size */}
         <div className="flex flex-wrap gap-4 mb-6 items-center justify-between">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-medium ${
-                filter === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
-              }`}
-            >
-              Svi
-            </button>
-            <button
-              onClick={() => setFilter('scheduled')}
-              className={`px-4 py-2 rounded-lg font-medium ${
-                filter === 'scheduled'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
-              }`}
-            >
-              Zakazani
-            </button>
-            <button
-              onClick={() => setFilter('completed')}
-              className={`px-4 py-2 rounded-lg font-medium ${
-                filter === 'completed'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
-              }`}
-            >
-              Završeni
-            </button>
+          <div className="flex flex-wrap gap-2">
+            {/* Status filter */}
+            <div className="flex gap-1">
+              <button
+                onClick={() => setFilter('all')}
+                className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                  filter === 'all'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                }`}
+              >
+                Svi
+              </button>
+              <button
+                onClick={() => setFilter('scheduled')}
+                className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                  filter === 'scheduled'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                }`}
+              >
+                Zakazani
+              </button>
+              <button
+                onClick={() => setFilter('completed')}
+                className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                  filter === 'completed'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                }`}
+              >
+                Završeni
+              </button>
+            </div>
+
+            {/* Match type filter */}
+            <div className="flex gap-1 ml-2 pl-2 border-l border-gray-300">
+              <button
+                onClick={() => setMatchType('all')}
+                className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                  matchType === 'all'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                }`}
+              >
+                Sve vrste
+              </button>
+              <button
+                onClick={() => setMatchType('regular')}
+                className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                  matchType === 'regular'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                }`}
+              >
+                Regularni
+              </button>
+              <button
+                onClick={() => setMatchType('rotation')}
+                className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                  matchType === 'rotation'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                }`}
+              >
+                Rotacija
+              </button>
+              <button
+                onClick={() => setMatchType('league')}
+                className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                  matchType === 'league'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                }`}
+              >
+                Liga
+              </button>
+            </div>
           </div>
 
           {/* Year/Month filters */}
@@ -422,13 +481,13 @@ export default function MatchesPage() {
                     </div>
                   </div>
 
-                  {/* Rotation Schedule with Results */}
+                  {/* Rotation Schedule with Results - Collapsible */}
                   {parseRotationSchedule(match) && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <div className="text-sm font-medium text-indigo-700 mb-2">
-                        Raspored rotacije parova:
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                    <details className="mt-4 pt-4 border-t border-gray-200">
+                      <summary className="text-sm font-medium text-indigo-700 cursor-pointer hover:text-indigo-900">
+                        Prikaži raspored rotacije parova
+                      </summary>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-2">
                         {parseRotationSchedule(match)!.map((setConfig) => {
                           const setResult = match.sets.find(s => s.setNumber === setConfig.setNumber)
                           const hasResult = setResult && (setResult.team1Score > 0 || setResult.team2Score > 0)
@@ -467,7 +526,7 @@ export default function MatchesPage() {
                           )
                         })}
                       </div>
-                    </div>
+                    </details>
                   )}
                 </div>
               </Link>

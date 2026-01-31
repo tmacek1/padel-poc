@@ -26,6 +26,21 @@ interface CourtSideStat {
   winRate: number
 }
 
+interface RegularStats {
+  matches: number
+  wins: number
+  losses: number
+  draws: number
+  winRate: number
+}
+
+interface RotationStats {
+  setsWon: number
+  setsLost: number
+  totalSets: number
+  winRate: number
+}
+
 interface Stats {
   userId: string
   totalMatches: number
@@ -33,6 +48,8 @@ interface Stats {
   losses: number
   draws: number
   winRate: number
+  regularStats?: RegularStats
+  rotationStats?: RotationStats
   totalSetsWon: number
   totalSetsLost: number
   setWinRate: number
@@ -174,61 +191,143 @@ export default function StatsPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Overview */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Pregled</h2>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-blue-600">
-                    {stats.totalMatches}
+            {/* Regular Matches Stats */}
+            {stats.regularStats && stats.regularStats.matches > 0 && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  Regularni mečevi
+                  <span className="ml-2 text-sm font-normal text-gray-500">(pobjeda/poraz po meču)</span>
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-blue-600">
+                      {stats.regularStats.matches}
+                    </div>
+                    <div className="text-gray-700">Mečevi</div>
                   </div>
-                  <div className="text-gray-700">Ukupno matcheva</div>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-green-600">
+                      {stats.regularStats.wins}
+                    </div>
+                    <div className="text-gray-700">Pobjede</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-red-600">
+                      {stats.regularStats.losses}
+                    </div>
+                    <div className="text-gray-700">Porazi</div>
+                  </div>
+                  {stats.regularStats.draws > 0 && (
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-yellow-600">
+                        {stats.regularStats.draws}
+                      </div>
+                      <div className="text-gray-700">Neriješeno</div>
+                    </div>
+                  )}
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-purple-600">
+                      {stats.regularStats.winRate}%
+                    </div>
+                    <div className="text-gray-700">Uspješnost</div>
+                  </div>
                 </div>
+                {/* Win Rate Visual for Regular */}
+                <div className="mt-4">
+                  <div className="relative h-6 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="absolute left-0 top-0 h-full bg-green-500 transition-all duration-500"
+                      style={{ width: `${stats.regularStats.winRate}%` }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold">
+                      {stats.regularStats.winRate}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Rotation Matches Stats */}
+            {stats.rotationStats && stats.rotationStats.totalSets > 0 && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  Rotacijski mečevi
+                  <span className="ml-2 text-sm font-normal text-gray-500">(pobjeda/poraz po setu)</span>
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-blue-600">
+                      {stats.rotationStats.totalSets}
+                    </div>
+                    <div className="text-gray-700">Ukupno setova</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-green-600">
+                      {stats.rotationStats.setsWon}
+                    </div>
+                    <div className="text-gray-700">Dobiveni setovi</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-red-600">
+                      {stats.rotationStats.setsLost}
+                    </div>
+                    <div className="text-gray-700">Izgubljeni setovi</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-purple-600">
+                      {stats.rotationStats.winRate}%
+                    </div>
+                    <div className="text-gray-700">Uspješnost</div>
+                  </div>
+                </div>
+                {/* Win Rate Visual for Rotation */}
+                <div className="mt-4">
+                  <div className="relative h-6 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="absolute left-0 top-0 h-full bg-green-500 transition-all duration-500"
+                      style={{ width: `${stats.rotationStats.winRate}%` }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold">
+                      {stats.rotationStats.winRate}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Combined Overview */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                Ukupna statistika
+                <span className="ml-2 text-sm font-normal text-gray-500">(svi mečevi zajedno)</span>
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-green-600">
+                  <div className="text-3xl font-bold text-green-600">
                     {stats.wins}
                   </div>
                   <div className="text-gray-700">Pobjede</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-red-600">
+                  <div className="text-3xl font-bold text-red-600">
                     {stats.losses}
                   </div>
                   <div className="text-gray-700">Porazi</div>
                 </div>
                 {stats.draws > 0 && (
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-yellow-600">
+                    <div className="text-3xl font-bold text-yellow-600">
                       {stats.draws}
                     </div>
                     <div className="text-gray-700">Neriješeno</div>
                   </div>
                 )}
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-purple-600">
+                  <div className="text-3xl font-bold text-purple-600">
                     {stats.winRate}%
                   </div>
                   <div className="text-gray-700">Uspješnost</div>
                 </div>
-              </div>
-            </div>
-
-            {/* Win Rate Visual */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Postotak pobjeda</h2>
-              <div className="relative h-8 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="absolute left-0 top-0 h-full bg-green-500 transition-all duration-500"
-                  style={{ width: `${stats.winRate}%` }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center text-sm font-semibold">
-                  {stats.winRate}%
-                </div>
-              </div>
-              <div className="flex justify-between mt-2 text-sm text-gray-700">
-                <span>{stats.wins} pobjeda</span>
-                {stats.draws > 0 && <span>{stats.draws} neriješeno</span>}
-                <span>{stats.losses} poraza</span>
               </div>
             </div>
 

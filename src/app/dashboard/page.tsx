@@ -21,7 +21,21 @@ interface Stats {
   totalMatches: number
   wins: number
   losses: number
+  draws: number
   winRate: number
+  regularStats?: {
+    matches: number
+    wins: number
+    losses: number
+    draws: number
+    winRate: number
+  }
+  rotationStats?: {
+    setsWon: number
+    setsLost: number
+    totalSets: number
+    winRate: number
+  }
 }
 
 export default function DashboardPage() {

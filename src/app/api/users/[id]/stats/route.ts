@@ -36,9 +36,13 @@ export async function GET(
       },
     })
 
-    let wins = 0
-    let losses = 0
-    let draws = 0
+    // Separate stats for regular and rotation matches
+    let regularWins = 0
+    let regularLosses = 0
+    let regularDraws = 0
+    let rotationSetsWon = 0
+    let rotationSetsLost = 0
+
     let totalSetsWon = 0
     let totalSetsLost = 0
     let totalGamesWon = 0
@@ -117,25 +121,38 @@ export async function GET(
       totalGamesWon += userGamesWon
       totalGamesLost += userGamesLost
 
-      // Determine wins/losses based on match type
+      // Determine wins/losses based on match type (track separately)
       if (match.pairRotation) {
-        // Rotation match: each set won = win, each set lost = loss
-        wins += userSetsWon
-        losses += userSetsLost
+        // Rotation match: track sets won/lost
+        rotationSetsWon += userSetsWon
+        rotationSetsLost += userSetsLost
       } else {
         // Regular match: win/loss based on overall match result
         if (userSetsWon > userSetsLost) {
-          wins++
+          regularWins++
         } else if (userSetsLost > userSetsWon) {
-          losses++
+          regularLosses++
         } else {
-          draws++ // Match ended in a draw (e.g., 1-1 in sets)
+          regularDraws++ // Match ended in a draw (e.g., 1-1 in sets)
         }
       }
     }
 
+    // Calculate combined stats (for backwards compatibility)
+    const wins = regularWins + rotationSetsWon
+    const losses = regularLosses + rotationSetsLost
+    const draws = regularDraws
+
     const totalMatches = wins + losses + draws
     const winRate = totalMatches > 0 ? (wins / totalMatches) * 100 : 0
+
+    // Regular match stats
+    const totalRegularMatches = regularWins + regularLosses + regularDraws
+    const regularWinRate = totalRegularMatches > 0 ? (regularWins / totalRegularMatches) * 100 : 0
+
+    // Rotation match stats
+    const totalRotationSets = rotationSetsWon + rotationSetsLost
+    const rotationWinRate = totalRotationSets > 0 ? (rotationSetsWon / totalRotationSets) * 100 : 0
     const totalSets = totalSetsWon + totalSetsLost
     const setWinRate = totalSets > 0 ? (totalSetsWon / totalSets) * 100 : 0
     const totalGames = totalGamesWon + totalGamesLost
@@ -174,11 +191,28 @@ export async function GET(
 
     return NextResponse.json({
       userId: id,
+      // Combined stats (for backwards compatibility)
       totalMatches,
       wins,
       losses,
       draws,
       winRate: Math.round(winRate * 10) / 10,
+      // Regular match stats (separate)
+      regularStats: {
+        matches: totalRegularMatches,
+        wins: regularWins,
+        losses: regularLosses,
+        draws: regularDraws,
+        winRate: Math.round(regularWinRate * 10) / 10,
+      },
+      // Rotation match stats (separate - counted by sets)
+      rotationStats: {
+        setsWon: rotationSetsWon,
+        setsLost: rotationSetsLost,
+        totalSets: totalRotationSets,
+        winRate: Math.round(rotationWinRate * 10) / 10,
+      },
+      // Set/game stats
       totalSetsWon,
       totalSetsLost,
       setWinRate: Math.round(setWinRate * 10) / 10,

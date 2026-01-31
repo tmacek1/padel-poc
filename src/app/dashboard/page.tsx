@@ -126,6 +126,11 @@ export default function DashboardPage() {
             <div className="text-3xl font-bold text-blue-600">
               {stats?.totalMatches || 0}
             </div>
+            {(stats?.regularStats || stats?.rotationStats) && (
+              <div className="text-xs text-gray-500 mt-1">
+                {stats?.regularStats?.matches || 0} regularnih + {stats?.rotationStats?.totalSets || 0} rotacijskih
+              </div>
+            )}
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-sm text-gray-700 font-medium">Pobjede</div>

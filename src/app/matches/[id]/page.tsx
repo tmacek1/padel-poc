@@ -158,6 +158,20 @@ export default function MatchDetailPage() {
         setMatch(data)
         setEditStatus(data.status)
 
+        // Parse rotation schedule if available
+        let rotationSchedule: PairRotationSchedule[] | null = null
+        if (data.pairRotation && data.pairRotationSchedule) {
+          if (Array.isArray(data.pairRotationSchedule)) {
+            rotationSchedule = data.pairRotationSchedule
+          } else if (typeof data.pairRotationSchedule === 'string') {
+            try {
+              rotationSchedule = JSON.parse(data.pairRotationSchedule)
+            } catch {
+              // Ignore parse errors
+            }
+          }
+        }
+
         // Initialize edit sets with setPlayers data
         if (data.sets.length > 0) {
           const setsWithPlayers = data.sets.map((set: MatchSet) => {
@@ -171,6 +185,18 @@ export default function MatchDetailPage() {
                 })),
               }
             }
+            // For rotation matches, use the rotation schedule
+            if (rotationSchedule) {
+              const setConfig = rotationSchedule.find(s => s.setNumber === set.setNumber)
+              if (setConfig) {
+                const team1Players = setConfig.team1.map(p => ({ userId: p.odUserId, team: 1 }))
+                const team2Players = setConfig.team2.map(p => ({ userId: p.odUserId, team: 2 }))
+                return {
+                  ...set,
+                  setPlayers: [...team1Players, ...team2Players],
+                }
+              }
+            }
             // Otherwise use original match players
             return {
               ...set,
@@ -181,10 +207,22 @@ export default function MatchDetailPage() {
           })
           setEditSets(setsWithPlayers)
         } else {
-          // Initialize with default players
-          const defaultPlayers = data.players
-            .filter((p: { user: { id: string } | null }) => p.user)
-            .map((p: { user: { id: string }; team: number }) => ({ userId: p.user.id, team: p.team }))
+          // Initialize with default players - use rotation schedule for first set if available
+          let defaultPlayers: EditSetPlayer[]
+
+          if (rotationSchedule && rotationSchedule[0]) {
+            // Use rotation schedule for first set
+            const setConfig = rotationSchedule[0]
+            defaultPlayers = [
+              ...setConfig.team1.map(p => ({ userId: p.odUserId, team: 1 })),
+              ...setConfig.team2.map(p => ({ userId: p.odUserId, team: 2 })),
+            ]
+          } else {
+            // Use original match players
+            defaultPlayers = data.players
+              .filter((p: { user: { id: string } | null }) => p.user)
+              .map((p: { user: { id: string }; team: number }) => ({ userId: p.user.id, team: p.team }))
+          }
           setEditSets([{ setNumber: 1, team1Score: 0, team2Score: 0, setPlayers: defaultPlayers }])
         }
         // Format date for datetime-local input (lokalno vrijeme)

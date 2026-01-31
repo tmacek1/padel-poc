@@ -14,16 +14,25 @@ export interface PairConfig {
  * 2. AC vs BD
  * 3. AD vs BC
  *
- * Za 5 setova, ponavljamo kombinacije.
+ * Za 5 setova, koristimo round-robin ciklus: nakon što se iscrpe sve 3
+ * kombinacije, ciklus kreće ispočetka (set 4 = kombinacija 1, set 5 = kombinacija 2).
  */
 export function generatePairRotationSchedule(): PairConfig[] {
-  const combinations: PairConfig[] = [
-    { setNumber: 1, team1: [0, 1], team2: [2, 3] }, // AB vs CD
-    { setNumber: 2, team1: [0, 2], team2: [1, 3] }, // AC vs BD
-    { setNumber: 3, team1: [0, 3], team2: [1, 2] }, // AD vs BC
-    { setNumber: 4, team1: [1, 2], team2: [0, 3] }, // BC vs AD (ponavljanje)
-    { setNumber: 5, team1: [1, 3], team2: [0, 2] }, // BD vs AC (ponavljanje)
+  const baseCombinations: [team1: [number, number], team2: [number, number]][] = [
+    [[0, 1], [2, 3]], // AB vs CD
+    [[0, 2], [1, 3]], // AC vs BD
+    [[0, 3], [1, 2]], // AD vs BC
   ]
+
+  const combinations: PairConfig[] = []
+  for (let i = 0; i < 5; i++) {
+    const combo = baseCombinations[i % 3]
+    combinations.push({
+      setNumber: i + 1,
+      team1: combo[0],
+      team2: combo[1],
+    })
+  }
 
   return combinations
 }
@@ -46,30 +55,3 @@ export function mapPlayersToSchedule(
   }))
 }
 
-/**
- * Generira nasumični raspored za 5 setova
- */
-export function generateRandomPairRotation(): PairConfig[] {
-  const baseConfigs: [number, number][][] = [
-    [[0, 1], [2, 3]], // AB vs CD
-    [[0, 2], [1, 3]], // AC vs BD
-    [[0, 3], [1, 2]], // AD vs BC
-  ]
-
-  // Shuffle the combinations
-  const shuffled = [...baseConfigs].sort(() => Math.random() - 0.5)
-
-  // Create 5 sets by repeating and shuffling
-  const result: PairConfig[] = []
-
-  for (let i = 0; i < 5; i++) {
-    const config = shuffled[i % 3]
-    result.push({
-      setNumber: i + 1,
-      team1: config[0] as [number, number],
-      team2: config[1] as [number, number],
-    })
-  }
-
-  return result
-}

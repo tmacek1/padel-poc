@@ -957,7 +957,8 @@ export default function MatchDetailPage() {
                   const team2Won = setResult && setResult.team2Score > setResult.team1Score
 
                   // Use actual SetPlayer records if available, otherwise fall back to original schedule
-                  const setPlayers = setResult?.setPlayers || []
+                  // Cast to SetPlayer[] since API response includes user data
+                  const setPlayers = (setResult?.setPlayers || []) as SetPlayer[]
                   const hasSetPlayers = setPlayers.length > 0
                   const team1Players = hasSetPlayers
                     ? setPlayers.filter(sp => sp.team === 1).map(sp => sp.user?.name?.split(' ')[0] || '?').join(' / ')

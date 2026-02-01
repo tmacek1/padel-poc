@@ -130,9 +130,10 @@ export default function MatchesPage() {
   const { years: availableYears, monthsByYear } = getAvailableYearsAndMonths(matches)
 
   const filteredMatches = matches.filter((match) => {
-    // Only show matches where logged-in user participated
+    // Admin i superadmin vide sve matcheve, ostali samo svoje
+    const isAdmin = session?.user?.isAdmin || session?.user?.isSuperAdmin
     const isParticipant = match.players.some(p => p.user?.id === session?.user?.id)
-    if (!isParticipant) return false
+    if (!isAdmin && !isParticipant) return false
 
     // Status filter
     if (filter !== 'all' && match.status !== filter) return false

@@ -1223,6 +1223,21 @@ export default function MatchDetailPage() {
                           {/* Set Header */}
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-bold text-gray-700">Set {set.setNumber}</span>
+                            {editSets.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  removeSet(idx)
+                                }}
+                                className="text-red-400 hover:text-red-600 p-0.5"
+                                title="Ukloni set"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            )}
                           </div>
 
                           {/* Score Inputs - Vertical */}

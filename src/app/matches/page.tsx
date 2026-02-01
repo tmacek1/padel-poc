@@ -37,6 +37,8 @@ interface Match {
     setNumber: number
     team1Score: number
     team2Score: number
+    team1Tiebreak?: number | null
+    team2Tiebreak?: number | null
     setPlayers?: {
       team: number
       user: { id: string; name: string } | null
@@ -535,6 +537,11 @@ export default function MatchesPage() {
                               {hasResult && (
                                 <div className="text-sm font-bold text-gray-900 mb-1">
                                   {setResult.team1Score} : {setResult.team2Score}
+                                  {setResult.team1Tiebreak != null && setResult.team2Tiebreak != null && (
+                                    <span className="text-xs font-normal text-gray-500 ml-1">
+                                      ({setResult.team1Tiebreak}-{setResult.team2Tiebreak})
+                                    </span>
+                                  )}
                                 </div>
                               )}
                               <div className="text-xs text-gray-700">

@@ -298,8 +298,13 @@ export default function DashboardPage() {
                       <td className="px-6 py-4 text-sm font-bold text-gray-700">
                         {idx + 1}.
                       </td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                        {player.name}
+                      <td className="px-6 py-4 text-sm font-medium">
+                        <Link
+                          href={`/stats?userId=${player.userId}`}
+                          className="text-blue-700 hover:text-blue-900 hover:underline"
+                        >
+                          {player.name}
+                        </Link>
                         {player.userId === session?.user?.id && (
                           <span className="ml-2 text-xs text-blue-600 font-normal">(ti)</span>
                         )}

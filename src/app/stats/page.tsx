@@ -1,7 +1,7 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import PlayerSearch from '@/components/PlayerSearch'
@@ -66,6 +66,7 @@ interface Stats {
 export default function StatsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [users, setUsers] = useState<User[]>([])
@@ -80,13 +81,28 @@ export default function StatsPage() {
 
   // Use session.user.id as dependency to avoid re-fetching when session object changes
   const userId = session?.user?.id
+  const queryUserId = searchParams.get('userId')
 
   useEffect(() => {
     if (userId) {
-      fetchStats(userId)
       fetchUsers()
+      if (queryUserId && queryUserId !== userId) {
+        // Load stats for the player from URL param
+        setViewingUserId(queryUserId)
+        fetchStats(queryUserId)
+      } else {
+        fetchStats(userId)
+      }
     }
-  }, [userId])
+  }, [userId, queryUserId])
+
+  // Set viewing user name once users are loaded and we have a queryUserId
+  useEffect(() => {
+    if (queryUserId && users.length > 0 && viewingUserId === queryUserId) {
+      const user = users.find(u => u.id === queryUserId)
+      setViewingUserName(user?.name || user?.email || '')
+    }
+  }, [users, queryUserId, viewingUserId])
 
   const fetchUsers = async () => {
     try {

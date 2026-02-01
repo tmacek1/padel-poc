@@ -38,12 +38,22 @@ interface Stats {
   }
 }
 
+interface RankedPlayer {
+  userId: string
+  name: string
+  wins: number
+  losses: number
+  totalMatches: number
+  winRate: number
+}
+
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([])
   const [recentMatches, setRecentMatches] = useState<Match[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
+  const [rankings, setRankings] = useState<RankedPlayer[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -85,6 +95,13 @@ export default function DashboardPage() {
       const statsRes = await fetch(`/api/users/${session?.user?.id}/stats`)
       const statsData = await statsRes.json()
       setStats(statsData)
+
+      // Fetch rankings
+      const rankingsRes = await fetch('/api/rankings')
+      const rankingsData = await rankingsRes.json()
+      if (Array.isArray(rankingsData)) {
+        setRankings(rankingsData)
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
     } finally {
@@ -251,6 +268,69 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Player Rankings */}
+        {rankings.length > 0 && (
+          <div className="bg-white rounded-lg shadow mt-8">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-semibold text-gray-900">Top 10 igraca</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b bg-gray-50">
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">#</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Igrac</th>
+                    <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase">Pobjede</th>
+                    <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase">Porazi</th>
+                    <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase">Ukupno</th>
+                    <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase">Uspjesnost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rankings.map((player, idx) => (
+                    <tr
+                      key={player.userId}
+                      className={`border-b last:border-0 ${
+                        player.userId === session?.user?.id ? 'bg-blue-50' : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      <td className="px-6 py-4 text-sm font-bold text-gray-700">
+                        {idx + 1}.
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                        {player.name}
+                        {player.userId === session?.user?.id && (
+                          <span className="ml-2 text-xs text-blue-600 font-normal">(ti)</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-center text-green-700 font-semibold">
+                        {player.wins}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-center text-red-700 font-semibold">
+                        {player.losses}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-center text-gray-700">
+                        {player.totalMatches}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${
+                          player.winRate >= 60
+                            ? 'bg-green-100 text-green-800'
+                            : player.winRate >= 40
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {player.winRate}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

@@ -89,6 +89,7 @@ export default function MatchesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all')
   const [selectedMonth, setSelectedMonth] = useState<number | 'all'>('all')
+  const [onlyMine, setOnlyMine] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -105,7 +106,7 @@ export default function MatchesPage() {
   // Reset to page 1 when filter or page size changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [filter, matchType, pageSize, selectedYear, selectedMonth])
+  }, [filter, matchType, pageSize, selectedYear, selectedMonth, onlyMine])
 
   // Reset month when year changes
   useEffect(() => {
@@ -134,6 +135,9 @@ export default function MatchesPage() {
     const isAdmin = session?.user?.isAdmin || session?.user?.isSuperAdmin
     const isParticipant = match.players.some(p => p.user?.id === session?.user?.id)
     if (!isAdmin && !isParticipant) return false
+
+    // Filter "Samo moji"
+    if (onlyMine && !isParticipant) return false
 
     // Status filter
     if (filter !== 'all' && match.status !== filter) return false
@@ -309,6 +313,20 @@ export default function MatchesPage() {
                 }`}
               >
                 Liga
+              </button>
+            </div>
+
+            {/* Samo moji filter */}
+            <div className="ml-2 pl-2 border-l border-gray-300">
+              <button
+                onClick={() => setOnlyMine(!onlyMine)}
+                className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                  onlyMine
+                    ? 'bg-green-600 text-white'
+                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                }`}
+              >
+                Samo moji
               </button>
             </div>
           </div>

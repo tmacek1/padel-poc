@@ -1015,6 +1015,11 @@ export default function MatchDetailPage() {
                         {hasResult && (
                           <div className="text-lg font-bold text-gray-900">
                             {setResult.team1Score} : {setResult.team2Score}
+                            {setResult.team1Tiebreak != null && setResult.team2Tiebreak != null && (
+                              <span className="text-xs font-normal text-gray-500 ml-1">
+                                ({setResult.team1Tiebreak}-{setResult.team2Tiebreak})
+                              </span>
+                            )}
                           </div>
                         )}
                       </div>
@@ -1089,7 +1094,7 @@ export default function MatchDetailPage() {
                   return (
                     <div key={set.id || set.setNumber} className="flex items-center justify-between border-b pb-3 last:border-0">
                       <div className="font-medium text-gray-800">
-                        Set {set.setNumber} ({set.team1Score} - {set.team2Score})
+                        Set {set.setNumber} ({set.team1Score} - {set.team2Score}{set.team1Tiebreak != null && set.team2Tiebreak != null ? `, tb ${set.team1Tiebreak}-${set.team2Tiebreak}` : ''})
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -1218,26 +1223,6 @@ export default function MatchDetailPage() {
                           {/* Set Header */}
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-bold text-gray-700">Set {set.setNumber}</span>
-                            <div className="flex items-center gap-1">
-                              {isFinishedSetScore(set.team1Score, set.team2Score) && (
-                                <span className="text-xs text-green-600">✓</span>
-                              )}
-                              {editSets.length > 1 && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    removeSet(idx)
-                                  }}
-                                  className="text-red-400 hover:text-red-600 p-0.5"
-                                  title="Ukloni set"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              )}
-                            </div>
                           </div>
 
                           {/* Score Inputs - Vertical */}

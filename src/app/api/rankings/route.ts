@@ -42,6 +42,7 @@ export async function GET() {
         const defaultTeam = player.team
         let userSetsWon = 0
         let userSetsLost = 0
+        let userSetsDrawn = 0
 
         for (const set of match.sets) {
           const setPlayerRecord = set.setPlayers?.find(sp => sp.userId === player.userId)
@@ -53,14 +54,17 @@ export async function GET() {
           const lost =
             (userTeam === 1 && set.team2Score > set.team1Score) ||
             (userTeam === 2 && set.team1Score > set.team2Score)
+          const drawn = set.team1Score === set.team2Score
 
           if (won) userSetsWon++
-          if (lost) userSetsLost++
+          else if (lost) userSetsLost++
+          else if (drawn) userSetsDrawn++
         }
 
         if (match.pairRotation) {
           userStats[player.userId].wins += userSetsWon
           userStats[player.userId].losses += userSetsLost
+          userStats[player.userId].draws += userSetsDrawn
         } else {
           if (userSetsWon > userSetsLost) {
             userStats[player.userId].wins++

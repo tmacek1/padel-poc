@@ -42,6 +42,7 @@ export async function GET(
     let regularDraws = 0
     let rotationSetsWon = 0
     let rotationSetsLost = 0
+    let rotationSetsDrawn = 0
 
     let totalSetsWon = 0
     let totalSetsLost = 0
@@ -49,7 +50,7 @@ export async function GET(
     let totalGamesLost = 0
 
     // Stats by set number (1st set, 2nd set, 3rd set, etc.)
-    const setStatsByNumber: Record<number, { won: number; lost: number }> = {}
+    const setStatsByNumber: Record<number, { won: number; lost: number; drawn: number }> = {}
 
     // Stats by court side
     const courtSideStats = {
@@ -67,6 +68,7 @@ export async function GET(
       // Calculate set scores
       let userSetsWon = 0
       let userSetsLost = 0
+      let userSetsDrawn = 0
       let userGamesWon = 0
       let userGamesLost = 0
 
@@ -92,12 +94,15 @@ export async function GET(
 
         // Track by set number
         if (!setStatsByNumber[set.setNumber]) {
-          setStatsByNumber[set.setNumber] = { won: 0, lost: 0 }
+          setStatsByNumber[set.setNumber] = { won: 0, lost: 0, drawn: 0 }
         }
         if (userWonSet) {
           setStatsByNumber[set.setNumber].won++
           userSetsWon++
-        } else if (set.team1Score !== set.team2Score) {
+        } else if (set.team1Score === set.team2Score) {
+          setStatsByNumber[set.setNumber].drawn++
+          userSetsDrawn++
+        } else {
           setStatsByNumber[set.setNumber].lost++
           userSetsLost++
         }
@@ -123,9 +128,10 @@ export async function GET(
 
       // Determine wins/losses based on match type (track separately)
       if (match.pairRotation) {
-        // Rotation match: track sets won/lost
+        // Rotation match: track sets won/lost/drawn
         rotationSetsWon += userSetsWon
         rotationSetsLost += userSetsLost
+        rotationSetsDrawn += userSetsDrawn
       } else {
         // Regular match: win/loss based on overall match result
         if (userSetsWon > userSetsLost) {
@@ -141,7 +147,7 @@ export async function GET(
     // Calculate combined stats (for backwards compatibility)
     const wins = regularWins + rotationSetsWon
     const losses = regularLosses + rotationSetsLost
-    const draws = regularDraws
+    const draws = regularDraws + rotationSetsDrawn
 
     const totalMatches = wins + losses + draws
     const winRate = totalMatches > 0 ? (wins / totalMatches) * 100 : 0
@@ -151,7 +157,7 @@ export async function GET(
     const regularWinRate = totalRegularMatches > 0 ? (regularWins / totalRegularMatches) * 100 : 0
 
     // Rotation match stats
-    const totalRotationSets = rotationSetsWon + rotationSetsLost
+    const totalRotationSets = rotationSetsWon + rotationSetsLost + rotationSetsDrawn
     const rotationWinRate = totalRotationSets > 0 ? (rotationSetsWon / totalRotationSets) * 100 : 0
     const totalSets = totalSetsWon + totalSetsLost
     const setWinRate = totalSets > 0 ? (totalSetsWon / totalSets) * 100 : 0
@@ -164,9 +170,10 @@ export async function GET(
         setNumber: parseInt(setNum),
         won: stats.won,
         lost: stats.lost,
-        total: stats.won + stats.lost,
-        winRate: stats.won + stats.lost > 0
-          ? Math.round((stats.won / (stats.won + stats.lost)) * 1000) / 10
+        drawn: stats.drawn,
+        total: stats.won + stats.lost + stats.drawn,
+        winRate: stats.won + stats.lost + stats.drawn > 0
+          ? Math.round((stats.won / (stats.won + stats.lost + stats.drawn)) * 1000) / 10
           : 0,
       }))
       .sort((a, b) => a.setNumber - b.setNumber)
@@ -209,6 +216,7 @@ export async function GET(
       rotationStats: {
         setsWon: rotationSetsWon,
         setsLost: rotationSetsLost,
+        setsDrawn: rotationSetsDrawn,
         totalSets: totalRotationSets,
         winRate: Math.round(rotationWinRate * 10) / 10,
       },

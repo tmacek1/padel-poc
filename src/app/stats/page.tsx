@@ -37,6 +37,7 @@ interface RegularStats {
 interface RotationStats {
   setsWon: number
   setsLost: number
+  setsDrawn: number
   totalSets: number
   winRate: number
 }
@@ -283,27 +284,35 @@ function StatsPageContent() {
               <div className="bg-white rounded-lg shadow p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">
                   Rotacijski matchevi
-                  <span className="ml-2 text-sm font-normal text-gray-500">(pobjeda/poraz po setu)</span>
+                  <span className="ml-2 text-sm font-normal text-gray-500">(pobjeda/poraz/neriješeno po setu)</span>
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
                   <div className="text-center">
                     <div className="text-4xl font-bold text-blue-600">
                       {stats.rotationStats.totalSets}
                     </div>
-                    <div className="text-gray-700">Ukupno matcheva</div>
+                    <div className="text-gray-700">Ukupno setova</div>
                   </div>
                   <div className="text-center">
                     <div className="text-4xl font-bold text-green-600">
                       {stats.rotationStats.setsWon}
                     </div>
-                    <div className="text-gray-700">Dobiveni matchevi</div>
+                    <div className="text-gray-700">Dobiveni</div>
                   </div>
                   <div className="text-center">
                     <div className="text-4xl font-bold text-red-600">
                       {stats.rotationStats.setsLost}
                     </div>
-                    <div className="text-gray-700">Izgubljeni matchevi</div>
+                    <div className="text-gray-700">Izgubljeni</div>
                   </div>
+                  {stats.rotationStats.setsDrawn > 0 && (
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-yellow-600">
+                        {stats.rotationStats.setsDrawn}
+                      </div>
+                      <div className="text-gray-700">Neriješeni</div>
+                    </div>
+                  )}
                   <div className="text-center">
                     <div className="text-4xl font-bold text-purple-600">
                       {stats.rotationStats.winRate}%

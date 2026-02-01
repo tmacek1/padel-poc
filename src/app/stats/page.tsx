@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import PlayerSearch from '@/components/PlayerSearch'
 
@@ -64,6 +64,21 @@ interface Stats {
 }
 
 export default function StatsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-100">
+        <Navbar />
+        <div className="flex items-center justify-center h-96">
+          <div className="text-gray-700">Učitavanje...</div>
+        </div>
+      </div>
+    }>
+      <StatsPageContent />
+    </Suspense>
+  )
+}
+
+function StatsPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()

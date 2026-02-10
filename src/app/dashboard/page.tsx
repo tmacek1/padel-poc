@@ -47,6 +47,19 @@ interface RankedPlayer {
   winRate: number
 }
 
+interface RankedPair {
+  pairKey: string
+  player1Id: string
+  player2Id: string
+  player1Name: string
+  player2Name: string
+  wins: number
+  losses: number
+  draws: number
+  totalMatches: number
+  winRate: number
+}
+
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -54,6 +67,7 @@ export default function DashboardPage() {
   const [recentMatches, setRecentMatches] = useState<Match[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [rankings, setRankings] = useState<RankedPlayer[]>([])
+  const [pairRankings, setPairRankings] = useState<RankedPair[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -101,6 +115,13 @@ export default function DashboardPage() {
       const rankingsData = await rankingsRes.json()
       if (Array.isArray(rankingsData)) {
         setRankings(rankingsData)
+      }
+
+      // Fetch pair rankings
+      const pairRankingsRes = await fetch('/api/rankings/pairs')
+      const pairRankingsData = await pairRankingsRes.json()
+      if (Array.isArray(pairRankingsData)) {
+        setPairRankings(pairRankingsData)
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -269,73 +290,140 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Player Rankings */}
-        {rankings.length > 0 && (
-          <div className="bg-white rounded-lg shadow mt-8">
-            <div className="p-6 border-b">
-              <h2 className="text-xl font-semibold text-gray-900">Top 10 igraca</h2>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">#</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Igrac</th>
-                    <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase">Pobjede</th>
-                    <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase">Porazi</th>
-                    <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase">Ukupno</th>
-                    <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase">Uspjesnost</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rankings.map((player, idx) => (
-                    <tr
-                      key={player.userId}
-                      className={`border-b last:border-0 ${
-                        player.userId === session?.user?.id ? 'bg-blue-50' : 'hover:bg-gray-50'
-                      }`}
-                    >
-                      <td className="px-6 py-4 text-sm font-bold text-gray-700">
-                        {idx + 1}.
-                      </td>
-                      <td className="px-6 py-4 text-sm font-medium">
-                        <Link
-                          href={`/stats?userId=${player.userId}`}
-                          className="text-blue-700 hover:text-blue-900 hover:underline"
-                        >
-                          {player.name}
-                        </Link>
-                        {player.userId === session?.user?.id && (
-                          <span className="ml-2 text-xs text-blue-600 font-normal">(ti)</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-center text-green-700 font-semibold">
-                        {player.wins}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-center text-red-700 font-semibold">
-                        {player.losses}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-center text-gray-700">
-                        {player.totalMatches}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${
-                          player.winRate >= 60
-                            ? 'bg-green-100 text-green-800'
-                            : player.winRate >= 40
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {player.winRate}%
-                        </span>
-                      </td>
+        {/* Rankings Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+          {/* Player Rankings */}
+          {rankings.length > 0 && (
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-6 border-b">
+                <h2 className="text-xl font-semibold text-gray-900">Top 10 igrača</h2>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b bg-gray-50">
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">#</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Igrač</th>
+                      <th className="text-center px-4 py-3 text-xs font-medium text-gray-500 uppercase">W/L</th>
+                      <th className="text-center px-4 py-3 text-xs font-medium text-gray-500 uppercase">%</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {rankings.map((player, idx) => (
+                      <tr
+                        key={player.userId}
+                        className={`border-b last:border-0 ${
+                          player.userId === session?.user?.id ? 'bg-blue-50' : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <td className="px-4 py-3 text-sm font-bold text-gray-700">
+                          {idx + 1}.
+                        </td>
+                        <td className="px-4 py-3 text-sm font-medium">
+                          <Link
+                            href={`/stats?userId=${player.userId}`}
+                            className="text-blue-700 hover:text-blue-900 hover:underline"
+                          >
+                            {player.name}
+                          </Link>
+                          {player.userId === session?.user?.id && (
+                            <span className="ml-1 text-xs text-blue-600 font-normal">(ti)</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-center text-gray-700">
+                          <span className="text-green-700 font-semibold">{player.wins}</span>
+                          <span className="text-gray-400 mx-1">/</span>
+                          <span className="text-red-700 font-semibold">{player.losses}</span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${
+                            player.winRate >= 60
+                              ? 'bg-green-100 text-green-800'
+                              : player.winRate >= 40
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {player.winRate}%
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Pair Rankings */}
+          {pairRankings.length > 0 && (
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-6 border-b">
+                <h2 className="text-xl font-semibold text-gray-900">Top 5 parova</h2>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b bg-gray-50">
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">#</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Par</th>
+                      <th className="text-center px-4 py-3 text-xs font-medium text-gray-500 uppercase">W/L</th>
+                      <th className="text-center px-4 py-3 text-xs font-medium text-gray-500 uppercase">%</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pairRankings.map((pair, idx) => {
+                      const isUserInPair = pair.player1Id === session?.user?.id || pair.player2Id === session?.user?.id
+                      return (
+                        <tr
+                          key={pair.pairKey}
+                          className={`border-b last:border-0 ${
+                            isUserInPair ? 'bg-blue-50' : 'hover:bg-gray-50'
+                          }`}
+                        >
+                          <td className="px-4 py-3 text-sm font-bold text-gray-700">
+                            {idx + 1}.
+                          </td>
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                            <div className="flex flex-col">
+                              <span>
+                                {pair.player1Name}
+                                {pair.player1Id === session?.user?.id && (
+                                  <span className="ml-1 text-xs text-blue-600 font-normal">(ti)</span>
+                                )}
+                              </span>
+                              <span>
+                                {pair.player2Name}
+                                {pair.player2Id === session?.user?.id && (
+                                  <span className="ml-1 text-xs text-blue-600 font-normal">(ti)</span>
+                                )}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-center text-gray-700">
+                            <span className="text-green-700 font-semibold">{pair.wins}</span>
+                            <span className="text-gray-400 mx-1">/</span>
+                            <span className="text-red-700 font-semibold">{pair.losses}</span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${
+                              pair.winRate >= 60
+                                ? 'bg-green-100 text-green-800'
+                                : pair.winRate >= 40
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {pair.winRate}%
+                            </span>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   )

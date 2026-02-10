@@ -430,7 +430,7 @@ export default function MatchesPage() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       {/* Liga badge */}
                       {match.leagueId ? (
                         <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 border border-orange-300 rounded font-medium">

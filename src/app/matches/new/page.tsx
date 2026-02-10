@@ -162,6 +162,19 @@ export default function NewMatchPage() {
     if (isSingles) {
       if (team1Player1) playersData.push({ userId: team1Player1, team: 1 })
       if (team2Player1) playersData.push({ userId: team2Player1, team: 2 })
+    } else if (pairRotation) {
+      // Za rotaciju, randomiziramo redoslijed igrača
+      const allPlayers = [team1Player1, team1Player2, team2Player1, team2Player2].filter(Boolean)
+      // Fisher-Yates shuffle
+      for (let i = allPlayers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allPlayers[i], allPlayers[j]] = [allPlayers[j], allPlayers[i]]
+      }
+      // Dodijeli prve 2 igrača u tim 1, druge 2 u tim 2
+      if (allPlayers[0]) playersData.push({ userId: allPlayers[0], team: 1 })
+      if (allPlayers[1]) playersData.push({ userId: allPlayers[1], team: 1 })
+      if (allPlayers[2]) playersData.push({ userId: allPlayers[2], team: 2 })
+      if (allPlayers[3]) playersData.push({ userId: allPlayers[3], team: 2 })
     } else {
       if (team1Player1) playersData.push({ userId: team1Player1, team: 1 })
       if (team1Player2) playersData.push({ userId: team1Player2, team: 1 })
@@ -580,22 +593,35 @@ export default function NewMatchPage() {
               Započni tipkati ime ili email za pretraživanje igrača.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Team 1 / Player 1 */}
-              <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
-                <h3 className="font-semibold mb-3 text-blue-700">
-                  {isSingles ? 'Igrač 1' : 'Tim 1'}
-                </h3>
-                <div className="space-y-3">
-                  <PlayerSearch
-                    users={users}
-                    selectedUserId={team1Player1}
-                    onSelect={setTeam1Player1}
-                    excludeIds={selectedPlayerIds.filter(id => id !== team1Player1)}
-                    label={isSingles ? 'Igrač' : 'Igrač 1'}
-                    placeholder="Pretraži igrača..."
-                  />
-                  {!isSingles && (
+            {/* Rotation mode - 4 players without teams */}
+            {pairRotation && !isSingles ? (
+              <div>
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-start gap-2">
+                    <svg className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p className="font-medium text-purple-800">Rotacija parova aktivirana</p>
+                      <p className="text-sm text-purple-700 mt-1">
+                        Sustav će automatski generirati parove u round-robin sistemu.
+                        Svaki igrač će igrati s svakim drugim igračem tijekom 5 setova.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/50">
+                    <PlayerSearch
+                      users={users}
+                      selectedUserId={team1Player1}
+                      onSelect={setTeam1Player1}
+                      excludeIds={selectedPlayerIds.filter(id => id !== team1Player1)}
+                      label="Igrač 1"
+                      placeholder="Pretraži igrača..."
+                    />
+                  </div>
+                  <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/50">
                     <PlayerSearch
                       users={users}
                       selectedUserId={team1Player2}
@@ -604,37 +630,86 @@ export default function NewMatchPage() {
                       label="Igrač 2"
                       placeholder="Pretraži igrača..."
                     />
-                  )}
-                </div>
-              </div>
-
-              {/* Team 2 / Player 2 */}
-              <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-                <h3 className="font-semibold mb-3 text-red-700">
-                  {isSingles ? 'Igrač 2' : 'Tim 2'}
-                </h3>
-                <div className="space-y-3">
-                  <PlayerSearch
-                    users={users}
-                    selectedUserId={team2Player1}
-                    onSelect={setTeam2Player1}
-                    excludeIds={selectedPlayerIds.filter(id => id !== team2Player1)}
-                    label={isSingles ? 'Igrač' : 'Igrač 1'}
-                    placeholder="Pretraži igrača..."
-                  />
-                  {!isSingles && (
+                  </div>
+                  <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/50">
+                    <PlayerSearch
+                      users={users}
+                      selectedUserId={team2Player1}
+                      onSelect={setTeam2Player1}
+                      excludeIds={selectedPlayerIds.filter(id => id !== team2Player1)}
+                      label="Igrač 3"
+                      placeholder="Pretraži igrača..."
+                    />
+                  </div>
+                  <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/50">
                     <PlayerSearch
                       users={users}
                       selectedUserId={team2Player2}
                       onSelect={setTeam2Player2}
                       excludeIds={selectedPlayerIds.filter(id => id !== team2Player2)}
-                      label="Igrač 2"
+                      label="Igrač 4"
                       placeholder="Pretraži igrača..."
                     />
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Team 1 / Player 1 */}
+                <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                  <h3 className="font-semibold mb-3 text-blue-700">
+                    {isSingles ? 'Igrač 1' : 'Tim 1'}
+                  </h3>
+                  <div className="space-y-3">
+                    <PlayerSearch
+                      users={users}
+                      selectedUserId={team1Player1}
+                      onSelect={setTeam1Player1}
+                      excludeIds={selectedPlayerIds.filter(id => id !== team1Player1)}
+                      label={isSingles ? 'Igrač' : 'Igrač 1'}
+                      placeholder="Pretraži igrača..."
+                    />
+                    {!isSingles && (
+                      <PlayerSearch
+                        users={users}
+                        selectedUserId={team1Player2}
+                        onSelect={setTeam1Player2}
+                        excludeIds={selectedPlayerIds.filter(id => id !== team1Player2)}
+                        label="Igrač 2"
+                        placeholder="Pretraži igrača..."
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* Team 2 / Player 2 */}
+                <div className="border border-red-200 rounded-lg p-4 bg-red-50">
+                  <h3 className="font-semibold mb-3 text-red-700">
+                    {isSingles ? 'Igrač 2' : 'Tim 2'}
+                  </h3>
+                  <div className="space-y-3">
+                    <PlayerSearch
+                      users={users}
+                      selectedUserId={team2Player1}
+                      onSelect={setTeam2Player1}
+                      excludeIds={selectedPlayerIds.filter(id => id !== team2Player1)}
+                      label={isSingles ? 'Igrač' : 'Igrač 1'}
+                      placeholder="Pretraži igrača..."
+                    />
+                    {!isSingles && (
+                      <PlayerSearch
+                        users={users}
+                        selectedUserId={team2Player2}
+                        onSelect={setTeam2Player2}
+                        excludeIds={selectedPlayerIds.filter(id => id !== team2Player2)}
+                        label="Igrač 2"
+                        placeholder="Pretraži igrača..."
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Notes */}

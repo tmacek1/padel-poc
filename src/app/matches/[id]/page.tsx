@@ -49,6 +49,7 @@ interface Match {
   status: string
   scoringType: string
   notes: string | null
+  videoUrl: string | null
   creatorId: string
   canEdit: boolean
   isParticipant: boolean
@@ -136,6 +137,9 @@ export default function MatchDetailPage() {
   const [joiningMatch, setJoiningMatch] = useState(false)
   const [leavingMatch, setLeavingMatch] = useState(false)
   const [draggedSetIndex, setDraggedSetIndex] = useState<number | null>(null)
+  const [editingVideo, setEditingVideo] = useState(false)
+  const [editVideoUrl, setEditVideoUrl] = useState('')
+  const [savingVideo, setSavingVideo] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -351,6 +355,46 @@ export default function MatchDetailPage() {
       setError('Greška pri napuštanju')
     } finally {
       setLeavingMatch(false)
+    }
+  }
+
+  // Pretvori Google Drive URL u embed URL za iframe
+  const getEmbedUrl = (url: string): string | null => {
+    // Google Drive: /file/d/FILE_ID/view... → /file/d/FILE_ID/preview
+    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/)
+    if (driveMatch) {
+      return `https://drive.google.com/file/d/${driveMatch[1]}/preview`
+    }
+    // YouTube: razne varijante
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/)
+    if (ytMatch) {
+      return `https://www.youtube.com/embed/${ytMatch[1]}`
+    }
+    return null
+  }
+
+  const handleSaveVideoUrl = async () => {
+    setSavingVideo(true)
+    setError('')
+
+    try {
+      const res = await fetch(`/api/matches/${matchId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoUrl: editVideoUrl.trim() || null }),
+      })
+
+      if (res.ok) {
+        await fetchMatch()
+        setEditingVideo(false)
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Greška pri spremanju video linka')
+      }
+    } catch {
+      setError('Greška pri spremanju video linka')
+    } finally {
+      setSavingVideo(false)
     }
   }
 
@@ -1460,6 +1504,121 @@ export default function MatchDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Video Section */}
+        <div className="bg-white rounded-lg shadow mb-6">
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Video snimka</h2>
+              {(match.isParticipant || match.canEdit) && !editingVideo && (
+                <button
+                  onClick={() => {
+                    setEditVideoUrl(match.videoUrl || '')
+                    setEditingVideo(true)
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  {match.videoUrl ? 'Promijeni link' : '+ Dodaj video'}
+                </button>
+              )}
+            </div>
+
+            {editingVideo ? (
+              <div className="space-y-3">
+                <div>
+                  <input
+                    type="url"
+                    value={editVideoUrl}
+                    onChange={(e) => setEditVideoUrl(e.target.value)}
+                    placeholder="Zalijepi link na video (Google Drive, YouTube...)"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Podržani: Google Drive (share link), YouTube. Video mora biti javno dostupan.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSaveVideoUrl}
+                    disabled={savingVideo}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
+                  >
+                    {savingVideo ? 'Spremanje...' : 'Spremi'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingVideo(false)
+                      setError('')
+                    }}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm"
+                  >
+                    Odustani
+                  </button>
+                  {match.videoUrl && (
+                    <button
+                      onClick={async () => {
+                        setSavingVideo(true)
+                        setError('')
+                        try {
+                          const res = await fetch(`/api/matches/${matchId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ videoUrl: null }),
+                          })
+                          if (res.ok) {
+                            await fetchMatch()
+                            setEditingVideo(false)
+                          } else {
+                            const data = await res.json()
+                            setError(data.error || 'Greška')
+                          }
+                        } catch {
+                          setError('Greška pri brisanju video linka')
+                        } finally {
+                          setSavingVideo(false)
+                        }
+                      }}
+                      disabled={savingVideo}
+                      className="px-4 py-2 text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50"
+                    >
+                      Ukloni video
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : match.videoUrl ? (
+              <div>
+                {/* Embedded player */}
+                {getEmbedUrl(match.videoUrl) ? (
+                  <div className="relative w-full rounded-lg overflow-hidden bg-black" style={{ paddingBottom: '56.25%' }}>
+                    <iframe
+                      src={getEmbedUrl(match.videoUrl)!}
+                      className="absolute inset-0 w-full h-full"
+                      allow="autoplay; encrypted-media"
+                      allowFullScreen
+                      title="Match video"
+                    />
+                  </div>
+                ) : (
+                  <a
+                    href={match.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Pogledaj video
+                  </a>
+                )}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-sm">Nema dodane video snimke.</p>
+            )}
+          </div>
+        </div>
 
         {/* Notes */}
         {match.notes && (

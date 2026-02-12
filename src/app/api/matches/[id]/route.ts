@@ -122,10 +122,26 @@ export async function PUT(
     const isParticipant = existingMatch.players.some(p => p.userId === user.id)
     const isCompletedWithResults = existingMatch.status === 'completed' && existingMatch.sets.length > 0
 
+    const body = await request.json()
+    const { locationId, scheduledAt, playedAt, status, notes, sets, videoUrl } = body
+
     // Permission check:
-    // - If match is completed with results: only admin can edit
+    // - Video URL: any participant can add/edit (even on completed matches)
+    // - If match is completed with results: only admin can edit other fields
     // - Otherwise: any participant can edit
-    if (isCompletedWithResults) {
+    const isVideoUrlOnlyUpdate = videoUrl !== undefined &&
+      locationId === undefined && scheduledAt === undefined &&
+      playedAt === undefined && status === undefined &&
+      notes === undefined && sets === undefined
+
+    if (isVideoUrlOnlyUpdate) {
+      if (!isParticipant && !user.isAdmin) {
+        return NextResponse.json(
+          { error: 'Samo sudionici meča ili admin mogu dodati video' },
+          { status: 403 }
+        )
+      }
+    } else if (isCompletedWithResults) {
       if (!user.isAdmin) {
         return NextResponse.json(
           { error: 'Završeni meč s upisanim rezultatom može mijenjati samo administrator' },
@@ -141,8 +157,6 @@ export async function PUT(
       }
     }
 
-    const body = await request.json()
-    const { locationId, scheduledAt, playedAt, status, notes, sets } = body
 
     // Update match
     const match = await prisma.match.update({
@@ -153,6 +167,7 @@ export async function PUT(
         ...(playedAt ? { playedAt: new Date(playedAt) } : {}),
         ...(status ? { status } : {}),
         ...(notes !== undefined ? { notes } : {}),
+        ...(videoUrl !== undefined ? { videoUrl } : {}),
       },
       include: {
         creator: {

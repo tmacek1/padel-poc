@@ -899,14 +899,39 @@ export default function MatchDetailPage() {
             {/* Set scores */}
             {match.sets.length > 0 && (
               <div className="mt-6 pt-6 border-t">
-                <div className="text-center text-gray-600 mb-3">Setovi</div>
-                <div className="flex justify-center gap-4">
+                <div className="text-center text-gray-600 mb-3">
+                  Setovi
+                  {match.pairRotation && (
+                    <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded">
+                      Rotacija
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 max-w-lg mx-auto">
                   {match.sets.map((set) => {
                     const positions = getPlayerPositionsForSet(set)
+
+                    // Za rotaciju: dohvati parove iz setPlayers ili rotation schedule
+                    const rotationSchedule = getParsedRotationSchedule()
+                    const setConfig = rotationSchedule?.find(s => s.setNumber === set.setNumber)
+                    const setPlayersData = (set.setPlayers || []) as SetPlayer[]
+                    const hasSetPlayers = setPlayersData.length > 0
+
+                    const team1Names = hasSetPlayers
+                      ? setPlayersData.filter(sp => sp.team === 1).map(sp => sp.user?.name?.split(' ')[0] || '?').join(' / ')
+                      : setConfig
+                        ? setConfig.team1.map(p => p.name.split(' ')[0]).join(' / ')
+                        : null
+                    const team2Names = hasSetPlayers
+                      ? setPlayersData.filter(sp => sp.team === 2).map(sp => sp.user?.name?.split(' ')[0] || '?').join(' / ')
+                      : setConfig
+                        ? setConfig.team2.map(p => p.name.split(' ')[0]).join(' / ')
+                        : null
+
                     return (
                       <div
                         key={set.setNumber}
-                        className="bg-gray-100 rounded px-4 py-2 text-center"
+                        className="bg-gray-100 rounded-lg px-2 py-2 sm:px-3 text-center"
                       >
                         <div className="text-xs text-gray-600">Set {set.setNumber}</div>
                         <div className="font-semibold text-gray-900">
@@ -918,8 +943,17 @@ export default function MatchDetailPage() {
                             </span>
                           )}
                         </div>
+                        {/* Parovi za rotaciju */}
+                        {(team1Names || team2Names) && (
+                          <div className="mt-1.5 pt-1.5 border-t border-gray-200 text-xs">
+                            <div className="text-blue-700 font-medium">{team1Names}</div>
+                            <div className="text-gray-400 text-[10px]">vs</div>
+                            <div className="text-red-700 font-medium">{team2Names}</div>
+                          </div>
+                        )}
+                        {/* Pozicije na terenu */}
                         {(positions.left.length > 0 || positions.right.length > 0) && (
-                          <div className="mt-2 text-xs text-gray-600 border-t pt-2">
+                          <div className="mt-1.5 text-xs text-gray-600 border-t border-gray-200 pt-1.5">
                             {positions.left.length > 0 && (
                               <div><span className="font-medium">L:</span> {positions.left.join(', ')}</div>
                             )}
@@ -1037,75 +1071,39 @@ export default function MatchDetailPage() {
           </div>
         )}
 
-        {/* Pair Rotation Schedule with Results */}
-        {getParsedRotationSchedule() && (
-          <div className="bg-white rounded-lg shadow mb-6">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Raspored parova po setovima</h2>
-                <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded">
-                  Rotacija
-                </span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                {getParsedRotationSchedule()!.map((setConfig: PairRotationSchedule) => {
-                  // Find the corresponding set result
-                  const setResult = match.sets.find(s => s.setNumber === setConfig.setNumber)
-                  const hasResult = setResult && (setResult.team1Score > 0 || setResult.team2Score > 0)
-
-                  // Use actual SetPlayer records if available, otherwise fall back to original schedule
-                  // Cast to SetPlayer[] since API response includes user data
-                  const setPlayers = (setResult?.setPlayers || []) as SetPlayer[]
-                  const hasSetPlayers = setPlayers.length > 0
-                  const team1Players = hasSetPlayers
-                    ? setPlayers.filter(sp => sp.team === 1).map(sp => sp.user?.name?.split(' ')[0] || '?').join(' / ')
-                    : setConfig.team1.map((p: { name: string }) => p.name.split(' ')[0]).join(' / ')
-                  const team2Players = hasSetPlayers
-                    ? setPlayers.filter(sp => sp.team === 2).map(sp => sp.user?.name?.split(' ')[0] || '?').join(' / ')
-                    : setConfig.team2.map((p: { name: string }) => p.name.split(' ')[0]).join(' / ')
-
-                  return (
-                    <div
-                      key={setConfig.setNumber}
-                      className="border rounded-lg p-3 bg-white border-gray-200"
-                    >
-                      <div className="text-center mb-2 pb-2 border-b">
-                        <div className="font-semibold text-gray-700">
-                          Set {setConfig.setNumber}
-                        </div>
-                        {hasResult && (
-                          <div className="text-lg font-bold text-gray-900">
-                            {setResult.team1Score} : {setResult.team2Score}
-                            {setResult.team1Tiebreak != null && setResult.team2Tiebreak != null && (
-                              <span className="text-xs font-normal text-gray-500 ml-1">
-                                ({setResult.team1Tiebreak}-{setResult.team2Tiebreak})
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <div className="rounded p-2 bg-blue-50">
-                          <div className="text-xs text-blue-600 font-medium">Tim A</div>
-                          <div className="text-sm text-gray-800 font-medium">
-                            {team1Players}
-                          </div>
-                        </div>
-                        <div className="text-center text-gray-400 text-xs">vs</div>
-                        <div className="rounded p-2 bg-red-50">
-                          <div className="text-xs text-red-600 font-medium">Tim B</div>
-                          <div className="text-sm text-gray-800 font-medium">
-                            {team2Players}
-                          </div>
-                        </div>
+        {/* Rotation Schedule - only show for sets not yet played (no results) */}
+        {getParsedRotationSchedule() && (() => {
+          const rotationSchedule = getParsedRotationSchedule()!
+          const unplayedSets = rotationSchedule.filter(setConfig => {
+            const setResult = match.sets.find(s => s.setNumber === setConfig.setNumber)
+            return !setResult || (setResult.team1Score === 0 && setResult.team2Score === 0)
+          })
+          if (unplayedSets.length === 0) return null
+          return (
+            <div className="bg-white rounded-lg shadow mb-6">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900">Preostali setovi</h2>
+                  <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded">
+                    Rotacija
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 max-w-lg mx-auto">
+                  {unplayedSets.map((setConfig) => (
+                    <div key={setConfig.setNumber} className="border rounded-lg p-2 sm:p-3 bg-white border-gray-200 text-center">
+                      <div className="text-xs font-semibold text-gray-700 mb-1">Set {setConfig.setNumber}</div>
+                      <div className="text-xs">
+                        <div className="text-blue-700 font-medium">{setConfig.team1.map(p => p.name.split(' ')[0]).join(' / ')}</div>
+                        <div className="text-gray-400 text-[10px]">vs</div>
+                        <div className="text-red-700 font-medium">{setConfig.team2.map(p => p.name.split(' ')[0]).join(' / ')}</div>
                       </div>
                     </div>
-                  )
-                })}
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* Enable Rotation Button - for regular 2v2 matches that are scheduled (not looking for players) */}
         {match.canEdit &&

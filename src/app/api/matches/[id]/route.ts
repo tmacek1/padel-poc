@@ -123,13 +123,13 @@ export async function PUT(
     const isCompletedWithResults = existingMatch.status === 'completed' && existingMatch.sets.length > 0
 
     const body = await request.json()
-    const { locationId, scheduledAt, playedAt, status, notes, sets, videoUrl } = body
+    const { locationId, scheduledAt, playedAt, status, notes, sets, videoUrls } = body
 
     // Permission check:
-    // - Video URL: any participant can add/edit (even on completed matches)
+    // - Video URLs: any participant can add/edit (even on completed matches)
     // - If match is completed with results: only admin can edit other fields
     // - Otherwise: any participant can edit
-    const isVideoUrlOnlyUpdate = videoUrl !== undefined &&
+    const isVideoUrlOnlyUpdate = videoUrls !== undefined &&
       locationId === undefined && scheduledAt === undefined &&
       playedAt === undefined && status === undefined &&
       notes === undefined && sets === undefined
@@ -167,7 +167,7 @@ export async function PUT(
         ...(playedAt ? { playedAt: new Date(playedAt) } : {}),
         ...(status ? { status } : {}),
         ...(notes !== undefined ? { notes } : {}),
-        ...(videoUrl !== undefined ? { videoUrl } : {}),
+        ...(videoUrls !== undefined ? { videoUrls } : {}),
       },
       include: {
         creator: {

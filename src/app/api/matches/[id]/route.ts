@@ -18,13 +18,13 @@ export async function GET(
       where: { id },
       include: {
         creator: {
-          select: { id: true, name: true, email: true, image: true },
+          select: { id: true, name: true, email: true, image: true, isGuest: true },
         },
         location: true,
         players: {
           include: {
             user: {
-              select: { id: true, name: true, email: true, image: true },
+              select: { id: true, name: true, email: true, image: true, isGuest: true },
             },
           },
         },
@@ -35,7 +35,7 @@ export async function GET(
             setPlayers: {
               include: {
                 user: {
-                  select: { id: true, name: true, email: true },
+                  select: { id: true, name: true, email: true, isGuest: true },
                 },
               },
             },
@@ -156,13 +156,13 @@ export async function PUT(
       },
       include: {
         creator: {
-          select: { id: true, name: true, email: true, image: true },
+          select: { id: true, name: true, email: true, image: true, isGuest: true },
         },
         location: true,
         players: {
           include: {
             user: {
-              select: { id: true, name: true, email: true, image: true },
+              select: { id: true, name: true, email: true, image: true, isGuest: true },
             },
           },
         },
@@ -251,13 +251,13 @@ export async function PUT(
       where: { id },
       include: {
         creator: {
-          select: { id: true, name: true, email: true, image: true },
+          select: { id: true, name: true, email: true, image: true, isGuest: true },
         },
         location: true,
         players: {
           include: {
             user: {
-              select: { id: true, name: true, email: true, image: true },
+              select: { id: true, name: true, email: true, image: true, isGuest: true },
             },
           },
         },
@@ -267,7 +267,7 @@ export async function PUT(
             setPlayers: {
               include: {
                 user: {
-                  select: { id: true, name: true, email: true },
+                  select: { id: true, name: true, email: true, isGuest: true },
                 },
               },
             },

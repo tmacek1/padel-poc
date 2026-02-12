@@ -31,7 +31,7 @@ interface Match {
   location?: { name: string }
   players: {
     team: number
-    user: { id: string; name: string; email: string } | null
+    user: { id: string; name: string; email: string; isGuest?: boolean } | null
   }[]
   sets: {
     setNumber: number
@@ -187,7 +187,10 @@ export default function MatchesPage() {
   const getTeamPlayers = (match: Match, team: number) => {
     return match.players
       .filter((p) => p.team === team && p.user)
-      .map((p) => p.user!.name || p.user!.email)
+      .map((p) => {
+        const name = p.user!.name || p.user!.email
+        return p.user!.isGuest ? `${name} (gost)` : name
+      })
       .join(' / ')
   }
 

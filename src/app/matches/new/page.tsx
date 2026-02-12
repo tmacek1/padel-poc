@@ -10,6 +10,7 @@ interface User {
   id: string
   name: string | null
   email: string
+  isGuest?: boolean
 }
 
 interface Location {
@@ -51,6 +52,12 @@ export default function NewMatchPage() {
   const [durationMinutes, setDurationMinutes] = useState(90)
   const [isLookingForPlayers, setIsLookingForPlayers] = useState(false)
   const [pairRotation, setPairRotation] = useState(false)
+
+  // Guest player mode per slot
+  const [guestMode, setGuestMode] = useState<Record<string, boolean>>({})
+  const [guestFirstName, setGuestFirstName] = useState<Record<string, string>>({})
+  const [guestLastName, setGuestLastName] = useState<Record<string, string>>({})
+  const [creatingGuest, setCreatingGuest] = useState<string | null>(null)
 
   // New location form
   const [showNewLocation, setShowNewLocation] = useState(false)
@@ -100,6 +107,45 @@ export default function NewMatchPage() {
       }
     } catch (error) {
       console.error('Error fetching locations:', error)
+    }
+  }
+
+  const handleCreateGuest = async (slotKey: string, setPlayer: (id: string) => void) => {
+    const first = guestFirstName[slotKey]?.trim()
+    const last = guestLastName[slotKey]?.trim()
+
+    if (!first || !last) {
+      setError('Ime i prezime gosta su obavezni')
+      return
+    }
+
+    setCreatingGuest(slotKey)
+    setError('')
+
+    try {
+      const res = await fetch('/api/users/guest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName: first, lastName: last }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        // Add guest to users list and select them
+        setUsers((prev) => [...prev, { id: data.id, name: data.name, email: '', isGuest: true }])
+        setPlayer(data.id)
+        // Reset guest mode for this slot
+        setGuestMode((prev) => ({ ...prev, [slotKey]: false }))
+        setGuestFirstName((prev) => ({ ...prev, [slotKey]: '' }))
+        setGuestLastName((prev) => ({ ...prev, [slotKey]: '' }))
+      } else {
+        setError(data.error || 'Greška pri kreiranju gosta')
+      }
+    } catch {
+      setError('Greška pri kreiranju gosta')
+    } finally {
+      setCreatingGuest(null)
     }
   }
 
@@ -276,6 +322,102 @@ export default function NewMatchPage() {
       setError('Greška pri kreiranju matcha')
       setLoading(false)
     }
+  }
+
+  const renderPlayerSlot = (
+    slotKey: string,
+    selectedUserId: string,
+    setPlayer: (id: string) => void,
+    label: string,
+    isCurrentUser = false
+  ) => {
+    const isGuestMode = guestMode[slotKey] || false
+
+    // Current user slot: no guest toggle
+    if (isCurrentUser) {
+      return (
+        <PlayerSearch
+          users={users}
+          selectedUserId={selectedUserId}
+          onSelect={setPlayer}
+          excludeIds={selectedPlayerIds.filter(id => id !== selectedUserId)}
+          label={label}
+          placeholder="Pretraži igrača..."
+        />
+      )
+    }
+
+    return (
+      <div>
+        {!isGuestMode ? (
+          <>
+            <PlayerSearch
+              users={users}
+              selectedUserId={selectedUserId}
+              onSelect={setPlayer}
+              excludeIds={selectedPlayerIds.filter(id => id !== selectedUserId)}
+              label={label}
+              placeholder="Pretraži igrača..."
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setPlayer('')
+                setGuestMode((prev) => ({ ...prev, [slotKey]: true }))
+              }}
+              className="mt-1 text-xs text-orange-600 hover:text-orange-800 font-medium"
+            >
+              + Dodaj gosta
+            </button>
+          </>
+        ) : (
+          <div>
+            <label className="block text-sm font-medium text-gray-800 mb-1">{label}</label>
+            <div className="space-y-2 p-3 border border-orange-200 rounded-lg bg-orange-50">
+              <div className="flex items-center gap-1 mb-1">
+                <span className="inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-orange-100 text-orange-700">gost</span>
+                <span className="text-xs text-gray-600">Novi gost igrač</span>
+              </div>
+              <input
+                type="text"
+                value={guestFirstName[slotKey] || ''}
+                onChange={(e) => setGuestFirstName((prev) => ({ ...prev, [slotKey]: e.target.value }))}
+                placeholder="Ime"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+              <input
+                type="text"
+                value={guestLastName[slotKey] || ''}
+                onChange={(e) => setGuestLastName((prev) => ({ ...prev, [slotKey]: e.target.value }))}
+                placeholder="Prezime"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleCreateGuest(slotKey, setPlayer)}
+                  disabled={creatingGuest === slotKey}
+                  className="px-3 py-1.5 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 disabled:opacity-50"
+                >
+                  {creatingGuest === slotKey ? 'Kreiranje...' : 'Dodaj'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGuestMode((prev) => ({ ...prev, [slotKey]: false }))
+                    setGuestFirstName((prev) => ({ ...prev, [slotKey]: '' }))
+                    setGuestLastName((prev) => ({ ...prev, [slotKey]: '' }))
+                  }}
+                  className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50"
+                >
+                  Odustani
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
   }
 
   // Get selected player IDs for exclusion
@@ -612,44 +754,16 @@ export default function NewMatchPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/50">
-                    <PlayerSearch
-                      users={users}
-                      selectedUserId={team1Player1}
-                      onSelect={setTeam1Player1}
-                      excludeIds={selectedPlayerIds.filter(id => id !== team1Player1)}
-                      label="Igrač 1"
-                      placeholder="Pretraži igrača..."
-                    />
+                    {renderPlayerSlot('rot1', team1Player1, setTeam1Player1, 'Igrač 1', true)}
                   </div>
                   <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/50">
-                    <PlayerSearch
-                      users={users}
-                      selectedUserId={team1Player2}
-                      onSelect={setTeam1Player2}
-                      excludeIds={selectedPlayerIds.filter(id => id !== team1Player2)}
-                      label="Igrač 2"
-                      placeholder="Pretraži igrača..."
-                    />
+                    {renderPlayerSlot('rot2', team1Player2, setTeam1Player2, 'Igrač 2')}
                   </div>
                   <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/50">
-                    <PlayerSearch
-                      users={users}
-                      selectedUserId={team2Player1}
-                      onSelect={setTeam2Player1}
-                      excludeIds={selectedPlayerIds.filter(id => id !== team2Player1)}
-                      label="Igrač 3"
-                      placeholder="Pretraži igrača..."
-                    />
+                    {renderPlayerSlot('rot3', team2Player1, setTeam2Player1, 'Igrač 3')}
                   </div>
                   <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/50">
-                    <PlayerSearch
-                      users={users}
-                      selectedUserId={team2Player2}
-                      onSelect={setTeam2Player2}
-                      excludeIds={selectedPlayerIds.filter(id => id !== team2Player2)}
-                      label="Igrač 4"
-                      placeholder="Pretraži igrača..."
-                    />
+                    {renderPlayerSlot('rot4', team2Player2, setTeam2Player2, 'Igrač 4')}
                   </div>
                 </div>
               </div>
@@ -661,24 +775,8 @@ export default function NewMatchPage() {
                     {isSingles ? 'Igrač 1' : 'Tim 1'}
                   </h3>
                   <div className="space-y-3">
-                    <PlayerSearch
-                      users={users}
-                      selectedUserId={team1Player1}
-                      onSelect={setTeam1Player1}
-                      excludeIds={selectedPlayerIds.filter(id => id !== team1Player1)}
-                      label={isSingles ? 'Igrač' : 'Igrač 1'}
-                      placeholder="Pretraži igrača..."
-                    />
-                    {!isSingles && (
-                      <PlayerSearch
-                        users={users}
-                        selectedUserId={team1Player2}
-                        onSelect={setTeam1Player2}
-                        excludeIds={selectedPlayerIds.filter(id => id !== team1Player2)}
-                        label="Igrač 2"
-                        placeholder="Pretraži igrača..."
-                      />
-                    )}
+                    {renderPlayerSlot('t1p1', team1Player1, setTeam1Player1, isSingles ? 'Igrač' : 'Igrač 1', true)}
+                    {!isSingles && renderPlayerSlot('t1p2', team1Player2, setTeam1Player2, 'Igrač 2')}
                   </div>
                 </div>
 
@@ -688,24 +786,8 @@ export default function NewMatchPage() {
                     {isSingles ? 'Igrač 2' : 'Tim 2'}
                   </h3>
                   <div className="space-y-3">
-                    <PlayerSearch
-                      users={users}
-                      selectedUserId={team2Player1}
-                      onSelect={setTeam2Player1}
-                      excludeIds={selectedPlayerIds.filter(id => id !== team2Player1)}
-                      label={isSingles ? 'Igrač' : 'Igrač 1'}
-                      placeholder="Pretraži igrača..."
-                    />
-                    {!isSingles && (
-                      <PlayerSearch
-                        users={users}
-                        selectedUserId={team2Player2}
-                        onSelect={setTeam2Player2}
-                        excludeIds={selectedPlayerIds.filter(id => id !== team2Player2)}
-                        label="Igrač 2"
-                        placeholder="Pretraži igrača..."
-                      />
-                    )}
+                    {renderPlayerSlot('t2p1', team2Player1, setTeam2Player1, isSingles ? 'Igrač' : 'Igrač 1')}
+                    {!isSingles && renderPlayerSlot('t2p2', team2Player2, setTeam2Player2, 'Igrač 2')}
                   </div>
                 </div>
               </div>

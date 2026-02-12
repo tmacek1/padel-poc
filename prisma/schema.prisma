@@ -70,6 +70,10 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Guest user - ghost korisnik kreiran pri dodavanju gosta u match
+  isGuest       Boolean   @default(false)
+  mergedIntoId  String?   // kad se gost spoji s registriranim korisnikom, čuvamo trag
+
   // Soft delete - kad se korisnik obriše, označava se kao obrisan ali ostaje u bazi
   isDeleted     Boolean   @default(false)
   deletedAt     DateTime?

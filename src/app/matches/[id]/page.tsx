@@ -61,7 +61,7 @@ interface Match {
     id: string
     team: number
     odUserId: string | null
-    user: { id: string; name: string; email: string; image?: string } | null
+    user: { id: string; name: string; email: string; image?: string; isGuest?: boolean } | null
   }[]
   sets: MatchSet[]
   league?: { id: string; name: string }
@@ -643,7 +643,10 @@ export default function MatchDetailPage() {
   const getTeamPlayers = (team: number) => {
     return match?.players
       .filter((p) => p.team === team && p.user)
-      .map((p) => p.user?.name || p.user?.email || 'Nepoznato')
+      .map((p) => {
+        const name = p.user?.name || p.user?.email || 'Nepoznato'
+        return p.user?.isGuest ? `${name} (gost)` : name
+      })
       .join(' / ')
   }
 

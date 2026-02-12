@@ -82,6 +82,7 @@ export async function GET(request: Request) {
         handle: true,
         image: true,
         createdAt: true,
+        isGuest: true,
         // Samo admini vide osjetljive podatke
         ...(isAdminOrSuper
           ? {

@@ -29,7 +29,7 @@ export async function GET(request: Request) {
       },
       include: {
         creator: {
-          select: { id: true, name: true, email: true, image: true },
+          select: { id: true, name: true, email: true, image: true, isGuest: true },
         },
         location: true,
         league: {
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
         players: {
           include: {
             user: {
-              select: { id: true, name: true, email: true, image: true },
+              select: { id: true, name: true, email: true, image: true, isGuest: true },
             },
           },
         },
@@ -201,13 +201,13 @@ export async function POST(request: Request) {
       },
       include: {
         creator: {
-          select: { id: true, name: true, email: true, image: true },
+          select: { id: true, name: true, email: true, image: true, isGuest: true },
         },
         location: true,
         players: {
           include: {
             user: {
-              select: { id: true, name: true, email: true, image: true },
+              select: { id: true, name: true, email: true, image: true, isGuest: true },
             },
           },
         },

@@ -15,6 +15,15 @@ interface User {
   club?: { id: string; name: string } | null
 }
 
+interface GuestUser {
+  id: string
+  name: string | null
+  firstName: string | null
+  lastName: string | null
+  createdAt: string
+  matchCount: number
+}
+
 interface Location {
   id: string
   name: string
@@ -36,6 +45,15 @@ export default function AdminPage() {
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
+
+  // Guest users
+  const [guestUsers, setGuestUsers] = useState<GuestUser[]>([])
+  const [mergingGuestId, setMergingGuestId] = useState<string | null>(null)
+  const [mergeTargetSearch, setMergeTargetSearch] = useState('')
+  const [mergeSearchResults, setMergeSearchResults] = useState<User[]>([])
+  const [mergeSearching, setMergeSearching] = useState(false)
+  const [mergeConfirm, setMergeConfirm] = useState<{ guestId: string; targetId: string; guestName: string; targetName: string } | null>(null)
+  const [merging, setMerging] = useState(false)
 
   // New location form
   const [showNewLocationForm, setShowNewLocationForm] = useState(false)
@@ -59,6 +77,7 @@ export default function AdminPage() {
     }
     fetchUsers()
     fetchLocations()
+    fetchGuestUsers()
   }, [status, session, router])
 
   async function fetchUsers() {
@@ -105,6 +124,72 @@ export default function AdminPage() {
     }, 300)
     return () => clearTimeout(timer)
   }, [searchQuery])
+
+  async function fetchGuestUsers() {
+    try {
+      const res = await fetch('/api/admin/merge-guest')
+      if (!res.ok) return
+      const data = await res.json()
+      setGuestUsers(data)
+    } catch {
+      console.error('Error fetching guest users')
+    }
+  }
+
+  async function searchMergeTarget(query: string) {
+    if (!query.trim()) {
+      setMergeSearchResults([])
+      return
+    }
+    setMergeSearching(true)
+    try {
+      const res = await fetch(`/api/users?search=${encodeURIComponent(query)}&limit=10`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      // Filtriraj goste iz rezultata
+      setMergeSearchResults(data.filter((u: User & { isGuest?: boolean }) => !u.isGuest))
+    } catch {
+      console.error('Error searching users for merge')
+    } finally {
+      setMergeSearching(false)
+    }
+  }
+
+  async function handleMergeGuest() {
+    if (!mergeConfirm) return
+    setMerging(true)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/admin/merge-guest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guestUserId: mergeConfirm.guestId,
+          targetUserId: mergeConfirm.targetId,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Greška pri spajanju')
+      }
+
+      // Refresh guest list
+      await fetchGuestUsers()
+      setMergeConfirm(null)
+      setMergingGuestId(null)
+      setMergeTargetSearch('')
+      setMergeSearchResults([])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nepoznata greška')
+    } finally {
+      setMerging(false)
+    }
+  }
 
   async function fetchLocations() {
     try {
@@ -512,6 +597,164 @@ export default function AdminPage() {
           </table>
           </div>
         </div>
+
+        {/* Guest Users Section */}
+        <h2 className="text-2xl font-bold mb-6 mt-12 text-gray-900">Gost igrači</h2>
+
+        <div className="bg-white rounded-lg shadow overflow-hidden mb-12">
+          <div className="px-4 py-3 bg-orange-50 border-b border-orange-200">
+            <h3 className="font-medium text-gray-900">
+              Ghost korisnici ({guestUsers.length})
+            </h3>
+            <p className="text-xs text-gray-600 mt-1">
+              Gost igrači kreirani pri dodavanju matcheva. Možete ih spojiti s registriranim korisnicima.
+            </p>
+          </div>
+
+          {guestUsers.length === 0 ? (
+            <div className="p-8 text-center text-gray-600">
+              Nema gost igrača za spajanje.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Ime</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Kreiran</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Matchevi</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Akcija</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {guestUsers.map((guest) => (
+                    <tr key={guest.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 rounded-full bg-orange-400 text-white flex items-center justify-center mr-3 text-sm">
+                            {guest.name?.[0] || '?'}
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900">{guest.name || '-'}</span>
+                            <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-orange-100 text-orange-700">gost</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">{formatDate(guest.createdAt)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-800">{guest.matchCount}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {mergingGuestId === guest.id ? (
+                          <div className="space-y-2 min-w-[250px]">
+                            <div className="relative">
+                              <input
+                                type="text"
+                                value={mergeTargetSearch}
+                                onChange={(e) => {
+                                  setMergeTargetSearch(e.target.value)
+                                  searchMergeTarget(e.target.value)
+                                }}
+                                placeholder="Pretraži registriranog korisnika..."
+                                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                              {mergeSearching && (
+                                <span className="absolute right-2 top-2 text-xs text-gray-500">...</span>
+                              )}
+                            </div>
+                            {mergeSearchResults.length > 0 && (
+                              <div className="border border-gray-200 rounded-lg max-h-40 overflow-auto bg-white shadow-sm">
+                                {mergeSearchResults.map((u) => (
+                                  <button
+                                    key={u.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setMergeConfirm({
+                                        guestId: guest.id,
+                                        targetId: u.id,
+                                        guestName: guest.name || 'Nepoznato',
+                                        targetName: u.name || u.email,
+                                      })
+                                    }}
+                                    className="w-full px-3 py-2 text-left text-sm hover:bg-blue-50 border-b border-gray-100 last:border-0"
+                                  >
+                                    <span className="font-medium text-gray-900">{u.name || '-'}</span>
+                                    <span className="text-gray-500 ml-2 text-xs">{u.email}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMergingGuestId(null)
+                                setMergeTargetSearch('')
+                                setMergeSearchResults([])
+                              }}
+                              className="text-xs text-gray-500 hover:text-gray-700"
+                            >
+                              Odustani
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setMergingGuestId(guest.id)}
+                            className="px-3 py-1 rounded text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200"
+                          >
+                            Poveži s korisnikom
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Merge Confirmation Modal */}
+        {mergeConfirm && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div
+              className="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity"
+              onClick={() => setMergeConfirm(null)}
+            />
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">Potvrdi spajanje</h3>
+                </div>
+
+                <p className="text-sm text-gray-700 mb-4">
+                  Svi matchevi gosta <strong>{mergeConfirm.guestName}</strong> bit će prebačeni na korisnika <strong>{mergeConfirm.targetName}</strong>.
+                </p>
+                <p className="text-xs text-gray-500 mb-6">
+                  Ova akcija se ne može poništiti. Ghost korisnik će biti označen kao obrisan.
+                </p>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleMergeGuest}
+                    disabled={merging}
+                    className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50"
+                  >
+                    {merging ? 'Spajanje...' : 'Spoji'}
+                  </button>
+                  <button
+                    onClick={() => setMergeConfirm(null)}
+                    className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium"
+                  >
+                    Odustani
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Locations Management Section */}
         <h2 className="text-2xl font-bold mb-6 mt-12 text-gray-900">Upravljanje lokacijama</h2>

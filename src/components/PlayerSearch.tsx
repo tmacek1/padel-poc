@@ -8,6 +8,7 @@ interface User {
   email: string
   handle?: string | null
   createdAt?: string
+  isGuest?: boolean
 }
 
 interface PlayerSearchProps {
@@ -42,10 +43,14 @@ export default function PlayerSearch({
         u.name.toLowerCase() === user.name.toLowerCase() &&
         u.id !== user.id
     )
+    let displayName = user.name || (user.handle ? `@${user.handle}` : 'Nepoznato ime')
     if (sameName.length > 0 && user.name && user.handle) {
-      return `${user.name} (@${user.handle})`
+      displayName = `${user.name} (@${user.handle})`
     }
-    return user.name || (user.handle ? `@${user.handle}` : 'Nepoznato ime')
+    if (user.isGuest) {
+      displayName += ' (gost)'
+    }
+    return displayName
   }
 
   const MAX_RESULTS = 20
@@ -209,7 +214,12 @@ export default function PlayerSearch({
                     index === highlightedIndex ? 'bg-blue-100' : ''
                   }`}
                 >
-                  <div className="font-medium text-gray-900">{user.name || 'Nepoznato ime'}</div>
+                  <div className="font-medium text-gray-900">
+                    {user.name || 'Nepoznato ime'}
+                    {user.isGuest && (
+                      <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-orange-100 text-orange-700">gost</span>
+                    )}
+                  </div>
                   {user.handle && (
                     <div className="text-sm text-gray-500">@{user.handle}</div>
                   )}

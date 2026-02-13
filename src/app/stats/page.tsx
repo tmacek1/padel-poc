@@ -16,6 +16,7 @@ interface SetNumberStat {
   setNumber: number
   won: number
   lost: number
+  drawn: number
   total: number
   winRate: number
 }
@@ -441,7 +442,7 @@ function StatsPageContent() {
                         {setStat.winRate}%
                       </div>
                       <div className="text-xs text-gray-700">
-                        {setStat.won}W / {setStat.lost}L ({setStat.total} ukupno)
+                        {setStat.won}W / {setStat.lost}L{setStat.drawn > 0 ? ` / ${setStat.drawn}D` : ''} ({setStat.total} ukupno)
                       </div>
                     </div>
                   ))}

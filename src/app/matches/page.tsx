@@ -92,6 +92,7 @@ export default function MatchesPage() {
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all')
   const [selectedMonth, setSelectedMonth] = useState<number | 'all'>('all')
   const [onlyMine, setOnlyMine] = useState(false)
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string>('all')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -108,7 +109,7 @@ export default function MatchesPage() {
   // Reset to page 1 when filter or page size changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [filter, matchType, pageSize, selectedYear, selectedMonth, onlyMine])
+  }, [filter, matchType, pageSize, selectedYear, selectedMonth, onlyMine, selectedPlayerId])
 
   // Reset month when year changes
   useEffect(() => {
@@ -132,6 +133,21 @@ export default function MatchesPage() {
   // Get available years and months from all matches
   const { years: availableYears, monthsByYear } = getAvailableYearsAndMonths(matches)
 
+  // Get unique players from all matches for player filter
+  const allPlayers = (() => {
+    const playerMap = new Map<string, string>()
+    matches.forEach(match => {
+      match.players.forEach(p => {
+        if (p.user && p.user.id && p.user.name) {
+          playerMap.set(p.user.id, p.user.name)
+        }
+      })
+    })
+    return Array.from(playerMap.entries())
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'hr'))
+  })()
+
   const filteredMatches = matches.filter((match) => {
     // Admin i superadmin vide sve matcheve, ostali samo svoje
     const isAdmin = session?.user?.isAdmin || session?.user?.isSuperAdmin
@@ -149,6 +165,12 @@ export default function MatchesPage() {
       if (matchType === 'league' && !match.leagueId) return false
       if (matchType === 'rotation' && (!match.pairRotation || match.leagueId)) return false
       if (matchType === 'regular' && (match.pairRotation || match.leagueId)) return false
+    }
+
+    // Player filter
+    if (selectedPlayerId !== 'all') {
+      const hasPlayer = match.players.some(p => p.user?.id === selectedPlayerId)
+      if (!hasPlayer) return false
     }
 
     // Year filter
@@ -334,6 +356,22 @@ export default function MatchesPage() {
                 Samo moji
               </button>
             </div>
+          </div>
+
+          {/* Player filter */}
+          <div className="flex items-center gap-2">
+            <select
+              value={selectedPlayerId}
+              onChange={(e) => setSelectedPlayerId(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">Svi igrači</option>
+              {allPlayers.map((player) => (
+                <option key={player.id} value={player.id}>
+                  {player.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Year/Month filters */}

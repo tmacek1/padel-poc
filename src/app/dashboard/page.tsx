@@ -358,7 +358,7 @@ export default function DashboardPage() {
           {pairRankings.length > 0 && (
             <div className="bg-white rounded-lg shadow">
               <div className="p-6 border-b">
-                <h2 className="text-xl font-semibold text-gray-900">Top 5 parova</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Top 10 parova</h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">

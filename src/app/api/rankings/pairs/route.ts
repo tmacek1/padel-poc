@@ -143,7 +143,7 @@ export async function GET() {
         if (b.winRate !== a.winRate) return b.winRate - a.winRate
         return b.wins - a.wins
       })
-      .slice(0, 5)
+      .slice(0, 10)
 
     return NextResponse.json(rankings)
   } catch (error) {

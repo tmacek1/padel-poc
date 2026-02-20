@@ -2,13 +2,18 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 
 export default function ToolsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [driveStatus, setDriveStatus] = useState<{
+    loading: string | null
+    success: { filename: string; link: string } | null
+    error: string | null
+  }>({ loading: null, success: null, error: null })
 
   useEffect(() => {
     if (status === 'loading') return
@@ -16,6 +21,31 @@ export default function ToolsPage() {
       router.push('/dashboard')
     }
   }, [status, session, router])
+
+  const uploadToDrive = async (type: string) => {
+    setDriveStatus({ loading: type, success: null, error: null })
+    try {
+      const res = await fetch(`/api/admin/backup/drive?type=${type}`, {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setDriveStatus({ loading: null, success: null, error: data.error })
+        return
+      }
+      setDriveStatus({
+        loading: null,
+        success: { filename: data.filename, link: data.webViewLink },
+        error: null,
+      })
+    } catch {
+      setDriveStatus({
+        loading: null,
+        success: null,
+        error: 'Greška pri povezivanju sa serverom',
+      })
+    }
+  }
 
   if (status === 'loading') {
     return (
@@ -63,26 +93,54 @@ export default function ToolsPage() {
               >
                 Backup svega (matchevi + igrači + lige + statistika)
               </a>
+
+              {/* Google Drive upload */}
               <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-1">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  Nakon preuzimanja, uploadaj na Google Drive:
+                  Spremi backup direktno na Google Drive:
                 </p>
-                <a
-                  href="https://drive.google.com/drive/my-drive"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition font-medium text-sm"
-                >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                    <path d="M4.433 22l-1.766-3.062 7.233-12.526h3.533L6.2 18.938 4.433 22z" fill="#0066DA"/>
-                    <path d="M19.567 22H4.433l1.767-3.062h13.367L21.333 22h-1.766z" fill="#00AC47"/>
-                    <path d="M14.9 6.412L8.433 18.938l-1.766-3.062L12.133 6.412h2.767z" fill="#EA4335"/>
-                    <path d="M21.333 18.938L19.567 22l-1.766-3.062L14.9 6.412h3.533l2.9 12.526z" fill="#00832D"/>
-                    <path d="M14.9 6.412h-2.767L8.433 6.412l3.534-6.124L14.9 6.412z" fill="#2684FC"/>
-                    <path d="M8.433 6.412l3.534-6.124L8.433.288l-3.534 6.124h3.534z" fill="#FFBA00"/>
-                  </svg>
-                  Otvori Google Drive
-                </a>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => uploadToDrive('matches')}
+                    disabled={driveStatus.loading !== null}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <DriveIcon />
+                    {driveStatus.loading === 'matches' ? 'Spremam...' : 'Spremi matcheve na Drive'}
+                  </button>
+                  <button
+                    onClick={() => uploadToDrive('all')}
+                    disabled={driveStatus.loading !== null}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <DriveIcon />
+                    {driveStatus.loading === 'all' ? 'Spremam...' : 'Spremi sve na Drive'}
+                  </button>
+                </div>
+
+                {driveStatus.success && (
+                  <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <p className="text-sm text-green-800 dark:text-green-300">
+                      Spremljeno: <strong>{driveStatus.success.filename}</strong>
+                    </p>
+                    {driveStatus.success.link && (
+                      <a
+                        href={driveStatus.success.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-green-600 dark:text-green-400 underline hover:no-underline"
+                      >
+                        Otvori na Google Driveu
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {driveStatus.error && (
+                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <p className="text-sm text-red-800 dark:text-red-300">{driveStatus.error}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -110,5 +168,18 @@ export default function ToolsPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function DriveIcon() {
+  return (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+      <path d="M4.433 22l-1.766-3.062 7.233-12.526h3.533L6.2 18.938 4.433 22z" fill="#0066DA"/>
+      <path d="M19.567 22H4.433l1.767-3.062h13.367L21.333 22h-1.766z" fill="#00AC47"/>
+      <path d="M14.9 6.412L8.433 18.938l-1.766-3.062L12.133 6.412h2.767z" fill="#EA4335"/>
+      <path d="M21.333 18.938L19.567 22l-1.766-3.062L14.9 6.412h3.533l2.9 12.526z" fill="#00832D"/>
+      <path d="M14.9 6.412h-2.767L8.433 6.412l3.534-6.124L14.9 6.412z" fill="#2684FC"/>
+      <path d="M8.433 6.412l3.534-6.124L8.433.288l-3.534 6.124h3.534z" fill="#FFBA00"/>
+    </svg>
   )
 }

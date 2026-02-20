@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
   if (type === 'all') {
     // --- Igrači sheet ---
     const users = await prisma.user.findMany({
-      where: { isDeleted: false, isGuest: false },
+      where: { isDeleted: false },
       select: {
         id: true,
         name: true,
@@ -99,6 +99,7 @@ export async function GET(req: NextRequest) {
         email: true,
         handle: true,
         gender: true,
+        isGuest: true,
         dominantHand: true,
         preferredCourtSide: true,
         isAdmin: true,
@@ -119,6 +120,7 @@ export async function GET(req: NextRequest) {
       'Dominantna ruka': u.dominantHand === 'right' ? 'Desna' : u.dominantHand === 'left' ? 'Lijeva' : '',
       'Strana terena': u.preferredCourtSide === 'right' ? 'Desna' : u.preferredCourtSide === 'left' ? 'Lijeva' : '',
       Klub: u.club?.name || '',
+      Gost: u.isGuest ? 'Da' : 'Ne',
       Admin: u.isAdmin ? 'Da' : 'Ne',
       'Datum registracije': u.createdAt ? new Date(u.createdAt).toLocaleDateString('hr-HR') : '',
     }))
@@ -159,7 +161,7 @@ export async function GET(req: NextRequest) {
 
     // --- Statistika po igračima sheet ---
     const allUsers = await prisma.user.findMany({
-      where: { isDeleted: false, isGuest: false },
+      where: { isDeleted: false },
       select: { id: true, name: true, email: true },
       orderBy: { name: 'asc' },
     })

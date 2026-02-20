@@ -36,17 +36,22 @@ export default function Navbar() {
                   Statistika
                 </Link>
                 {session.user?.isAdmin && (
-                  <Link href="/admin" className="hover:text-blue-200 dark:hover:text-gray-300">
-                    Admin
-                  </Link>
+                  <>
+                    <Link href="/admin" className="hover:text-blue-200 dark:hover:text-gray-300">
+                      Admin
+                    </Link>
+                    <Link href="/tools" className="hover:text-blue-200 dark:hover:text-gray-300">
+                      Alati
+                    </Link>
+                  </>
                 )}
               </div>
 
               <div className="flex items-center space-x-2">
-                {/* Dark mode toggle - desktop only */}
+                {/* Dark mode toggle - both desktop and mobile */}
                 <button
                   onClick={toggleTheme}
-                  className="hidden md:flex p-2 rounded-md hover:bg-blue-700 dark:hover:bg-gray-700"
+                  className="p-2 rounded-md hover:bg-blue-700 dark:hover:bg-gray-700"
                   aria-label="Toggle theme"
                 >
                   {theme === 'dark' ? (

@@ -16,7 +16,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Link href="/dashboard" className="font-bold text-xl">
-            Padel PoC
+            PadelHub
           </Link>
 
           {session && (

@@ -39,7 +39,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions): 
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"Padel PoC" <${process.env.SMTP_USER}>`,
+      from: process.env.SMTP_FROM || `"PadelHub" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,
@@ -77,11 +77,11 @@ export async function sendWelcomeEmail(email: string, name: string | null): Prom
     <body>
       <div class="container">
         <div class="header">
-          <h1>🎾 Padel PoC</h1>
+          <h1>🎾 PadelHub</h1>
         </div>
         <div class="content">
           <h2>Dobrodošao/la, ${displayName}!</h2>
-          <p>Hvala ti na registraciji na <strong>Padel PoC</strong> platformu!</p>
+          <p>Hvala ti na registraciji na <strong>PadelHub</strong> platformu!</p>
           <p>Sada možeš:</p>
           <ul>
             <li>📅 Kreirati i pratiti svoje matcheve</li>
@@ -91,7 +91,7 @@ export async function sendWelcomeEmail(email: string, name: string | null): Prom
           </ul>
           <p>Ako imaš bilo kakvih pitanja, slobodno nam se javi!</p>
           <p>Vidimo se na terenu! 🎾</p>
-          <p><strong>Padel PoC Tim</strong></p>
+          <p><strong>PadelHub Tim</strong></p>
         </div>
         <div class="footer">
           <p>Ovo je automatski generirana poruka. Molimo ne odgovaraj na ovaj email.</p>
@@ -104,7 +104,7 @@ export async function sendWelcomeEmail(email: string, name: string | null): Prom
   const text = `
 Dobrodošao/la, ${displayName}!
 
-Hvala ti na registraciji na Padel PoC platformu!
+Hvala ti na registraciji na PadelHub platformu!
 
 Sada možeš:
 - Kreirati i pratiti svoje matcheve
@@ -116,12 +116,12 @@ Ako imaš bilo kakvih pitanja, slobodno nam se javi!
 
 Vidimo se na terenu! 🎾
 
-Padel PoC Tim
+PadelHub Tim
   `
 
   return sendEmail({
     to: email,
-    subject: '🎾 Dobrodošao/la na Padel PoC!',
+    subject: '🎾 Dobrodošao/la na PadelHub!',
     html,
     text,
   })

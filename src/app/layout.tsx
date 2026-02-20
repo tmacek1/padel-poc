@@ -18,13 +18,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Padel PoC",
+  title: "PadelHub",
   description: "Aplikacija za praćenje padel mečeva i statistike",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Padel PoC",
+    title: "PadelHub",
   },
   formatDetection: {
     telephone: false,

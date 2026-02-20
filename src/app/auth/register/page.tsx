@@ -57,7 +57,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md dark:shadow-gray-900/50 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-2 text-gray-900 dark:text-white">Padel PoC</h1>
+        <h1 className="text-2xl font-bold text-center mb-2 text-gray-900 dark:text-white">PadelHub</h1>
         <p className="text-center text-gray-600 dark:text-gray-400 mb-6">Prati svoje matcheve, statistiku i lige</p>
         <h2 className="text-xl text-center mb-4 text-gray-800 dark:text-gray-200">Registracija</h2>
 

@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-500 to-blue-700">
       <div className="text-center text-white">
-        <h1 className="text-5xl font-bold mb-4">Padel PoC</h1>
+        <h1 className="text-5xl font-bold mb-4">PadelHub</h1>
         <p className="text-xl mb-8 opacity-90">
           Prati svoje matcheve, statistiku i lige
         </p>

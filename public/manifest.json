@@ -1,5 +1,5 @@
 {
-  "name": "Padel PoC",
+  "name": "PadelHub",
   "short_name": "Padel",
   "description": "Aplikacija za praćenje padel mečeva i statistike",
   "start_url": "/dashboard",

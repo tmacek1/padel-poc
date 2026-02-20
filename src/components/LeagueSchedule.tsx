@@ -70,9 +70,9 @@ function formatDate(dateStr: string): string {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  pending: { label: 'Čeka', className: 'bg-gray-100 text-gray-700' },
-  scheduled: { label: 'Zakazano', className: 'bg-blue-100 text-blue-700' },
-  completed: { label: 'Odigrano', className: 'bg-green-100 text-green-700' },
+  pending: { label: 'Čeka', className: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' },
+  scheduled: { label: 'Zakazano', className: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
+  completed: { label: 'Odigrano', className: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' },
 }
 
 export default function LeagueSchedule({
@@ -241,7 +241,7 @@ export default function LeagueSchedule({
 
   if (matchups.length === 0) {
     return (
-      <div className="text-sm text-gray-600 py-2">
+      <div className="text-sm text-gray-600 dark:text-gray-400 py-2">
         Raspored još nije generiran.
       </div>
     )
@@ -250,19 +250,19 @@ export default function LeagueSchedule({
   return (
     <div className="space-y-4">
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm">
+        <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-3 py-2 rounded text-sm">
           {error}
         </div>
       )}
 
       {roundNumbers.map((roundNum) => (
-        <div key={roundNum} className="border border-gray-200 rounded-lg">
-          <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-            <h4 className="font-medium text-gray-900 text-sm">
+        <div key={roundNum} className="border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div className="bg-gray-50 dark:bg-gray-800 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+            <h4 className="font-medium text-gray-900 dark:text-white text-sm">
               Kolo {roundNum}
             </h4>
           </div>
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {rounds[roundNum].map((matchup) => {
               const status = statusConfig[matchup.status] || statusConfig.pending
               const matchResult = matchup.match
@@ -273,18 +273,18 @@ export default function LeagueSchedule({
                     {/* Teams */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="font-medium text-gray-900 truncate">
+                        <span className="font-medium text-gray-900 dark:text-white truncate">
                           {getTeamName(matchup.homeTeam)}
                         </span>
-                        <span className="text-gray-500 flex-shrink-0">vs</span>
-                        <span className="font-medium text-gray-900 truncate">
+                        <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">vs</span>
+                        <span className="font-medium text-gray-900 dark:text-white truncate">
                           {getTeamName(matchup.awayTeam)}
                         </span>
                       </div>
 
                       {/* Match result */}
                       {matchResult && matchResult.sets.length > 0 && (
-                        <div className="text-xs text-gray-700 mt-1">
+                        <div className="text-xs text-gray-700 dark:text-gray-300 mt-1">
                           Rezultat:{' '}
                           {matchResult.sets
                             .map((s) => `${s.team1Score}-${s.team2Score}`)
@@ -294,12 +294,12 @@ export default function LeagueSchedule({
 
                       {/* Scheduled date and location */}
                       {(matchup.scheduledAt || matchup.location) && (
-                        <div className="text-xs text-gray-600 mt-1 flex flex-wrap gap-2">
+                        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 flex flex-wrap gap-2">
                           {matchup.scheduledAt && (
                             <span>{formatDate(matchup.scheduledAt)}</span>
                           )}
                           {matchup.location && (
-                            <span className="text-blue-600">
+                            <span className="text-blue-600 dark:text-blue-400">
                               @ {matchup.location.name}
                               {matchup.location.city && `, ${matchup.location.city}`}
                             </span>
@@ -321,7 +321,7 @@ export default function LeagueSchedule({
                           {/* Edit date/location button */}
                           <button
                             onClick={() => startEditing(matchup)}
-                            className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50"
+                            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20"
                             title="Uredi termin"
                           >
                             Termin
@@ -331,7 +331,7 @@ export default function LeagueSchedule({
                           <button
                             onClick={() => handleCreateMatch(matchup.id)}
                             disabled={creatingMatch === matchup.id}
-                            className="text-xs text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 disabled:opacity-50"
+                            className="text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 px-2 py-1 rounded hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-50"
                             title="Kreiraj mec"
                           >
                             {creatingMatch === matchup.id
@@ -342,7 +342,7 @@ export default function LeagueSchedule({
                       )}
 
                       {matchup.matchId && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           Mec kreiran
                         </span>
                       )}
@@ -351,28 +351,28 @@ export default function LeagueSchedule({
 
                   {/* Edit inline form */}
                   {isAdmin && editingMatchup === matchup.id && (
-                    <div className="mt-3 p-3 bg-blue-50 rounded-lg space-y-3">
+                    <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-3">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {/* Date/time */}
                         <div>
-                          <label className="block text-xs text-gray-700 mb-1">Datum i vrijeme</label>
+                          <label className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Datum i vrijeme</label>
                           <input
                             type="datetime-local"
                             value={scheduledDate}
                             onChange={(e) => setScheduledDate(e.target.value)}
-                            className="w-full text-sm px-2 py-1.5 border border-gray-300 rounded text-gray-900 bg-white"
+                            className="w-full text-sm px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                           />
                         </div>
 
                         {/* Location */}
                         <div>
-                          <label className="block text-xs text-gray-700 mb-1">Lokacija</label>
+                          <label className="block text-xs text-gray-700 dark:text-gray-300 mb-1">Lokacija</label>
                           {!showNewLocation ? (
                             <div className="flex gap-2">
                               <select
                                 value={selectedLocationId}
                                 onChange={(e) => setSelectedLocationId(e.target.value)}
-                                className="flex-1 text-sm px-2 py-1.5 border border-gray-300 rounded text-gray-900 bg-white"
+                                className="flex-1 text-sm px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                               >
                                 <option value="">-- Odaberi lokaciju --</option>
                                 {locations.map((loc) => (
@@ -384,7 +384,7 @@ export default function LeagueSchedule({
                               <button
                                 type="button"
                                 onClick={() => setShowNewLocation(true)}
-                                className="text-xs text-blue-600 hover:text-blue-800 px-2 whitespace-nowrap"
+                                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 px-2 whitespace-nowrap"
                                 title="Dodaj novu lokaciju"
                               >
                                 + Nova
@@ -397,21 +397,21 @@ export default function LeagueSchedule({
                                 value={newLocationName}
                                 onChange={(e) => setNewLocationName(e.target.value)}
                                 placeholder="Naziv lokacije *"
-                                className="w-full text-sm px-2 py-1.5 border border-gray-300 rounded text-gray-900 bg-white"
+                                className="w-full text-sm px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                               />
                               <input
                                 type="text"
                                 value={newLocationAddress}
                                 onChange={(e) => setNewLocationAddress(e.target.value)}
                                 placeholder="Adresa *"
-                                className="w-full text-sm px-2 py-1.5 border border-gray-300 rounded text-gray-900 bg-white"
+                                className="w-full text-sm px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                               />
                               <input
                                 type="text"
                                 value={newLocationCity}
                                 onChange={(e) => setNewLocationCity(e.target.value)}
                                 placeholder="Grad *"
-                                className="w-full text-sm px-2 py-1.5 border border-gray-300 rounded text-gray-900 bg-white"
+                                className="w-full text-sm px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                               />
                               <div className="flex gap-2">
                                 <button
@@ -430,7 +430,7 @@ export default function LeagueSchedule({
                                     setNewLocationAddress('')
                                     setNewLocationCity('')
                                   }}
-                                  className="text-xs text-gray-600 hover:text-gray-800 px-2"
+                                  className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 px-2"
                                 >
                                   Odustani
                                 </button>
@@ -441,7 +441,7 @@ export default function LeagueSchedule({
                       </div>
 
                       {/* Action buttons */}
-                      <div className="flex gap-2 pt-2 border-t border-blue-100">
+                      <div className="flex gap-2 pt-2 border-t border-blue-100 dark:border-blue-800">
                         <button
                           onClick={() => handleSave(matchup.id)}
                           disabled={saving}
@@ -455,7 +455,7 @@ export default function LeagueSchedule({
                             setError('')
                             setShowNewLocation(false)
                           }}
-                          className="text-xs text-gray-600 hover:text-gray-800 px-3 py-1.5"
+                          className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 px-3 py-1.5"
                         >
                           Odustani
                         </button>

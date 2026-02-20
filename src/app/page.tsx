@@ -12,7 +12,7 @@ export default function Home() {
         <div className="space-x-4">
           <Link
             href="/auth/login"
-            className="inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
+            className="inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-200 transition"
           >
             Prijava
           </Link>

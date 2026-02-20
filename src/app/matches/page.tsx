@@ -238,22 +238,22 @@ export default function MatchesPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-700">Učitavanje...</div>
+          <div className="text-gray-700 dark:text-gray-300">Učitavanje...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Matchevi</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Matchevi</h1>
           <Link
             href="/matches/new"
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
@@ -272,7 +272,7 @@ export default function MatchesPage() {
                 className={`px-3 py-2 rounded-lg text-sm font-medium ${
                   filter === 'all'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                    : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                 }`}
               >
                 Svi
@@ -282,7 +282,7 @@ export default function MatchesPage() {
                 className={`px-3 py-2 rounded-lg text-sm font-medium ${
                   filter === 'scheduled'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                    : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                 }`}
               >
                 Zakazani
@@ -292,7 +292,7 @@ export default function MatchesPage() {
                 className={`px-3 py-2 rounded-lg text-sm font-medium ${
                   filter === 'completed'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                    : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                 }`}
               >
                 Završeni
@@ -300,13 +300,13 @@ export default function MatchesPage() {
             </div>
 
             {/* Match type filter */}
-            <div className="flex gap-1 ml-2 pl-2 border-l border-gray-300">
+            <div className="flex gap-1 ml-2 pl-2 border-l border-gray-300 dark:border-gray-600">
               <button
                 onClick={() => setMatchType('all')}
                 className={`px-3 py-2 rounded-lg text-sm font-medium ${
                   matchType === 'all'
                     ? 'bg-purple-600 text-white'
-                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                    : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                 }`}
               >
                 Sve vrste
@@ -316,7 +316,7 @@ export default function MatchesPage() {
                 className={`px-3 py-2 rounded-lg text-sm font-medium ${
                   matchType === 'regular'
                     ? 'bg-purple-600 text-white'
-                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                    : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                 }`}
               >
                 Regularni
@@ -326,7 +326,7 @@ export default function MatchesPage() {
                 className={`px-3 py-2 rounded-lg text-sm font-medium ${
                   matchType === 'rotation'
                     ? 'bg-purple-600 text-white'
-                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                    : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                 }`}
               >
                 Rotacija
@@ -336,7 +336,7 @@ export default function MatchesPage() {
                 className={`px-3 py-2 rounded-lg text-sm font-medium ${
                   matchType === 'league'
                     ? 'bg-purple-600 text-white'
-                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                    : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                 }`}
               >
                 Liga
@@ -344,13 +344,13 @@ export default function MatchesPage() {
             </div>
 
             {/* Samo moji filter */}
-            <div className="ml-2 pl-2 border-l border-gray-300">
+            <div className="ml-2 pl-2 border-l border-gray-300 dark:border-gray-600">
               <button
                 onClick={() => setOnlyMine(!onlyMine)}
                 className={`px-3 py-2 rounded-lg text-sm font-medium ${
                   onlyMine
                     ? 'bg-green-600 text-white'
-                    : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-300'
+                    : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                 }`}
               >
                 Samo moji
@@ -363,7 +363,7 @@ export default function MatchesPage() {
             <select
               value={selectedPlayerId}
               onChange={(e) => setSelectedPlayerId(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Svi igrači</option>
               {allPlayers.map((player) => (
@@ -379,7 +379,7 @@ export default function MatchesPage() {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Sve godine</option>
               {availableYears.map((year) => (
@@ -393,7 +393,7 @@ export default function MatchesPage() {
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-                className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">Svi mjeseci</option>
                 {monthsByYear[selectedYear].map((month) => (
@@ -407,11 +407,11 @@ export default function MatchesPage() {
 
           {/* Page size selector */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Prikaži:</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">Prikaži:</span>
             <select
               value={pageSize}
               onChange={(e) => setPageSize(Number(e.target.value))}
-              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {PAGE_SIZE_OPTIONS.map((size) => (
                 <option key={size} value={size}>
@@ -423,17 +423,17 @@ export default function MatchesPage() {
         </div>
 
         {/* Results summary */}
-        <div className="text-sm text-gray-600 mb-4">
+        <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Prikazano {startIndex + 1}-{Math.min(endIndex, totalMatches)} od {totalMatches} matcheva
         </div>
 
         {/* Matches List */}
         {paginatedMatches.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-700 mb-4">Nema matcheva za prikaz</p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-8 text-center">
+            <p className="text-gray-700 dark:text-gray-300 mb-4">Nema matcheva za prikaz</p>
             <Link
               href="/matches/new"
-              className="text-blue-600 hover:underline font-medium"
+              className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
             >
               Kreiraj novi match
             </Link>
@@ -444,12 +444,12 @@ export default function MatchesPage() {
               <Link
                 key={match.id}
                 href={`/matches/${match.id}`}
-                className="block bg-white rounded-lg shadow hover:shadow-md transition"
+                className="block bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 hover:shadow-md dark:hover:shadow-gray-900/70 transition"
               >
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <div className="text-lg font-semibold text-gray-900">
+                      <div className="text-lg font-semibold text-gray-900 dark:text-white">
                         {new Date(match.scheduledAt).toLocaleDateString('hr-HR', {
                           weekday: 'long',
                           day: 'numeric',
@@ -459,10 +459,10 @@ export default function MatchesPage() {
                           minute: '2-digit',
                         })}
                       </div>
-                      <div className="text-gray-700 flex items-center gap-3">
+                      <div className="text-gray-700 dark:text-gray-300 flex items-center gap-3">
                         <span>{match.location?.name || 'Lokacija nije određena'}</span>
                         {match.durationMinutes && (
-                          <span className="inline-flex items-center gap-1 text-sm text-gray-600">
+                          <span className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
@@ -474,38 +474,38 @@ export default function MatchesPage() {
                     <div className="flex flex-wrap items-center gap-1.5">
                       {/* Liga badge */}
                       {match.leagueId ? (
-                        <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 border border-orange-300 rounded font-medium">
+                        <span className="px-2 py-1 text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border border-orange-300 dark:border-orange-700 rounded font-medium">
                           Liga
                         </span>
                       ) : (
-                        <span className="px-2 py-1 text-xs bg-teal-100 text-teal-800 border border-teal-300 rounded font-medium">
+                        <span className="px-2 py-1 text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300 border border-teal-300 dark:border-teal-700 rounded font-medium">
                           Regular
                         </span>
                       )}
                       {/* Rotacija badge */}
                       {match.pairRotation && (
-                        <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-800 border border-indigo-300 rounded font-medium">
+                        <span className="px-2 py-1 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700 rounded font-medium">
                           Rotacija
                         </span>
                       )}
                       {match.creatorId === session?.user?.id && (
-                        <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded font-medium">
+                        <span className="px-2 py-1 text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded font-medium">
                           Tvoj match
                         </span>
                       )}
                       <span
                         className={`px-2 py-1 text-xs rounded font-medium ${
                           match.status === 'scheduled'
-                            ? 'bg-blue-100 text-blue-800'
+                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
                             : match.status === 'in_progress'
-                            ? 'bg-yellow-100 text-yellow-800'
+                            ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                             : match.status === 'completed'
-                            ? 'bg-green-100 text-green-800'
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
                             : match.status === 'cancelled'
-                            ? 'bg-red-100 text-red-800'
+                            ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                             : match.status === 'looking_for_players'
-                            ? 'bg-orange-100 text-orange-800'
-                            : 'bg-gray-200 text-gray-800'
+                            ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300'
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
                         }`}
                       >
                         {match.status === 'scheduled'
@@ -525,31 +525,31 @@ export default function MatchesPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="font-semibold text-gray-900">{getTeamPlayers(match, 1)}</div>
+                      <div className="font-semibold text-gray-900 dark:text-white">{getTeamPlayers(match, 1)}</div>
                     </div>
                     <div className="px-6 text-center">
                       {match.status === 'completed' && !match.pairRotation ? (
-                        <div className="text-2xl font-bold text-gray-900">
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
                           {getMatchScore(match)}
                         </div>
                       ) : match.status === 'completed' && match.pairRotation ? (
-                        <div className="text-sm text-indigo-600 font-medium">rotacija</div>
+                        <div className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">rotacija</div>
                       ) : (
-                        <div className="text-gray-600 font-medium">vs</div>
+                        <div className="text-gray-600 dark:text-gray-400 font-medium">vs</div>
                       )}
                     </div>
                     <div className="flex-1 text-right">
-                      <div className="font-semibold text-gray-900">{getTeamPlayers(match, 2)}</div>
+                      <div className="font-semibold text-gray-900 dark:text-white">{getTeamPlayers(match, 2)}</div>
                     </div>
                   </div>
 
                   {/* Rotation Schedule with Results - Collapsible */}
                   {parseRotationSchedule(match) && (
                     <details
-                      className="mt-4 pt-4 border-t border-gray-200"
+                      className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <summary className="text-sm font-medium text-indigo-700 cursor-pointer hover:text-indigo-900">
+                      <summary className="text-sm font-medium text-indigo-700 dark:text-indigo-400 cursor-pointer hover:text-indigo-900 dark:hover:text-indigo-300">
                         Prikaži raspored rotacije parova
                       </summary>
                       <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-2">
@@ -570,26 +570,26 @@ export default function MatchesPage() {
                           return (
                             <div
                               key={setConfig.setNumber}
-                              className="rounded-lg p-2 text-center bg-white border border-indigo-200"
+                              className="rounded-lg p-2 text-center bg-white dark:bg-gray-700 border border-indigo-200 dark:border-indigo-700"
                             >
-                              <div className="text-xs font-bold text-indigo-800">
+                              <div className="text-xs font-bold text-indigo-800 dark:text-indigo-300">
                                 Set {setConfig.setNumber}
                               </div>
                               {hasResult && (
-                                <div className="text-sm font-bold text-gray-900 mb-1">
+                                <div className="text-sm font-bold text-gray-900 dark:text-white mb-1">
                                   {setResult.team1Score} : {setResult.team2Score}
                                   {setResult.team1Tiebreak != null && setResult.team2Tiebreak != null && (
-                                    <span className="text-xs font-normal text-gray-500 ml-1">
+                                    <span className="text-xs font-normal text-gray-500 dark:text-gray-400 ml-1">
                                       ({setResult.team1Tiebreak}-{setResult.team2Tiebreak})
                                     </span>
                                   )}
                                 </div>
                               )}
-                              <div className="text-xs text-gray-700">
+                              <div className="text-xs text-gray-700 dark:text-gray-300">
                                 <span className="font-medium">{team1Players}</span>
                               </div>
-                              <div className="text-xs text-gray-500 my-0.5">vs</div>
-                              <div className="text-xs text-gray-700">
+                              <div className="text-xs text-gray-500 dark:text-gray-400 my-0.5">vs</div>
+                              <div className="text-xs text-gray-700 dark:text-gray-300">
                                 <span className="font-medium">{team2Players}</span>
                               </div>
                             </div>
@@ -607,7 +607,7 @@ export default function MatchesPage() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               Stranica {currentPage} od {totalPages}
             </div>
             <div className="flex items-center gap-2">
@@ -617,8 +617,8 @@ export default function MatchesPage() {
                 disabled={currentPage === 1}
                 className={`px-3 py-2 rounded-lg text-sm font-medium ${
                   currentPage === 1
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 ← Prethodna
@@ -641,14 +641,14 @@ export default function MatchesPage() {
                     return (
                       <span key={page} className="flex items-center">
                         {showEllipsis && (
-                          <span className="px-2 text-gray-400">...</span>
+                          <span className="px-2 text-gray-400 dark:text-gray-500">...</span>
                         )}
                         <button
                           onClick={() => handlePageChange(page)}
                           className={`w-10 h-10 rounded-lg text-sm font-medium ${
                             page === currentPage
                               ? 'bg-blue-600 text-white'
-                              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                           }`}
                         >
                           {page}
@@ -664,8 +664,8 @@ export default function MatchesPage() {
                 disabled={currentPage === totalPages}
                 className={`px-3 py-2 rounded-lg text-sm font-medium ${
                   currentPage === totalPages
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 Sljedeća →

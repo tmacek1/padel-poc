@@ -399,10 +399,10 @@ export default function AdminPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
         <Navbar />
         <div className="max-w-4xl mx-auto p-6">
-          <p className="text-gray-700">Učitavanje...</p>
+          <p className="text-gray-700 dark:text-gray-300">Učitavanje...</p>
         </div>
       </div>
     )
@@ -413,20 +413,20 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <Navbar />
       <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6 text-gray-900">Upravljanje korisnicima</h1>
+        <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Upravljanje korisnicima</h1>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
             {error}
           </div>
         )}
 
         {/* Search Section */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-4 mb-6">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Pretraži korisnike
           </label>
           <div className="relative">
@@ -435,10 +435,10 @@ export default function AdminPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Upiši ime ili email..."
-              className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
             />
             <svg
-              className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
+              className="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -451,29 +451,29 @@ export default function AdminPage() {
               />
             </svg>
             {searching && (
-              <span className="absolute right-3 top-2.5 text-sm text-gray-500">Tražim...</span>
+              <span className="absolute right-3 top-2.5 text-sm text-gray-500 dark:text-gray-400">Tražim...</span>
             )}
           </div>
         </div>
 
         {/* Search Results */}
         {searchQuery && searchResults.length > 0 && (
-          <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
-            <div className="px-4 py-3 bg-blue-50 border-b border-blue-100">
-              <h3 className="font-medium text-gray-900">Rezultati pretrage ({searchResults.length})</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 overflow-hidden mb-6">
+            <div className="px-4 py-3 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-800">
+              <h3 className="font-medium text-gray-900 dark:text-white">Rezultati pretrage ({searchResults.length})</h3>
             </div>
             <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Korisnik</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Registriran</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Admin</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Akcija</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Korisnik</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Registriran</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Admin</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Akcija</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {searchResults.map((user) => (
                   <tr key={user.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -483,21 +483,21 @@ export default function AdminPage() {
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center mr-3">{user.name?.[0] || user.email[0]}</div>
                         )}
-                        <span className="font-medium text-gray-900">{user.name || '-'}</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{user.name || '-'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">{user.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">{formatDate(user.createdAt)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{user.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-400 text-sm">{formatDate(user.createdAt)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {user.isAdmin ? (
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Da</span>
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">Da</span>
                       ) : (
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-800">Ne</span>
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">Ne</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {user.id === session.user.id ? (
-                        <span className="text-gray-600 text-sm font-medium">Vi</span>
+                        <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">Vi</span>
                       ) : (
                         <div className="flex gap-2">
                           <button
@@ -526,28 +526,28 @@ export default function AdminPage() {
         )}
 
         {searchQuery && searchResults.length === 0 && !searching && (
-          <div className="bg-white rounded-lg shadow p-6 mb-6 text-center text-gray-600">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 mb-6 text-center text-gray-600 dark:text-gray-400">
             Nema rezultata za &quot;{searchQuery}&quot;
           </div>
         )}
 
         {/* Recent Users Section */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-            <h3 className="font-medium text-gray-900">Zadnje registrirani korisnici</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 overflow-hidden">
+          <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+            <h3 className="font-medium text-gray-900 dark:text-white">Zadnje registrirani korisnici</h3>
           </div>
           <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Korisnik</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Registriran</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Admin</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Akcija</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Korisnik</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Registriran</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Admin</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Akcija</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {recentUsers.map((user) => (
                 <tr key={user.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -557,21 +557,21 @@ export default function AdminPage() {
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center mr-3">{user.name?.[0] || user.email[0]}</div>
                       )}
-                      <span className="font-medium text-gray-900">{user.name || '-'}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">{user.name || '-'}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">{user.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">{formatDate(user.createdAt)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{user.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-400 text-sm">{formatDate(user.createdAt)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {user.isAdmin ? (
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Da</span>
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">Da</span>
                     ) : (
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-800">Ne</span>
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">Ne</span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {user.id === session.user.id ? (
-                      <span className="text-gray-600 text-sm font-medium">Vi</span>
+                      <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">Vi</span>
                     ) : (
                       <div className="flex gap-2">
                         <button
@@ -599,34 +599,34 @@ export default function AdminPage() {
         </div>
 
         {/* Guest Users Section */}
-        <h2 className="text-2xl font-bold mb-6 mt-12 text-gray-900">Gost igrači</h2>
+        <h2 className="text-2xl font-bold mb-6 mt-12 text-gray-900 dark:text-white">Gost igrači</h2>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden mb-12">
-          <div className="px-4 py-3 bg-orange-50 border-b border-orange-200">
-            <h3 className="font-medium text-gray-900">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 overflow-hidden mb-12">
+          <div className="px-4 py-3 bg-orange-50 dark:bg-orange-900/20 border-b border-orange-200 dark:border-orange-800">
+            <h3 className="font-medium text-gray-900 dark:text-white">
               Ghost korisnici ({guestUsers.length})
             </h3>
-            <p className="text-xs text-gray-600 mt-1">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
               Gost igrači kreirani pri dodavanju matcheva. Možete ih spojiti s registriranim korisnicima.
             </p>
           </div>
 
           {guestUsers.length === 0 ? (
-            <div className="p-8 text-center text-gray-600">
+            <div className="p-8 text-center text-gray-600 dark:text-gray-400">
               Nema gost igrača za spajanje.
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Ime</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Kreiran</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Matchevi</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Akcija</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Ime</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Kreiran</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Matchevi</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Akcija</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {guestUsers.map((guest) => (
                     <tr key={guest.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -635,13 +635,13 @@ export default function AdminPage() {
                             {guest.name?.[0] || '?'}
                           </div>
                           <div>
-                            <span className="font-medium text-gray-900">{guest.name || '-'}</span>
-                            <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-orange-100 text-orange-700">gost</span>
+                            <span className="font-medium text-gray-900 dark:text-white">{guest.name || '-'}</span>
+                            <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">gost</span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-600 text-sm">{formatDate(guest.createdAt)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-800">{guest.matchCount}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-400 text-sm">{formatDate(guest.createdAt)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{guest.matchCount}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {mergingGuestId === guest.id ? (
                           <div className="space-y-2 min-w-[250px]">
@@ -654,14 +654,14 @@ export default function AdminPage() {
                                   searchMergeTarget(e.target.value)
                                 }}
                                 placeholder="Pretraži registriranog korisnika..."
-                                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                               />
                               {mergeSearching && (
-                                <span className="absolute right-2 top-2 text-xs text-gray-500">...</span>
+                                <span className="absolute right-2 top-2 text-xs text-gray-500 dark:text-gray-400">...</span>
                               )}
                             </div>
                             {mergeSearchResults.length > 0 && (
-                              <div className="border border-gray-200 rounded-lg max-h-40 overflow-auto bg-white shadow-sm">
+                              <div className="border border-gray-200 dark:border-gray-600 rounded-lg max-h-40 overflow-auto bg-white dark:bg-gray-700 shadow-sm">
                                 {mergeSearchResults.map((u) => (
                                   <button
                                     key={u.id}
@@ -674,10 +674,10 @@ export default function AdminPage() {
                                         targetName: u.name || u.email,
                                       })
                                     }}
-                                    className="w-full px-3 py-2 text-left text-sm hover:bg-blue-50 border-b border-gray-100 last:border-0"
+                                    className="w-full px-3 py-2 text-left text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 border-b border-gray-100 dark:border-gray-600 last:border-0"
                                   >
-                                    <span className="font-medium text-gray-900">{u.name || '-'}</span>
-                                    <span className="text-gray-500 ml-2 text-xs">{u.email}</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">{u.name || '-'}</span>
+                                    <span className="text-gray-500 dark:text-gray-400 ml-2 text-xs">{u.email}</span>
                                   </button>
                                 ))}
                               </div>
@@ -689,7 +689,7 @@ export default function AdminPage() {
                                 setMergeTargetSearch('')
                                 setMergeSearchResults([])
                               }}
-                              className="text-xs text-gray-500 hover:text-gray-700"
+                              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                             >
                               Odustani
                             </button>
@@ -719,20 +719,20 @@ export default function AdminPage() {
               onClick={() => setMergeConfirm(null)}
             />
             <div className="flex min-h-full items-center justify-center p-4">
-              <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+              <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl dark:shadow-gray-900/50 max-w-md w-full p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                     <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Potvrdi spajanje</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Potvrdi spajanje</h3>
                 </div>
 
-                <p className="text-sm text-gray-700 mb-4">
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
                   Svi matchevi gosta <strong>{mergeConfirm.guestName}</strong> bit će prebačeni na korisnika <strong>{mergeConfirm.targetName}</strong>.
                 </p>
-                <p className="text-xs text-gray-500 mb-6">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
                   Ova akcija se ne može poništiti. Ghost korisnik će biti označen kao obrisan.
                 </p>
 
@@ -746,7 +746,7 @@ export default function AdminPage() {
                   </button>
                   <button
                     onClick={() => setMergeConfirm(null)}
-                    className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium"
+                    className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium"
                   >
                     Odustani
                   </button>
@@ -757,11 +757,11 @@ export default function AdminPage() {
         )}
 
         {/* Locations Management Section */}
-        <h2 className="text-2xl font-bold mb-6 mt-12 text-gray-900">Upravljanje lokacijama</h2>
+        <h2 className="text-2xl font-bold mb-6 mt-12 text-gray-900 dark:text-white">Upravljanje lokacijama</h2>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-            <span className="text-sm text-gray-600">{locations.length} lokacija</span>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 overflow-hidden">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <span className="text-sm text-gray-600 dark:text-gray-400">{locations.length} lokacija</span>
             <button
               onClick={() => setShowNewLocationForm(!showNewLocationForm)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
@@ -772,36 +772,36 @@ export default function AdminPage() {
 
           {/* New location form */}
           {showNewLocationForm && (
-            <div className="p-4 bg-blue-50 border-b border-blue-200">
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Naziv *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Naziv *</label>
                   <input
                     type="text"
                     value={newLocationName}
                     onChange={(e) => setNewLocationName(e.target.value)}
                     placeholder="npr. Padel Zagreb"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Adresa *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Adresa *</label>
                   <input
                     type="text"
                     value={newLocationAddress}
                     onChange={(e) => setNewLocationAddress(e.target.value)}
                     placeholder="npr. Ulica grada Vukovara 123"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Grad *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Grad *</label>
                   <input
                     type="text"
                     value={newLocationCity}
                     onChange={(e) => setNewLocationCity(e.target.value)}
                     placeholder="npr. Zagreb"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                   />
                 </div>
               </div>
@@ -816,29 +816,29 @@ export default function AdminPage() {
           )}
 
           {locations.length === 0 ? (
-            <div className="p-8 text-center text-gray-600">
+            <div className="p-8 text-center text-gray-600 dark:text-gray-400">
               Nema lokacija. Klikni &quot;+ Nova lokacija&quot; za dodavanje.
             </div>
           ) : (
             <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Naziv
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Adresa
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Grad
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                     Akcija
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {locations.map((location) => (
                   <tr key={location.id}>
                     {editingLocationId === location.id ? (
@@ -848,7 +848,7 @@ export default function AdminPage() {
                             type="text"
                             value={editLocationName}
                             onChange={(e) => setEditLocationName(e.target.value)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-gray-900 text-sm"
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded text-gray-900 text-sm"
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -856,7 +856,7 @@ export default function AdminPage() {
                             type="text"
                             value={editLocationAddress}
                             onChange={(e) => setEditLocationAddress(e.target.value)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-gray-900 text-sm"
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded text-gray-900 text-sm"
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -864,7 +864,7 @@ export default function AdminPage() {
                             type="text"
                             value={editLocationCity}
                             onChange={(e) => setEditLocationCity(e.target.value)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-gray-900 text-sm"
+                            className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded text-gray-900 text-sm"
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -878,7 +878,7 @@ export default function AdminPage() {
                             </button>
                             <button
                               onClick={cancelEditingLocation}
-                              className="px-3 py-1 rounded text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              className="px-3 py-1 rounded text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                             >
                               Odustani
                             </button>
@@ -888,12 +888,12 @@ export default function AdminPage() {
                     ) : (
                       <>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="font-medium text-gray-900">{location.name}</span>
+                          <span className="font-medium text-gray-900 dark:text-white">{location.name}</span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
                           {location.address || '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
                           {location.city || '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -921,6 +921,60 @@ export default function AdminPage() {
             </table>
             </div>
           )}
+        </div>
+        {/* Backup & Import Section */}
+        <h2 className="text-2xl font-bold mb-6 mt-12 text-gray-900 dark:text-white">Alati</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          {/* Backup */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Backup podataka</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Preuzmi Excel datoteku s podacima</p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3">
+              <a
+                href="/api/admin/backup?type=matches"
+                className="block text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm"
+              >
+                Backup matcheva
+              </a>
+              <a
+                href="/api/admin/backup?type=all"
+                className="block text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium text-sm"
+              >
+                Backup svega (matchevi + igrači + lige)
+              </a>
+            </div>
+          </div>
+
+          {/* Import */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Uvoz podataka</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Uvezi matcheve iz CSV datoteke</p>
+              </div>
+            </div>
+            <a
+              href="/admin/import"
+              className="block text-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium text-sm"
+            >
+              Otvori uvoz podataka
+            </a>
+          </div>
         </div>
       </div>
     </div>

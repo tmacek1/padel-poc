@@ -73,24 +73,24 @@ export default function CompleteProfilePage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-gray-700">Učitavanje...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <div className="text-gray-700 dark:text-gray-300">Učitavanje...</div>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-500 to-blue-700 py-12 px-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg dark:shadow-gray-900/50 max-w-md w-full p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Dovrši profil</h1>
-          <p className="text-gray-700 mt-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dovrši profil</h1>
+          <p className="text-gray-700 dark:text-gray-300 mt-2">
             Samo još par podataka da završiš registraciju
           </p>
         </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+          <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-6">
             {error}
           </div>
         )}
@@ -98,14 +98,14 @@ export default function CompleteProfilePage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Ime i prezime *
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              className="w-full px-4 py-3 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700"
               placeholder="Tvoje ime i prezime"
               required
             />
@@ -113,7 +113,7 @@ export default function CompleteProfilePage() {
 
           {/* Gender */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Spol
             </label>
             <div className="flex gap-4">
@@ -126,7 +126,7 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setGender(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span className="text-gray-800">Muški</span>
+                <span className="text-gray-800 dark:text-gray-200">Muški</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -137,14 +137,14 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setGender(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span className="text-gray-800">Ženski</span>
+                <span className="text-gray-800 dark:text-gray-200">Ženski</span>
               </label>
             </div>
           </div>
 
           {/* Dominant Hand */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Glavna ruka
             </label>
             <div className="flex gap-4">
@@ -157,7 +157,7 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setDominantHand(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span className="text-gray-800">Desna</span>
+                <span className="text-gray-800 dark:text-gray-200">Desna</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -168,14 +168,14 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setDominantHand(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span className="text-gray-800">Lijeva</span>
+                <span className="text-gray-800 dark:text-gray-200">Lijeva</span>
               </label>
             </div>
           </div>
 
           {/* Preferred Court Side */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Preferirana strana terena
             </label>
             <div className="flex gap-4">
@@ -188,7 +188,7 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setPreferredCourtSide(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span className="text-gray-800">Desna (Drive)</span>
+                <span className="text-gray-800 dark:text-gray-200">Desna (Drive)</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -199,7 +199,7 @@ export default function CompleteProfilePage() {
                   onChange={(e) => setPreferredCourtSide(e.target.value)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span className="text-gray-800">Lijeva (Reves)</span>
+                <span className="text-gray-800 dark:text-gray-200">Lijeva (Reves)</span>
               </label>
             </div>
           </div>

@@ -62,11 +62,11 @@ interface Season {
 }
 
 const tierBadges: Record<string, string> = {
-  diamond: 'bg-blue-100 text-blue-800 border-blue-300',
-  platinum: 'bg-cyan-100 text-cyan-800 border-cyan-300',
-  gold: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  silver: 'bg-gray-200 text-gray-800 border-gray-400',
-  bronze: 'bg-amber-100 text-amber-800 border-amber-300',
+  diamond: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-300',
+  platinum: 'bg-cyan-100 text-cyan-800 dark:text-cyan-300 border-cyan-300',
+  gold: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-300',
+  silver: 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-400',
+  bronze: 'bg-amber-100 text-amber-800 dark:text-amber-300 border-amber-300',
 }
 
 const tierIcons: Record<string, string> = {
@@ -401,10 +401,10 @@ export default function LeaguesPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-600">Učitavanje...</div>
+          <div className="text-gray-600 dark:text-gray-400">Učitavanje...</div>
         </div>
       </div>
     )
@@ -421,12 +421,12 @@ export default function LeaguesPage() {
   const tierOrder = ['diamond', 'platinum', 'gold', 'silver', 'bronze']
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Lige</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Lige</h1>
 
           <div className="flex items-center gap-4">
             {/* Admin: Create League button */}
@@ -444,7 +444,7 @@ export default function LeaguesPage() {
               <select
                 value={selectedSeason}
                 onChange={(e) => setSelectedSeason(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700"
               >
                 <option value="">Sve lige</option>
                 {seasons.map((season) => (
@@ -459,16 +459,16 @@ export default function LeaguesPage() {
 
         {/* Admin: Create League Form */}
         {isAdmin && showCreateForm && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Kreiraj novu ligu</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6 mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Kreiraj novu ligu</h2>
             {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4">
                 {error}
               </div>
             )}
             <form onSubmit={handleCreateLeague} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Naziv lige *
                 </label>
                 <input
@@ -476,11 +476,11 @@ export default function LeaguesPage() {
                   value={newLeagueName}
                   onChange={(e) => setNewLeagueName(e.target.value)}
                   placeholder="npr. Bronze Liga Zagreb"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white dark:bg-gray-700"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Opis (opcionalno)
                 </label>
                 <textarea
@@ -488,17 +488,17 @@ export default function LeaguesPage() {
                   onChange={(e) => setNewLeagueDescription(e.target.value)}
                   placeholder="Opis lige..."
                   rows={2}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white dark:bg-gray-700"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Tier
                 </label>
                 <select
                   value={newLeagueTier}
                   onChange={(e) => setNewLeagueTier(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white dark:bg-gray-700"
                 >
                   {tierOrder.map((tier) => (
                     <option key={tier} value={tier}>
@@ -518,12 +518,12 @@ export default function LeaguesPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateForm(false)}
-                  className="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-50 transition"
+                  className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-6 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                 >
                   Odustani
                 </button>
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Liga neće biti aktivna dok nema najmanje 2 para.
               </p>
             </form>
@@ -531,8 +531,8 @@ export default function LeaguesPage() {
         )}
 
         {/* League tier explanation */}
-        <div className="bg-white rounded-lg shadow p-4 mb-8">
-          <h2 className="font-semibold text-gray-900 mb-3">Hijerarhija liga</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-4 mb-8">
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3">Hijerarhija liga</h2>
           <div className="flex flex-wrap gap-3">
             {tierOrder.map((tier) => (
               <span
@@ -543,20 +543,20 @@ export default function LeaguesPage() {
               </span>
             ))}
           </div>
-          <p className="text-sm text-gray-600 mt-3">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
             Top 25% napreduje u višu ligu • Bottom 25% ispada u nižu ligu • Minimum 8 matcheva za rangiranje
           </p>
         </div>
 
         {leagues.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-600">Trenutno nema aktivnih liga.</p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-8 text-center">
+            <p className="text-gray-600 dark:text-gray-400">Trenutno nema aktivnih liga.</p>
             {isAdmin ? (
-              <p className="text-sm text-gray-700 mt-2">
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
                 Kao administrator, možeš kreirati novu ligu klikom na gumb &quot;+ Nova liga&quot;.
               </p>
             ) : (
-              <p className="text-sm text-gray-700 mt-2">
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
                 Samo administrator sustava može kreirati nove lige.
               </p>
             )}
@@ -581,22 +581,22 @@ export default function LeaguesPage() {
                     {tierLeagues.map((league) => (
                       <div
                         key={league.id}
-                        className="bg-white rounded-lg shadow hover:shadow-md transition"
+                        className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 hover:shadow-md transition"
                       >
                         <div className="p-6">
                           <div className="flex justify-between items-start mb-4">
                             <div>
-                              <h2 className="text-xl font-semibold text-gray-900">{league.name}</h2>
+                              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{league.name}</h2>
                               {league.description && (
-                                <p className="text-gray-600 mt-1">{league.description}</p>
+                                <p className="text-gray-600 dark:text-gray-400 mt-1">{league.description}</p>
                               )}
                               {league.season && (
-                                <p className="text-sm text-gray-700 mt-1">
+                                <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
                                   Sezona: {league.season.name}
                                 </p>
                               )}
                               {league.creator && (
-                                <p className="text-sm text-gray-600 mt-1">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                   Kreator: {league.creator.name || league.creator.email}
                                 </p>
                               )}
@@ -605,8 +605,8 @@ export default function LeaguesPage() {
                               <span
                                 className={`px-3 py-1 rounded-full text-sm font-medium ${
                                   league.isActive
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-yellow-100 text-yellow-800'
+                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                                    : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                                 }`}
                               >
                                 {league.isActive ? 'Aktivna' : 'Neaktivna'}
@@ -617,8 +617,8 @@ export default function LeaguesPage() {
                                   disabled={togglingActive === league.id}
                                   className={`text-xs px-2 py-1 rounded font-medium transition disabled:opacity-50 ${
                                     league.isActive
-                                      ? 'text-yellow-700 hover:bg-yellow-50 border border-yellow-300'
-                                      : 'text-green-700 hover:bg-green-50 border border-green-300'
+                                      ? 'text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700'
+                                      : 'text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 border border-green-300 dark:border-green-700'
                                   }`}
                                 >
                                   {togglingActive === league.id
@@ -633,7 +633,7 @@ export default function LeaguesPage() {
                                 <button
                                   onClick={() => handleDeleteLeague(league.id, league.name)}
                                   disabled={deletingLeague === league.id}
-                                  className="text-xs px-2 py-1 rounded font-medium transition disabled:opacity-50 text-red-700 hover:bg-red-50 border border-red-300"
+                                  className="text-xs px-2 py-1 rounded font-medium transition disabled:opacity-50 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-300 dark:border-red-700"
                                 >
                                   {deletingLeague === league.id ? '...' : 'Obriši'}
                                 </button>
@@ -641,12 +641,12 @@ export default function LeaguesPage() {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-6 text-sm text-gray-600 mb-4">
+                          <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400 mb-4">
                             <div>
-                              <span className="font-medium text-gray-900">{league.teamCount}</span> / 2
+                              <span className="font-medium text-gray-900 dark:text-white">{league.teamCount}</span> / 2
                               para
                               {!league.isActive && league.teamCount < 2 && (
-                                <span className="ml-2 text-yellow-600">
+                                <span className="ml-2 text-yellow-600 dark:text-yellow-400">
                                   (potrebno još {2 - league.teamCount} za aktivaciju)
                                 </span>
                               )}
@@ -655,12 +655,12 @@ export default function LeaguesPage() {
 
                           {/* Standings table */}
                           {league.standings && league.standings.length > 0 && (
-                            <div className="mt-4 pt-4 border-t">
-                              <h3 className="font-medium text-gray-900 mb-3">Rang lista</h3>
+                            <div className="mt-4 pt-4 border-t dark:border-gray-700">
+                              <h3 className="font-medium text-gray-900 dark:text-white mb-3">Rang lista</h3>
                               <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                   <thead>
-                                    <tr className="text-left text-gray-600 border-b">
+                                    <tr className="text-left text-gray-600 dark:text-gray-400 border-b dark:border-gray-700">
                                       <th className="pb-2 pr-4">#</th>
                                       <th className="pb-2 pr-4">Par</th>
                                       <th className="pb-2 pr-4 text-center">M</th>
@@ -671,23 +671,23 @@ export default function LeaguesPage() {
                                   </thead>
                                   <tbody>
                                     {league.standings.map((standing, idx) => (
-                                      <tr key={standing.id} className="border-b last:border-0">
-                                        <td className="py-2 pr-4 text-gray-600">{idx + 1}</td>
-                                        <td className="py-2 pr-4 text-gray-900">
+                                      <tr key={standing.id} className="border-b dark:border-gray-700 last:border-0">
+                                        <td className="py-2 pr-4 text-gray-600 dark:text-gray-400">{idx + 1}</td>
+                                        <td className="py-2 pr-4 text-gray-900 dark:text-white">
                                           {standing.leagueTeam?.players
                                             .map((p) => p.user.name)
                                             .join(' / ') || '-'}
                                         </td>
-                                        <td className="py-2 pr-4 text-center text-gray-700">
+                                        <td className="py-2 pr-4 text-center text-gray-700 dark:text-gray-300">
                                           {standing.matchesPlayed}
                                         </td>
-                                        <td className="py-2 pr-4 text-center text-green-600">
+                                        <td className="py-2 pr-4 text-center text-green-600 dark:text-green-400">
                                           {standing.wins}
                                         </td>
-                                        <td className="py-2 pr-4 text-center text-red-600">
+                                        <td className="py-2 pr-4 text-center text-red-600 dark:text-red-400">
                                           {standing.losses}
                                         </td>
-                                        <td className="py-2 text-center font-semibold text-gray-900">
+                                        <td className="py-2 text-center font-semibold text-gray-900 dark:text-white">
                                           {standing.points}
                                         </td>
                                       </tr>
@@ -699,9 +699,9 @@ export default function LeaguesPage() {
                           )}
 
                           {/* Teams section */}
-                          <div className="mt-4 pt-4 border-t">
+                          <div className="mt-4 pt-4 border-t dark:border-gray-700">
                             <div className="flex justify-between items-center mb-3">
-                              <div className="text-sm font-medium text-gray-800">
+                              <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
                                 Prijavljeni parovi ({league.teams.length}):
                               </div>
                               {isAdmin && addingTeamToLeague !== league.id && (
@@ -713,7 +713,7 @@ export default function LeaguesPage() {
                                     setTeamName('')
                                     setError('')
                                   }}
-                                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                                  className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                                 >
                                   + Dodaj par
                                 </button>
@@ -722,22 +722,22 @@ export default function LeaguesPage() {
 
                             {/* Add team form */}
                             {isAdmin && addingTeamToLeague === league.id && (
-                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                                <h4 className="font-medium text-gray-900 mb-3">Dodaj novi par</h4>
+                              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                                <h4 className="font-medium text-gray-900 dark:text-white mb-3">Dodaj novi par</h4>
                                 {error && (
-                                  <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-3 text-sm">
+                                  <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-3 py-2 rounded mb-3 text-sm">
                                     {error}
                                   </div>
                                 )}
                                 <div className="space-y-3">
                                   <div>
-                                    <label className="block text-sm text-gray-700 mb-1">Ime tima (opcionalno)</label>
+                                    <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Ime tima (opcionalno)</label>
                                     <input
                                       type="text"
                                       value={teamName}
                                       onChange={(e) => setTeamName(e.target.value)}
                                       placeholder="npr. Dream Team"
-                                      className="w-full px-3 py-2 border border-gray-300 rounded text-gray-900 bg-white text-sm"
+                                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700 text-sm"
                                     />
                                   </div>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -771,7 +771,7 @@ export default function LeaguesPage() {
                                         setAddingTeamToLeague(null)
                                         setError('')
                                       }}
-                                      className="border border-gray-300 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-50"
+                                      className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
                                     >
                                       Odustani
                                     </button>
@@ -781,19 +781,19 @@ export default function LeaguesPage() {
                             )}
 
                             {league.teams.length === 0 ? (
-                              <p className="text-sm text-gray-600">Još nema prijavljenih parova.</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">Još nema prijavljenih parova.</p>
                             ) : (
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 {league.teams.map((team) => (
                                   <div
                                     key={team.id}
-                                    className="bg-gray-100 rounded px-3 py-2 text-sm text-gray-800 flex justify-between items-center"
+                                    className="bg-gray-100 dark:bg-gray-700 rounded px-3 py-2 text-sm text-gray-800 dark:text-gray-200 flex justify-between items-center"
                                   >
                                     <span>{getTeamName(team)}</span>
                                     {isAdmin && (
                                       <button
                                         onClick={() => handleRemoveTeam(league.id, team.id)}
-                                        className="text-red-500 hover:text-red-700 ml-2"
+                                        className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 ml-2"
                                         title="Ukloni par"
                                       >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -809,9 +809,9 @@ export default function LeaguesPage() {
 
                           {/* Schedule section */}
                           {league.isActive && (
-                            <div className="mt-4 pt-4 border-t">
+                            <div className="mt-4 pt-4 border-t dark:border-gray-700">
                               <div className="flex justify-between items-center mb-3">
-                                <h3 className="font-medium text-gray-900 text-sm">Raspored</h3>
+                                <h3 className="font-medium text-gray-900 dark:text-white text-sm">Raspored</h3>
                                 {isAdmin && league.teams.length >= 2 && (
                                   <button
                                     onClick={() => handleGenerateSchedule(league.id)}

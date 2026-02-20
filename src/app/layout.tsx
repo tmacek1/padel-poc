@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
+import ThemeProvider from "@/components/ThemeProvider";
 import Footer from "@/components/Footer";
+import BottomNav from "@/components/BottomNav";
 import PWARegister from "@/components/PWARegister";
 
 const geistSans = Geist({
@@ -47,14 +49,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="hr">
+    <html lang="hr" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         <SessionProvider>
-          <PWARegister />
-          <div className="flex-1">{children}</div>
-          <Footer />
+          <ThemeProvider>
+            <PWARegister />
+            <div className="flex-1 pb-16 md:pb-0">{children}</div>
+            <Footer />
+            <BottomNav />
+          </ThemeProvider>
         </SessionProvider>
       </body>
     </html>

@@ -735,10 +735,10 @@ export default function MatchDetailPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-600">Učitavanje...</div>
+          <div className="text-gray-600 dark:text-gray-400">Učitavanje...</div>
         </div>
       </div>
     )
@@ -746,10 +746,10 @@ export default function MatchDetailPage() {
 
   if (error && !match) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-red-600">{error}</div>
+          <div className="text-red-600 dark:text-red-400">{error}</div>
         </div>
       </div>
     )
@@ -760,25 +760,25 @@ export default function MatchDetailPage() {
   const score = getMatchScore()
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-6">
           <div className="p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
                 {editingSchedule ? (
                   <div className="space-y-3">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Novi termin
                     </label>
                     <input
                       type="datetime-local"
                       value={editScheduledAt}
                       onChange={(e) => setEditScheduledAt(e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white dark:bg-gray-700"
                     />
                     <div className="flex gap-2">
                       <button
@@ -790,7 +790,7 @@ export default function MatchDetailPage() {
                       </button>
                       <button
                         onClick={() => setEditingSchedule(false)}
-                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm"
+                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
                       >
                         Odustani
                       </button>
@@ -798,7 +798,7 @@ export default function MatchDetailPage() {
                   </div>
                 ) : (
                   <>
-                    <h1 className="text-2xl font-bold text-gray-900">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                       {new Date(match.scheduledAt).toLocaleDateString('hr-HR', {
                         weekday: 'long',
                         day: 'numeric',
@@ -806,7 +806,7 @@ export default function MatchDetailPage() {
                         year: 'numeric',
                       })}
                     </h1>
-                    <div className="text-gray-600 flex items-center gap-2">
+                    <div className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
                       <span>
                         {new Date(match.scheduledAt).toLocaleTimeString('hr-HR', {
                           hour: '2-digit',
@@ -817,7 +817,7 @@ export default function MatchDetailPage() {
                       {match.canEdit && (match.status === 'scheduled' || match.status === 'looking_for_players') && (
                         <button
                           onClick={() => setEditingSchedule(true)}
-                          className="text-blue-600 hover:text-blue-800 text-sm"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm"
                           title="Promijeni termin"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -833,16 +833,16 @@ export default function MatchDetailPage() {
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
                     match.status === 'scheduled'
-                      ? 'bg-blue-100 text-blue-800'
+                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
                       : match.status === 'in_progress'
-                      ? 'bg-yellow-100 text-yellow-800'
+                      ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                       : match.status === 'completed'
-                      ? 'bg-green-100 text-green-800'
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
                       : match.status === 'cancelled'
-                      ? 'bg-red-100 text-red-800'
+                      ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                       : match.status === 'looking_for_players'
-                      ? 'bg-orange-100 text-orange-800'
-                      : 'bg-gray-200 text-gray-700'
+                      ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                   }`}
                 >
                   {match.status === 'scheduled'
@@ -861,7 +861,7 @@ export default function MatchDetailPage() {
             </div>
 
             {/* Creator info */}
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               Kreirao: {match.creator.name || match.creator.email}
               {match.canEdit && ' (možeš uređivati)'}
             </div>
@@ -869,40 +869,40 @@ export default function MatchDetailPage() {
         </div>
 
         {/* Score Display */}
-        <div className="bg-white rounded-lg shadow mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-6">
           <div className="p-6">
             <div className="flex items-center justify-between">
               {/* Team 1 */}
               <div className="flex-1 text-center">
-                <div className="text-lg font-semibold text-blue-600 mb-2">Tim 1</div>
-                <div className="text-xl text-gray-800">{getTeamPlayers(1)}</div>
+                <div className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">Tim 1</div>
+                <div className="text-xl text-gray-800 dark:text-gray-200">{getTeamPlayers(1)}</div>
                 {score && !match.pairRotation && (
-                  <div className="text-4xl font-bold mt-4 text-gray-900">{score.team1Sets}</div>
+                  <div className="text-4xl font-bold mt-4 text-gray-900 dark:text-white">{score.team1Sets}</div>
                 )}
               </div>
 
               {/* VS */}
               <div className="px-8">
-                <div className="text-2xl text-gray-600">vs</div>
+                <div className="text-2xl text-gray-600 dark:text-gray-400">vs</div>
               </div>
 
               {/* Team 2 */}
               <div className="flex-1 text-center">
-                <div className="text-lg font-semibold text-red-600 mb-2">Tim 2</div>
-                <div className="text-xl text-gray-800">{getTeamPlayers(2)}</div>
+                <div className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">Tim 2</div>
+                <div className="text-xl text-gray-800 dark:text-gray-200">{getTeamPlayers(2)}</div>
                 {score && !match.pairRotation && (
-                  <div className="text-4xl font-bold mt-4 text-gray-900">{score.team2Sets}</div>
+                  <div className="text-4xl font-bold mt-4 text-gray-900 dark:text-white">{score.team2Sets}</div>
                 )}
               </div>
             </div>
 
             {/* Set scores */}
             {match.sets.length > 0 && (
-              <div className="mt-6 pt-6 border-t">
-                <div className="text-center text-gray-600 mb-3">
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div className="text-center text-gray-600 dark:text-gray-400 mb-3">
                   Setovi
                   {match.pairRotation && (
-                    <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded">
+                    <span className="ml-2 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-medium rounded">
                       Rotacija
                     </span>
                   )}
@@ -931,29 +931,29 @@ export default function MatchDetailPage() {
                     return (
                       <div
                         key={set.setNumber}
-                        className="bg-gray-100 rounded-lg px-2 py-2 sm:px-3 text-center"
+                        className="bg-gray-100 dark:bg-gray-700 rounded-lg px-2 py-2 sm:px-3 text-center"
                       >
-                        <div className="text-xs text-gray-600">Set {set.setNumber}</div>
-                        <div className="font-semibold text-gray-900">
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Set {set.setNumber}</div>
+                        <div className="font-semibold text-gray-900 dark:text-white">
                           {set.team1Score} - {set.team2Score}
                           {(set.team1Tiebreak !== null && set.team1Tiebreak !== undefined) &&
                            (set.team2Tiebreak !== null && set.team2Tiebreak !== undefined) && (
-                            <span className="text-xs font-normal text-gray-600 ml-1">
+                            <span className="text-xs font-normal text-gray-600 dark:text-gray-400 ml-1">
                               ({set.team1Tiebreak}-{set.team2Tiebreak})
                             </span>
                           )}
                         </div>
                         {/* Parovi za rotaciju */}
                         {(team1Names || team2Names) && (
-                          <div className="mt-1.5 pt-1.5 border-t border-gray-200 text-xs">
-                            <div className="text-blue-700 font-medium">{team1Names}</div>
-                            <div className="text-gray-400 text-[10px]">vs</div>
-                            <div className="text-red-700 font-medium">{team2Names}</div>
+                          <div className="mt-1.5 pt-1.5 border-t border-gray-200 dark:border-gray-600 text-xs">
+                            <div className="text-blue-700 dark:text-blue-400 font-medium">{team1Names}</div>
+                            <div className="text-gray-400 dark:text-gray-500 text-[10px]">vs</div>
+                            <div className="text-red-700 dark:text-red-400 font-medium">{team2Names}</div>
                           </div>
                         )}
                         {/* Pozicije na terenu */}
                         {(positions.left.length > 0 || positions.right.length > 0) && (
-                          <div className="mt-1.5 text-xs text-gray-600 border-t border-gray-200 pt-1.5">
+                          <div className="mt-1.5 text-xs text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-600 pt-1.5">
                             {positions.left.length > 0 && (
                               <div><span className="font-medium">L:</span> {positions.left.join(', ')}</div>
                             )}
@@ -973,32 +973,32 @@ export default function MatchDetailPage() {
 
         {/* Join Match Section - for looking_for_players matches */}
         {match.status === 'looking_for_players' && !match.isParticipant && (
-          <div className="bg-white rounded-lg shadow mb-6 border-2 border-orange-200">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-6 border-2 border-orange-200 dark:border-orange-700">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Pridruži se meču</h2>
-                  <p className="text-sm text-gray-600">Ovaj meč traži još igrača. Odaberi tim kojem se želiš pridružiti.</p>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Pridruži se meču</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Ovaj meč traži još igrača. Odaberi tim kojem se želiš pridružiti.</p>
                 </div>
               </div>
 
               {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4">
                   {error}
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 {/* Tim 1 */}
-                <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
-                  <h3 className="font-semibold text-blue-700 mb-2">Tim 1</h3>
-                  <div className="text-sm text-gray-700 mb-3">
-                    {getTeamPlayers(1) || <span className="text-gray-400 italic">Nema igrača</span>}
+                <div className="border border-blue-200 dark:border-blue-700 rounded-lg p-4 bg-blue-50 dark:bg-blue-900/20">
+                  <h3 className="font-semibold text-blue-700 dark:text-blue-400 mb-2">Tim 1</h3>
+                  <div className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                    {getTeamPlayers(1) || <span className="text-gray-400 dark:text-gray-500 italic">Nema igrača</span>}
                   </div>
                   {(() => {
                     const maxPlayers = match.isSingles ? 1 : 2
@@ -1013,7 +1013,7 @@ export default function MatchDetailPage() {
                         {joiningMatch ? 'Prijava...' : `Pridruži se (${currentPlayers}/${maxPlayers})`}
                       </button>
                     ) : (
-                      <div className="text-center py-2 text-sm text-gray-500 bg-gray-100 rounded-lg">
+                      <div className="text-center py-2 text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-lg">
                         Tim je pun ({currentPlayers}/{maxPlayers})
                       </div>
                     )
@@ -1021,10 +1021,10 @@ export default function MatchDetailPage() {
                 </div>
 
                 {/* Tim 2 */}
-                <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-                  <h3 className="font-semibold text-red-700 mb-2">Tim 2</h3>
-                  <div className="text-sm text-gray-700 mb-3">
-                    {getTeamPlayers(2) || <span className="text-gray-400 italic">Nema igrača</span>}
+                <div className="border border-red-200 dark:border-red-700 rounded-lg p-4 bg-red-50 dark:bg-red-900/20">
+                  <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2">Tim 2</h3>
+                  <div className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                    {getTeamPlayers(2) || <span className="text-gray-400 dark:text-gray-500 italic">Nema igrača</span>}
                   </div>
                   {(() => {
                     const maxPlayers = match.isSingles ? 1 : 2
@@ -1039,7 +1039,7 @@ export default function MatchDetailPage() {
                         {joiningMatch ? 'Prijava...' : `Pridruži se (${currentPlayers}/${maxPlayers})`}
                       </button>
                     ) : (
-                      <div className="text-center py-2 text-sm text-gray-500 bg-gray-100 rounded-lg">
+                      <div className="text-center py-2 text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-lg">
                         Tim je pun ({currentPlayers}/{maxPlayers})
                       </div>
                     )
@@ -1052,12 +1052,12 @@ export default function MatchDetailPage() {
 
         {/* Leave Match Button - for participants who are not the creator */}
         {match.status === 'looking_for_players' && match.isParticipant && match.creatorId !== session?.user?.id && (
-          <div className="bg-white rounded-lg shadow mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-6">
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900">Prijavljen si na ovaj meč</h3>
-                  <p className="text-sm text-gray-600">Možeš napustiti meč dok se još traže igrači.</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Prijavljen si na ovaj meč</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Možeš napustiti meč dok se još traže igrači.</p>
                 </div>
                 <button
                   onClick={handleLeaveMatch}
@@ -1080,22 +1080,22 @@ export default function MatchDetailPage() {
           })
           if (unplayedSets.length === 0) return null
           return (
-            <div className="bg-white rounded-lg shadow mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-6">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Preostali setovi</h2>
-                  <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Preostali setovi</h2>
+                  <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-medium rounded">
                     Rotacija
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3 max-w-lg mx-auto">
                   {unplayedSets.map((setConfig) => (
-                    <div key={setConfig.setNumber} className="border rounded-lg p-2 sm:p-3 bg-white border-gray-200 text-center">
-                      <div className="text-xs font-semibold text-gray-700 mb-1">Set {setConfig.setNumber}</div>
+                    <div key={setConfig.setNumber} className="border rounded-lg p-2 sm:p-3 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-center">
+                      <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Set {setConfig.setNumber}</div>
                       <div className="text-xs">
-                        <div className="text-blue-700 font-medium">{setConfig.team1.map(p => p.name.split(' ')[0]).join(' / ')}</div>
-                        <div className="text-gray-400 text-[10px]">vs</div>
-                        <div className="text-red-700 font-medium">{setConfig.team2.map(p => p.name.split(' ')[0]).join(' / ')}</div>
+                        <div className="text-blue-700 dark:text-blue-400 font-medium">{setConfig.team1.map(p => p.name.split(' ')[0]).join(' / ')}</div>
+                        <div className="text-gray-400 dark:text-gray-500 text-[10px]">vs</div>
+                        <div className="text-red-700 dark:text-red-400 font-medium">{setConfig.team2.map(p => p.name.split(' ')[0]).join(' / ')}</div>
                       </div>
                     </div>
                   ))}
@@ -1112,12 +1112,12 @@ export default function MatchDetailPage() {
          !match.league &&
          match.status === 'scheduled' &&
          match.players.filter(p => p.user).length === 4 && (
-          <div className="bg-white rounded-lg shadow mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-6">
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900">Rotacija parova</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Rotacija parova</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     Omogući rotaciju parova po setu - svaki igrač igra s svakim
                   </p>
                 </div>
@@ -1135,14 +1135,14 @@ export default function MatchDetailPage() {
 
         {/* Court Side Section (for participants) */}
         {match.isParticipant && match.sets.length > 0 && (
-          <div className="bg-white rounded-lg shadow mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-6">
             <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Tvoja pozicija na terenu</h2>
-              <p className="text-sm text-gray-600 mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Tvoja pozicija na terenu</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 Odaberi na kojoj si strani terena igrao u svakom setu (lijeva/desna).
               </p>
               {error && !editing && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4">
                   {error}
                 </div>
               )}
@@ -1151,8 +1151,8 @@ export default function MatchDetailPage() {
                   const myPosition = getMyPositionForSet(set)
                   const isSaving = savingPosition === set.id
                   return (
-                    <div key={set.id || set.setNumber} className="flex items-center justify-between border-b pb-3 last:border-0">
-                      <div className="font-medium text-gray-800">
+                    <div key={set.id || set.setNumber} className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-3 last:border-0">
+                      <div className="font-medium text-gray-800 dark:text-gray-200">
                         Set {set.setNumber} ({set.team1Score} - {set.team2Score}{set.team1Tiebreak != null && set.team2Tiebreak != null ? `, tb ${set.team1Tiebreak}-${set.team2Tiebreak}` : ''})
                       </div>
                       <div className="flex gap-2">
@@ -1162,7 +1162,7 @@ export default function MatchDetailPage() {
                           className={`px-4 py-2 rounded text-sm font-medium transition ${
                             myPosition === 'left'
                               ? 'bg-blue-600 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                           } ${isSaving ? 'opacity-50' : ''}`}
                         >
                           {isSaving ? '...' : 'Lijeva'}
@@ -1173,7 +1173,7 @@ export default function MatchDetailPage() {
                           className={`px-4 py-2 rounded text-sm font-medium transition ${
                             myPosition === 'right'
                               ? 'bg-blue-600 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                           } ${isSaving ? 'opacity-50' : ''}`}
                         >
                           {isSaving ? '...' : 'Desna'}
@@ -1189,10 +1189,10 @@ export default function MatchDetailPage() {
 
         {/* Edit Section (for creator or admin) */}
         {match.canEdit && (
-          <div className="bg-white rounded-lg shadow mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-6">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Upravljanje matchom</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Upravljanje matchom</h2>
                 {!editing && match.status !== 'looking_for_players' && (
                   <button
                     onClick={() => setEditing(true)}
@@ -1205,14 +1205,14 @@ export default function MatchDetailPage() {
 
               {/* Info message when looking for players */}
               {match.status === 'looking_for_players' && !editing && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                  <div className="flex items-center gap-2 text-yellow-800">
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4 mb-4">
+                  <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span className="font-medium">Meč još traži igrače</span>
                   </div>
-                  <p className="text-sm text-yellow-700 mt-1">
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
                     Rezultati se mogu unositi tek kada se svi igrači pridruže i meč prijeđe u status &quot;Zakazan&quot;.
                   </p>
                 </div>
@@ -1222,13 +1222,13 @@ export default function MatchDetailPage() {
                 <div className="space-y-6">
                   {/* Status */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Status matcha
                     </label>
                     <select
                       value={editStatus}
                       onChange={(e) => setEditStatus(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white dark:bg-gray-700"
                     >
                       <option value="scheduled">Zakazan</option>
                       <option value="in_progress">U tijeku</option>
@@ -1240,18 +1240,18 @@ export default function MatchDetailPage() {
                   {/* Set Scores with dropdown */}
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Rezultat po setovima (teniski format)
                       </label>
                       <button
                         type="button"
                         onClick={addSet}
-                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                        className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                       >
                         + Dodaj set
                       </button>
                     </div>
-                    <p className="text-xs text-gray-600 mb-3">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
                       Povuci i ispusti setove za promjenu redoslijeda. Za nezavršene setove unesite trenutni rezultat.
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
@@ -1273,15 +1273,15 @@ export default function MatchDetailPage() {
                             }
                             setDraggedSetIndex(null)
                           }}
-                          className={`border-2 rounded-lg p-3 bg-white cursor-move transition-all ${
+                          className={`border-2 rounded-lg p-3 bg-white dark:bg-gray-700 cursor-move transition-all ${
                             draggedSetIndex === idx
                               ? 'border-blue-500 shadow-lg scale-105 opacity-70'
-                              : 'border-gray-200 hover:border-gray-300 hover:shadow'
+                              : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:shadow'
                           }`}
                         >
                           {/* Set Header */}
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-bold text-gray-700">Set {set.setNumber}</span>
+                            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Set {set.setNumber}</span>
                             {editSets.length > 1 && (
                               <button
                                 type="button"
@@ -1289,7 +1289,7 @@ export default function MatchDetailPage() {
                                   e.stopPropagation()
                                   removeSet(idx)
                                 }}
-                                className="text-red-400 hover:text-red-600 p-0.5"
+                                className="text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 p-0.5"
                                 title="Ukloni set"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1317,9 +1317,9 @@ export default function MatchDetailPage() {
                                 setEditSets(newSets)
                               }}
                               onClick={(e) => e.stopPropagation()}
-                              className="w-12 px-2 py-2 border border-gray-300 rounded text-center text-lg font-bold text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-12 px-2 py-2 border border-gray-300 dark:border-gray-600 rounded text-center text-lg font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                            <span className="text-gray-400 font-bold text-lg">:</span>
+                            <span className="text-gray-400 dark:text-gray-500 font-bold text-lg">:</span>
                             <input
                               type="number"
                               min="0"
@@ -1336,14 +1336,14 @@ export default function MatchDetailPage() {
                                 setEditSets(newSets)
                               }}
                               onClick={(e) => e.stopPropagation()}
-                              className="w-12 px-2 py-2 border border-gray-300 rounded text-center text-lg font-bold text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-12 px-2 py-2 border border-gray-300 dark:border-gray-600 rounded text-center text-lg font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                           </div>
 
                           {/* Tiebreak input for 7-6 scores */}
                           {isTiebreakScore(set.team1Score, set.team2Score) && (
-                            <div className="mt-2 pt-2 border-t border-gray-200">
-                              <label className="block text-xs text-gray-500 mb-1 text-center">Tiebreak</label>
+                            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1 text-center">Tiebreak</label>
                               <div className="flex items-center justify-center gap-1">
                                 <input
                                   type="number"
@@ -1352,10 +1352,10 @@ export default function MatchDetailPage() {
                                   value={set.team1Tiebreak ?? ''}
                                   onChange={(e) => updateTiebreakScore(idx, 1, e.target.value)}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="w-10 px-1 py-1 border border-gray-300 rounded text-center text-sm text-gray-900 bg-white"
+                                  className="w-10 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded text-center text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-600"
                                   placeholder="0"
                                 />
-                                <span className="text-gray-400 text-sm">-</span>
+                                <span className="text-gray-400 dark:text-gray-500 text-sm">-</span>
                                 <input
                                   type="number"
                                   min="0"
@@ -1363,7 +1363,7 @@ export default function MatchDetailPage() {
                                   value={set.team2Tiebreak ?? ''}
                                   onChange={(e) => updateTiebreakScore(idx, 2, e.target.value)}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="w-10 px-1 py-1 border border-gray-300 rounded text-center text-sm text-gray-900 bg-white"
+                                  className="w-10 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded text-center text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-600"
                                   placeholder="0"
                                 />
                               </div>
@@ -1372,7 +1372,7 @@ export default function MatchDetailPage() {
 
                           {/* Set players - compact view */}
                           {!match.isSingles && match.players.filter(p => p.user).length === 4 && (
-                            <div className="mt-2 pt-2 border-t border-gray-100">
+                            <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-600">
                               {(() => {
                                 const setPlayers = set.setPlayers as EditSetPlayer[] || []
                                 const team1 = setPlayers.filter(sp => sp.team === 1)
@@ -1383,11 +1383,11 @@ export default function MatchDetailPage() {
                                 }
                                 return (
                                   <div className="text-xs text-center space-y-1">
-                                    <div className="text-blue-700 font-medium">
+                                    <div className="text-blue-700 dark:text-blue-400 font-medium">
                                       {team1.map(sp => getPlayerName(sp.userId)).join(' / ')}
                                     </div>
-                                    <div className="text-gray-400">vs</div>
-                                    <div className="text-red-700 font-medium">
+                                    <div className="text-gray-400 dark:text-gray-500">vs</div>
+                                    <div className="text-red-700 dark:text-red-400 font-medium">
                                       {team2.map(sp => getPlayerName(sp.userId)).join(' / ')}
                                     </div>
                                   </div>
@@ -1401,8 +1401,8 @@ export default function MatchDetailPage() {
 
                     {/* Team composition editor - expandable */}
                     {!match.isSingles && match.players.filter(p => p.user).length === 4 && editSets.some(s => s.team1Score > 0 || s.team2Score > 0) && (
-                      <details className="mt-4 border border-gray-200 rounded-lg">
-                        <summary className="px-4 py-3 bg-gray-50 cursor-pointer text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-t-lg">
+                      <details className="mt-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <summary className="px-4 py-3 bg-gray-50 dark:bg-gray-700 cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-t-lg">
                           Uredi parove po setovima (klikni za proširiti)
                         </summary>
                         <div className="p-4 space-y-4">
@@ -1410,14 +1410,14 @@ export default function MatchDetailPage() {
                             const actualIdx = editSets.findIndex(s => s.setNumber === set.setNumber)
                             const setPlayers = set.setPlayers as EditSetPlayer[] || []
                             return (
-                              <div key={set.setNumber} className="border border-gray-200 rounded-lg p-3">
-                                <div className="text-sm font-semibold text-gray-700 mb-2">
+                              <div key={set.setNumber} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                                <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                   Set {set.setNumber} ({set.team1Score}:{set.team2Score})
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                   {/* Team 1 */}
-                                  <div className="bg-blue-50 rounded-lg p-2">
-                                    <p className="text-xs font-semibold text-blue-700 mb-1">Tim 1:</p>
+                                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2">
+                                    <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-1">Tim 1:</p>
                                     {setPlayers.filter(sp => sp.team === 1).map((sp) => {
                                       const player = match.players.find(p => p.user?.id === sp.userId)
                                       if (!player?.user) return null
@@ -1433,17 +1433,17 @@ export default function MatchDetailPage() {
                                             newSets[actualIdx] = { ...set, setPlayers: updated }
                                             setEditSets(newSets)
                                           }}
-                                          className="w-full flex items-center justify-between p-1.5 rounded bg-blue-200 hover:bg-blue-300 mb-1 text-left"
+                                          className="w-full flex items-center justify-between p-1.5 rounded bg-blue-200 dark:bg-blue-800 hover:bg-blue-300 dark:hover:bg-blue-700 mb-1 text-left"
                                         >
-                                          <span className="text-xs font-medium">{player.user.name?.split(' ')[0]}</span>
-                                          <span className="text-xs text-blue-600">→</span>
+                                          <span className="text-xs font-medium text-gray-900 dark:text-white">{player.user.name?.split(' ')[0]}</span>
+                                          <span className="text-xs text-blue-600 dark:text-blue-400">→</span>
                                         </button>
                                       )
                                     })}
                                   </div>
                                   {/* Team 2 */}
-                                  <div className="bg-red-50 rounded-lg p-2">
-                                    <p className="text-xs font-semibold text-red-700 mb-1">Tim 2:</p>
+                                  <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-2">
+                                    <p className="text-xs font-semibold text-red-700 dark:text-red-400 mb-1">Tim 2:</p>
                                     {setPlayers.filter(sp => sp.team === 2).map((sp) => {
                                       const player = match.players.find(p => p.user?.id === sp.userId)
                                       if (!player?.user) return null
@@ -1459,10 +1459,10 @@ export default function MatchDetailPage() {
                                             newSets[actualIdx] = { ...set, setPlayers: updated }
                                             setEditSets(newSets)
                                           }}
-                                          className="w-full flex items-center justify-between p-1.5 rounded bg-red-200 hover:bg-red-300 mb-1 text-left"
+                                          className="w-full flex items-center justify-between p-1.5 rounded bg-red-200 dark:bg-red-800 hover:bg-red-300 dark:hover:bg-red-700 mb-1 text-left"
                                         >
-                                          <span className="text-xs font-medium">{player.user.name?.split(' ')[0]}</span>
-                                          <span className="text-xs text-red-600">→</span>
+                                          <span className="text-xs font-medium text-gray-900 dark:text-white">{player.user.name?.split(' ')[0]}</span>
+                                          <span className="text-xs text-red-600 dark:text-red-400">→</span>
                                         </button>
                                       )
                                     })}
@@ -1478,7 +1478,7 @@ export default function MatchDetailPage() {
 
                   {/* Error message */}
                   {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded">
                       {error}
                     </div>
                   )}
@@ -1497,7 +1497,7 @@ export default function MatchDetailPage() {
                         setEditing(false)
                         setError('')
                       }}
-                      className="border border-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-50 transition"
+                      className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-6 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                     >
                       Odustani
                     </button>
@@ -1508,7 +1508,7 @@ export default function MatchDetailPage() {
               {!editing && (
                 <button
                   onClick={handleDelete}
-                  className="text-red-600 hover:text-red-800 text-sm font-medium"
+                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium"
                 >
                   Obriši match
                 </button>
@@ -1518,13 +1518,13 @@ export default function MatchDetailPage() {
         )}
 
         {/* Video Section */}
-        <div className="bg-white rounded-lg shadow mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-6">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Video snimka
                 {match.videoUrls.length > 1 && (
-                  <span className="ml-2 text-sm font-normal text-gray-500">({match.videoUrls.length} dijela)</span>
+                  <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">({match.videoUrls.length} dijela)</span>
                 )}
               </h2>
               {(match.isParticipant || match.canEdit) && !editingVideo && (
@@ -1534,7 +1534,7 @@ export default function MatchDetailPage() {
                     setNewVideoUrl('')
                     setEditingVideo(true)
                   }}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                 >
                   {match.videoUrls.length > 0 ? 'Uredi videe' : '+ Dodaj video'}
                 </button>
@@ -1547,13 +1547,13 @@ export default function MatchDetailPage() {
                 {editVideoUrls.length > 0 && (
                   <div className="space-y-2">
                     {editVideoUrls.map((url, idx) => (
-                      <div key={idx} className="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
-                        <span className="text-xs font-medium text-gray-500 min-w-[50px]">Dio {idx + 1}</span>
-                        <span className="flex-1 text-sm text-gray-700 truncate">{url}</span>
+                      <div key={idx} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 min-w-[50px]">Dio {idx + 1}</span>
+                        <span className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate">{url}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveVideoUrl(idx)}
-                          className="text-red-500 hover:text-red-700 p-1"
+                          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1572,18 +1572,18 @@ export default function MatchDetailPage() {
                     onChange={(e) => setNewVideoUrl(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddVideoUrl() } }}
                     placeholder="Zalijepi link na video (Google Drive, YouTube...)"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white dark:bg-gray-700"
                   />
                   <button
                     type="button"
                     onClick={handleAddVideoUrl}
                     disabled={!newVideoUrl.trim()}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium disabled:opacity-50"
+                    className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm font-medium disabled:opacity-50"
                   >
                     + Dodaj
                   </button>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Podržani: Google Drive, YouTube. Možeš dodati više dijelova ako je video razbijen.
                 </p>
 
@@ -1600,7 +1600,7 @@ export default function MatchDetailPage() {
                       setEditingVideo(false)
                       setError('')
                     }}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
                   >
                     Odustani
                   </button>
@@ -1611,7 +1611,7 @@ export default function MatchDetailPage() {
                 {match.videoUrls.map((url, idx) => (
                   <div key={idx}>
                     {match.videoUrls.length > 1 && (
-                      <div className="text-sm font-medium text-gray-600 mb-2">Dio {idx + 1}</div>
+                      <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Dio {idx + 1}</div>
                     )}
                     {getEmbedUrl(url) ? (
                       <div className="relative w-full rounded-lg overflow-hidden bg-black" style={{ paddingBottom: '56.25%' }}>
@@ -1628,7 +1628,7 @@ export default function MatchDetailPage() {
                         href={url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
+                        className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -1641,27 +1641,27 @@ export default function MatchDetailPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-sm">Nema dodane video snimke.</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Nema dodane video snimke.</p>
             )}
           </div>
         </div>
 
         {/* Notes */}
         {match.notes && (
-          <div className="bg-white rounded-lg shadow mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-6">
             <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Napomena</h2>
-              <p className="text-gray-700">{match.notes}</p>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Napomena</h2>
+              <p className="text-gray-700 dark:text-gray-300">{match.notes}</p>
             </div>
           </div>
         )}
 
         {/* League info */}
         {match.league && (
-          <div className="bg-white rounded-lg shadow">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50">
             <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Liga</h2>
-              <p className="text-gray-700">{match.league.name}</p>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Liga</h2>
+              <p className="text-gray-700 dark:text-gray-300">{match.league.name}</p>
             </div>
           </div>
         )}
@@ -1670,7 +1670,7 @@ export default function MatchDetailPage() {
         <div className="mt-6">
           <button
             onClick={() => router.back()}
-            className="text-blue-600 hover:underline font-medium"
+            className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
           >
             &larr; Natrag
           </button>

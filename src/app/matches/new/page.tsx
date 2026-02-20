@@ -365,32 +365,32 @@ export default function NewMatchPage() {
                 setPlayer('')
                 setGuestMode((prev) => ({ ...prev, [slotKey]: true }))
               }}
-              className="mt-1 text-xs text-orange-600 hover:text-orange-800 font-medium"
+              className="mt-1 text-xs text-orange-600 hover:text-orange-800 font-medium dark:text-orange-400 dark:hover:text-orange-300"
             >
               + Dodaj gosta
             </button>
           </>
         ) : (
           <div>
-            <label className="block text-sm font-medium text-gray-800 mb-1">{label}</label>
-            <div className="space-y-2 p-3 border border-orange-200 rounded-lg bg-orange-50">
+            <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">{label}</label>
+            <div className="space-y-2 p-3 border border-orange-200 dark:border-orange-700 rounded-lg bg-orange-50 dark:bg-orange-900/20">
               <div className="flex items-center gap-1 mb-1">
-                <span className="inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-orange-100 text-orange-700">gost</span>
-                <span className="text-xs text-gray-600">Novi gost igrač</span>
+                <span className="inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-400">gost</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">Novi gost igrač</span>
               </div>
               <input
                 type="text"
                 value={guestFirstName[slotKey] || ''}
                 onChange={(e) => setGuestFirstName((prev) => ({ ...prev, [slotKey]: e.target.value }))}
                 placeholder="Ime"
-                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
               <input
                 type="text"
                 value={guestLastName[slotKey] || ''}
                 onChange={(e) => setGuestLastName((prev) => ({ ...prev, [slotKey]: e.target.value }))}
                 placeholder="Prezime"
-                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
               <div className="flex gap-2">
                 <button
@@ -408,7 +408,7 @@ export default function NewMatchPage() {
                     setGuestFirstName((prev) => ({ ...prev, [slotKey]: '' }))
                     setGuestLastName((prev) => ({ ...prev, [slotKey]: '' }))
                   }}
-                  className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50"
+                  className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   Odustani
                 </button>
@@ -441,43 +441,43 @@ export default function NewMatchPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-600">Učitavanje...</div>
+          <div className="text-gray-600 dark:text-gray-400">Učitavanje...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
       <main className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Novi match</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Novi match</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Date and Time */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Datum i vrijeme</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Datum i vrijeme</h2>
             <input
               type="datetime-local"
               value={scheduledAt}
               onChange={(e) => setScheduledAt(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:bg-gray-700 dark:text-white"
               required
             />
           </div>
 
           {/* Location */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Lokacija</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Lokacija</h2>
               <button
                 type="button"
                 onClick={() => setShowNewLocation(!showNewLocation)}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
               >
                 {showNewLocation ? 'Otkaži' : '+ Nova lokacija'}
               </button>
@@ -486,7 +486,7 @@ export default function NewMatchPage() {
             {showNewLocation ? (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Naziv padel centra *
                   </label>
                   <input
@@ -494,11 +494,11 @@ export default function NewMatchPage() {
                     value={newLocationName}
                     onChange={(e) => setNewLocationName(e.target.value)}
                     placeholder="npr. Padel Zagreb"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Adresa *
                   </label>
                   <input
@@ -506,11 +506,11 @@ export default function NewMatchPage() {
                     value={newLocationAddress}
                     onChange={(e) => setNewLocationAddress(e.target.value)}
                     placeholder="npr. Ulica grada Vukovara 123"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Grad *
                   </label>
                   <input
@@ -518,7 +518,7 @@ export default function NewMatchPage() {
                     value={newLocationCity}
                     onChange={(e) => setNewLocationCity(e.target.value)}
                     placeholder="npr. Zagreb"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
                 <button
@@ -534,7 +534,7 @@ export default function NewMatchPage() {
               <select
                 value={locationId}
                 onChange={(e) => setLocationId(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:bg-gray-700 dark:text-white"
               >
                 <option value="">-- Odaberi lokaciju --</option>
                 {locations.map((loc) => (
@@ -547,8 +547,8 @@ export default function NewMatchPage() {
           </div>
 
           {/* Match Type & Scoring */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Tip matcha</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Tip matcha</h2>
 
             <div className="space-y-4">
               {/* Match type radio buttons */}
@@ -561,7 +561,7 @@ export default function NewMatchPage() {
                     onChange={() => setIsLeagueMatch(false)}
                     className="w-5 h-5 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-gray-800 font-medium">Regularan match</span>
+                  <span className="text-gray-800 dark:text-gray-200 font-medium">Regularan match</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -571,18 +571,18 @@ export default function NewMatchPage() {
                     onChange={() => setIsLeagueMatch(true)}
                     className="w-5 h-5 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-gray-800 font-medium">Ligaški match</span>
+                  <span className="text-gray-800 dark:text-gray-200 font-medium">Ligaški match</span>
                 </label>
               </div>
               {isLeagueMatch && (
-                <p className="text-sm text-gray-600 ml-1">Golden Point, 2 seta za pobjedu</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 ml-1">Golden Point, 2 seta za pobjedu</p>
               )}
 
               {/* Scoring type and duration - only for non-league matches */}
               {!isLeagueMatch && (
                 <>
                   {/* Looking for players toggle */}
-                  <div className="flex items-center gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-center gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
                     <input
                       type="checkbox"
                       id="lookingForPlayers"
@@ -597,14 +597,14 @@ export default function NewMatchPage() {
                       className="w-5 h-5 text-yellow-600 focus:ring-yellow-500 rounded"
                     />
                     <label htmlFor="lookingForPlayers" className="cursor-pointer">
-                      <span className="font-medium text-gray-800">Tražim igrače</span>
-                      <p className="text-xs text-gray-600">Kreiraj match s manjim brojem igrača - drugi se mogu prijaviti</p>
+                      <span className="font-medium text-gray-800 dark:text-gray-200">Tražim igrače</span>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Kreiraj match s manjim brojem igrača - drugi se mogu prijaviti</p>
                     </label>
                   </div>
 
                   {/* Singles/Doubles toggle */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Format igre
                     </label>
                     <div className="flex gap-4">
@@ -619,8 +619,8 @@ export default function NewMatchPage() {
                           className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                         />
                         <div>
-                          <span className="font-medium text-gray-800">Parovi (2v2)</span>
-                          <p className="text-xs text-gray-600">Standardni padel format</p>
+                          <span className="font-medium text-gray-800 dark:text-gray-200">Parovi (2v2)</span>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">Standardni padel format</p>
                         </div>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -637,15 +637,15 @@ export default function NewMatchPage() {
                           className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                         />
                         <div>
-                          <span className="font-medium text-gray-800">Pojedinačno (1v1)</span>
-                          <p className="text-xs text-gray-600">Jedan igrač protiv jednog</p>
+                          <span className="font-medium text-gray-800 dark:text-gray-200">Pojedinačno (1v1)</span>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">Jedan igrač protiv jednog</p>
                         </div>
                       </label>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Način bodovanja
                     </label>
                     <div className="flex gap-4">
@@ -659,8 +659,8 @@ export default function NewMatchPage() {
                           className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                         />
                         <div>
-                          <span className="font-medium text-gray-800">Golden Point</span>
-                          <p className="text-xs text-gray-600">Na 40-40 odlučuje jedan poen</p>
+                          <span className="font-medium text-gray-800 dark:text-gray-200">Golden Point</span>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">Na 40-40 odlučuje jedan poen</p>
                         </div>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -673,15 +673,15 @@ export default function NewMatchPage() {
                           className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                         />
                         <div>
-                          <span className="font-medium text-gray-800">Klasično</span>
-                          <p className="text-xs text-gray-600">Deuce/Advantage sustav</p>
+                          <span className="font-medium text-gray-800 dark:text-gray-200">Klasično</span>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">Deuce/Advantage sustav</p>
                         </div>
                       </label>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Trajanje meča
                     </label>
                     <div className="flex items-center gap-4">
@@ -693,15 +693,15 @@ export default function NewMatchPage() {
                           step="30"
                           value={durationMinutes}
                           onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                          className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
                         />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1 px-0.5">
+                        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1 px-0.5">
                           <span>60 min</span>
                           <span>90 min</span>
                           <span>120 min</span>
                         </div>
                       </div>
-                      <span className="text-lg font-semibold text-gray-900 min-w-[80px] text-center">
+                      <span className="text-lg font-semibold text-gray-900 dark:text-white min-w-[80px] text-center">
                         {durationMinutes} min
                       </span>
                     </div>
@@ -709,7 +709,7 @@ export default function NewMatchPage() {
 
                   {/* Pair rotation - only for 2v2 matches when not looking for players */}
                   {!isSingles && !isLookingForPlayers && (
-                    <div className="flex items-center gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg">
                       <input
                         type="checkbox"
                         id="pairRotation"
@@ -718,8 +718,8 @@ export default function NewMatchPage() {
                         className="w-5 h-5 text-purple-600 focus:ring-purple-500 rounded"
                       />
                       <label htmlFor="pairRotation" className="cursor-pointer">
-                        <span className="font-medium text-gray-800">Rotacija parova po setu</span>
-                        <p className="text-xs text-gray-600">Svaki igrač igra s svakim - generira se raspored za 5 setova</p>
+                        <span className="font-medium text-gray-800 dark:text-gray-200">Rotacija parova po setu</span>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Svaki igrač igra s svakim - generira se raspored za 5 setova</p>
                       </label>
                     </div>
                   )}
@@ -729,23 +729,23 @@ export default function NewMatchPage() {
           </div>
 
           {/* Players */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Igrači</h2>
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Igrači</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Započni tipkati ime ili email za pretraživanje igrača.
             </p>
 
             {/* Rotation mode - 4 players without teams */}
             {pairRotation && !isSingles ? (
               <div>
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 mb-4">
                   <div className="flex items-start gap-2">
-                    <svg className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
-                      <p className="font-medium text-purple-800">Rotacija parova aktivirana</p>
-                      <p className="text-sm text-purple-700 mt-1">
+                      <p className="font-medium text-purple-800 dark:text-purple-300">Rotacija parova aktivirana</p>
+                      <p className="text-sm text-purple-700 dark:text-purple-400 mt-1">
                         Sustav će automatski generirati parove u round-robin sistemu.
                         Svaki igrač će igrati s svakim drugim igračem tijekom 5 setova.
                       </p>
@@ -753,16 +753,16 @@ export default function NewMatchPage() {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/50">
+                  <div className="border border-purple-200 dark:border-purple-700 rounded-lg p-4 bg-purple-50/50 dark:bg-purple-900/10">
                     {renderPlayerSlot('rot1', team1Player1, setTeam1Player1, 'Igrač 1', true)}
                   </div>
-                  <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/50">
+                  <div className="border border-purple-200 dark:border-purple-700 rounded-lg p-4 bg-purple-50/50 dark:bg-purple-900/10">
                     {renderPlayerSlot('rot2', team1Player2, setTeam1Player2, 'Igrač 2')}
                   </div>
-                  <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/50">
+                  <div className="border border-purple-200 dark:border-purple-700 rounded-lg p-4 bg-purple-50/50 dark:bg-purple-900/10">
                     {renderPlayerSlot('rot3', team2Player1, setTeam2Player1, 'Igrač 3')}
                   </div>
-                  <div className="border border-purple-200 rounded-lg p-4 bg-purple-50/50">
+                  <div className="border border-purple-200 dark:border-purple-700 rounded-lg p-4 bg-purple-50/50 dark:bg-purple-900/10">
                     {renderPlayerSlot('rot4', team2Player2, setTeam2Player2, 'Igrač 4')}
                   </div>
                 </div>
@@ -770,8 +770,8 @@ export default function NewMatchPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Team 1 / Player 1 */}
-                <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
-                  <h3 className="font-semibold mb-3 text-blue-700">
+                <div className="border border-blue-200 dark:border-blue-700 rounded-lg p-4 bg-blue-50 dark:bg-blue-900/20">
+                  <h3 className="font-semibold mb-3 text-blue-700 dark:text-blue-400">
                     {isSingles ? 'Igrač 1' : 'Tim 1'}
                   </h3>
                   <div className="space-y-3">
@@ -781,8 +781,8 @@ export default function NewMatchPage() {
                 </div>
 
                 {/* Team 2 / Player 2 */}
-                <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-                  <h3 className="font-semibold mb-3 text-red-700">
+                <div className="border border-red-200 dark:border-red-700 rounded-lg p-4 bg-red-50 dark:bg-red-900/20">
+                  <h3 className="font-semibold mb-3 text-red-700 dark:text-red-400">
                     {isSingles ? 'Igrač 2' : 'Tim 2'}
                   </h3>
                   <div className="space-y-3">
@@ -795,12 +795,12 @@ export default function NewMatchPage() {
           </div>
 
           {/* Notes */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Napomena (opcionalno)</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Napomena (opcionalno)</h2>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:bg-gray-700 dark:text-white"
               rows={3}
               placeholder="Dodatne napomene o matchu..."
             />
@@ -808,7 +808,7 @@ export default function NewMatchPage() {
 
           {/* Error message - visible near submit button */}
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded">
               {error}
             </div>
           )}
@@ -825,7 +825,7 @@ export default function NewMatchPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+              className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
             >
               Odustani
             </button>
@@ -844,29 +844,29 @@ export default function NewMatchPage() {
 
           {/* Modal */}
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+            <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all">
               {/* Warning icon */}
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Konflikt u rasporedu
                 </h3>
               </div>
 
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 Neki igrači već imaju zakazan meč u isto vrijeme ili na isti dan:
               </p>
 
               <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
                 {warnings.map((warning, idx) => (
-                  <div key={idx} className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <div className="font-medium text-gray-900">{getUserName(warning.userId)}</div>
+                  <div key={idx} className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3">
+                    <div className="font-medium text-gray-900 dark:text-white">{getUserName(warning.userId)}</div>
                     {warning.conflicts.map((conflict, cidx) => (
-                      <div key={cidx} className="text-sm text-gray-700 mt-1">
+                      <div key={cidx} className="text-sm text-gray-700 dark:text-gray-300 mt-1">
                         {conflict.message}
                       </div>
                     ))}
@@ -886,7 +886,7 @@ export default function NewMatchPage() {
                 </button>
                 <button
                   onClick={() => setShowWarningModal(false)}
-                  className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg hover:bg-gray-50 transition font-medium"
+                  className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium"
                 >
                   Odustani
                 </button>

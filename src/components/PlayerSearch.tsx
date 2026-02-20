@@ -154,7 +154,7 @@ export default function PlayerSearch({
   return (
     <div className="relative">
       {label && (
-        <label className="block text-sm font-medium text-gray-800 mb-1">
+        <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">
           {label}
         </label>
       )}
@@ -169,15 +169,15 @@ export default function PlayerSearch({
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white ${
-            selectedUserId ? 'bg-green-50 border-green-300' : ''
+          className={`w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700 ${
+            selectedUserId ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-600' : ''
           }`}
         />
         {selectedUserId && (
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-700 hover:text-gray-700 p-1"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-700 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 p-1"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -190,15 +190,15 @@ export default function PlayerSearch({
       {isOpen && !selectedUserId && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto"
+          className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg dark:shadow-gray-900/50 max-h-60 overflow-auto"
         >
           {filteredUsers.length === 0 ? (
-            <div className="px-4 py-3 text-gray-600">
+            <div className="px-4 py-3 text-gray-600 dark:text-gray-400">
               {searchTerm ? 'Nema rezultata' : 'Nema dostupnih igrača'}
             </div>
           ) : (
             <>
-              <div className="px-3 py-2 text-xs text-gray-600 bg-gray-50 border-b">
+              <div className="px-3 py-2 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
                 {searchTerm
                   ? `${filteredUsers.length} igrača pronađeno${filteredUsers.length > MAX_RESULTS ? ` (prikazano prvih ${MAX_RESULTS})` : ''}`
                   : 'Nedavno registrirani igrači'
@@ -210,23 +210,23 @@ export default function PlayerSearch({
                   type="button"
                   onClick={() => handleSelect(user)}
                   onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`w-full px-4 py-2 text-left hover:bg-blue-50 ${
-                    index === highlightedIndex ? 'bg-blue-100' : ''
+                  className={`w-full px-4 py-2 text-left hover:bg-blue-50 dark:hover:bg-blue-900/30 ${
+                    index === highlightedIndex ? 'bg-blue-100 dark:bg-blue-900/30' : ''
                   }`}
                 >
-                  <div className="font-medium text-gray-900">
+                  <div className="font-medium text-gray-900 dark:text-white">
                     {user.name || 'Nepoznato ime'}
                     {user.isGuest && (
-                      <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-orange-100 text-orange-700">gost</span>
+                      <span className="ml-2 inline-flex px-1.5 py-0.5 text-xs font-medium rounded bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">gost</span>
                     )}
                   </div>
                   {user.handle && (
-                    <div className="text-sm text-gray-500">@{user.handle}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">@{user.handle}</div>
                   )}
                 </button>
               ))}
               {searchTerm && filteredUsers.length > MAX_RESULTS && (
-                <div className="px-4 py-2 text-sm text-gray-600 bg-gray-50 border-t">
+                <div className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 border-t dark:border-gray-600">
                   Suzi pretragu za prikaz ostalih rezultata.
                 </div>
               )}

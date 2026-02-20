@@ -63,6 +63,27 @@ export default function ToolsPage() {
               >
                 Backup svega (matchevi + igrači + lige + statistika)
               </a>
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  Nakon preuzimanja, uploadaj na Google Drive:
+                </p>
+                <a
+                  href="https://drive.google.com/drive/my-drive"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition font-medium text-sm"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                    <path d="M4.433 22l-1.766-3.062 7.233-12.526h3.533L6.2 18.938 4.433 22z" fill="#0066DA"/>
+                    <path d="M19.567 22H4.433l1.767-3.062h13.367L21.333 22h-1.766z" fill="#00AC47"/>
+                    <path d="M14.9 6.412L8.433 18.938l-1.766-3.062L12.133 6.412h2.767z" fill="#EA4335"/>
+                    <path d="M21.333 18.938L19.567 22l-1.766-3.062L14.9 6.412h3.533l2.9 12.526z" fill="#00832D"/>
+                    <path d="M14.9 6.412h-2.767L8.433 6.412l3.534-6.124L14.9 6.412z" fill="#2684FC"/>
+                    <path d="M8.433 6.412l3.534-6.124L8.433.288l-3.534 6.124h3.534z" fill="#FFBA00"/>
+                  </svg>
+                  Otvori Google Drive
+                </a>
+              </div>
             </div>
           </div>
 

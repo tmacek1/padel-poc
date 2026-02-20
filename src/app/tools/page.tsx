@@ -18,13 +18,14 @@ export default function ToolsPage() {
   }>({ loading: null, success: null, error: null })
 
   // Folder picker state
-  const [folderPicker, setFolderPicker] = useState<{
+  const [picker, setPicker] = useState<{
     open: boolean
     type: string
     folders: DriveFolder[]
-    path: { id: string | null; name: string }[]
     loading: boolean
-  }>({ open: false, type: 'matches', folders: [], path: [{ id: null, name: 'My Drive' }], loading: false })
+    newFolderName: string
+    creating: boolean
+  }>({ open: false, type: 'matches', folders: [], loading: false, newFolderName: '', creating: false })
 
   useEffect(() => {
     if (status === 'loading') return
@@ -33,50 +34,57 @@ export default function ToolsPage() {
     }
   }, [status, session, router])
 
-  const fetchFolders = useCallback(async (parentId?: string) => {
-    setFolderPicker(prev => ({ ...prev, loading: true }))
+  const fetchFolders = useCallback(async () => {
+    setPicker(prev => ({ ...prev, loading: true }))
     try {
-      const url = parentId
-        ? `/api/admin/backup/drive/folders?parentId=${parentId}`
-        : '/api/admin/backup/drive/folders'
-      const res = await fetch(url)
+      const res = await fetch('/api/admin/backup/drive/folders')
       const data = await res.json()
       if (!res.ok) {
         setDriveStatus({ loading: null, success: null, error: data.error })
-        setFolderPicker(prev => ({ ...prev, open: false, loading: false }))
+        setPicker(prev => ({ ...prev, open: false, loading: false }))
         return
       }
-      setFolderPicker(prev => ({ ...prev, folders: data.folders, loading: false }))
+      setPicker(prev => ({ ...prev, folders: data.folders, loading: false }))
     } catch {
-      setFolderPicker(prev => ({ ...prev, loading: false }))
+      setPicker(prev => ({ ...prev, loading: false }))
     }
   }, [])
 
   const openFolderPicker = async (type: string) => {
     setDriveStatus({ loading: null, success: null, error: null })
-    setFolderPicker({ open: true, type, folders: [], path: [{ id: null, name: 'My Drive' }], loading: true })
+    setPicker({ open: true, type, folders: [], loading: true, newFolderName: '', creating: false })
     await fetchFolders()
   }
 
-  const navigateToFolder = async (folder: DriveFolder) => {
-    setFolderPicker(prev => ({
-      ...prev,
-      path: [...prev.path, { id: folder.id, name: folder.name }],
-      folders: [],
-    }))
-    await fetchFolders(folder.id)
-  }
-
-  const navigateToPathIndex = async (index: number) => {
-    const newPath = folderPicker.path.slice(0, index + 1)
-    setFolderPicker(prev => ({ ...prev, path: newPath, folders: [] }))
-    const parentId = newPath[newPath.length - 1].id
-    await fetchFolders(parentId || undefined)
+  const createFolder = async () => {
+    const name = picker.newFolderName.trim()
+    if (!name) return
+    setPicker(prev => ({ ...prev, creating: true }))
+    try {
+      const res = await fetch('/api/admin/backup/drive/folders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setPicker(prev => ({
+          ...prev,
+          folders: [...prev.folders, data.folder].sort((a, b) => a.name.localeCompare(b.name)),
+          newFolderName: '',
+          creating: false,
+        }))
+      } else {
+        setPicker(prev => ({ ...prev, creating: false }))
+      }
+    } catch {
+      setPicker(prev => ({ ...prev, creating: false }))
+    }
   }
 
   const uploadToDrive = async (folderId?: string | null) => {
-    const type = folderPicker.type
-    setFolderPicker(prev => ({ ...prev, open: false }))
+    const type = picker.type
+    setPicker(prev => ({ ...prev, open: false }))
     setDriveStatus({ loading: type, success: null, error: null })
     try {
       let url = `/api/admin/backup/drive?type=${type}`
@@ -113,8 +121,6 @@ export default function ToolsPage() {
   }
 
   if (!session?.user?.isAdmin) return null
-
-  const currentFolderId = folderPicker.path[folderPicker.path.length - 1].id
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -225,15 +231,15 @@ export default function ToolsPage() {
       </div>
 
       {/* Folder Picker Modal */}
-      {folderPicker.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setFolderPicker(prev => ({ ...prev, open: false }))}>
+      {picker.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setPicker(prev => ({ ...prev, open: false }))}>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-gray-900 dark:text-white">Odaberi folder na Driveu</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900 dark:text-white">Spremi na Google Drive</h3>
                 <button
-                  onClick={() => setFolderPicker(prev => ({ ...prev, open: false }))}
+                  onClick={() => setPicker(prev => ({ ...prev, open: false }))}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -241,60 +247,77 @@ export default function ToolsPage() {
                   </svg>
                 </button>
               </div>
-              {/* Breadcrumb */}
-              <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
-                {folderPicker.path.map((p, i) => (
-                  <span key={i} className="flex items-center gap-1">
-                    {i > 0 && <span>/</span>}
-                    <button
-                      onClick={() => navigateToPathIndex(i)}
-                      className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline"
-                    >
-                      {p.name}
-                    </button>
-                  </span>
-                ))}
-              </div>
             </div>
 
-            {/* Folder list */}
-            <div className="flex-1 overflow-y-auto p-2 min-h-[200px]">
-              {folderPicker.loading ? (
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {picker.loading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                 </div>
-              ) : folderPicker.folders.length === 0 ? (
-                <p className="text-center text-sm text-gray-500 dark:text-gray-400 py-8">
-                  Nema podfoldera
-                </p>
               ) : (
-                folderPicker.folders.map(folder => (
+                <>
+                  {/* Save to root */}
                   <button
-                    key={folder.id}
-                    onClick={() => navigateToFolder(folder)}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left"
+                    onClick={() => uploadToDrive(null)}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left border border-gray-200 dark:border-gray-600 mb-3"
                   >
-                    <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
-                    </svg>
-                    <span className="text-sm text-gray-900 dark:text-gray-100 truncate">{folder.name}</span>
+                    <DriveIcon />
+                    <div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">My Drive (root)</span>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Spremi direktno u root</p>
+                    </div>
                   </button>
-                ))
+
+                  {/* Existing folders */}
+                  {picker.folders.length > 0 && (
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium uppercase tracking-wide">Postojeci folderi</p>
+                      {picker.folders.map(folder => (
+                        <button
+                          key={folder.id}
+                          onClick={() => uploadToDrive(folder.id)}
+                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition text-left"
+                        >
+                          <svg className="w-5 h-5 text-yellow-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+                          </svg>
+                          <span className="text-sm text-gray-900 dark:text-gray-100 truncate">{folder.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Create new folder */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium uppercase tracking-wide">Novi folder</p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={picker.newFolderName}
+                        onChange={e => setPicker(prev => ({ ...prev, newFolderName: e.target.value }))}
+                        onKeyDown={e => e.key === 'Enter' && createFolder()}
+                        placeholder="Naziv foldera..."
+                        className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        onClick={createFolder}
+                        disabled={!picker.newFolderName.trim() || picker.creating}
+                        className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {picker.creating ? '...' : 'Kreiraj'}
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex gap-2">
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
               <button
-                onClick={() => uploadToDrive(currentFolderId)}
-                disabled={folderPicker.loading}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm disabled:opacity-50"
-              >
-                Spremi ovdje
-              </button>
-              <button
-                onClick={() => setFolderPicker(prev => ({ ...prev, open: false }))}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium text-sm"
+                onClick={() => setPicker(prev => ({ ...prev, open: false }))}
+                className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium text-sm"
               >
                 Odustani
               </button>

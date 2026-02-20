@@ -42,21 +42,31 @@ export async function getGoogleDriveClient(userId: string) {
   return google.drive({ version: 'v3', auth: oauth2Client })
 }
 
-export async function listDriveFolders(userId: string, parentId?: string) {
+export async function listAppFolders(userId: string) {
   const drive = await getGoogleDriveClient(userId)
 
-  const query = parentId
-    ? `'${parentId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`
-    : `'root' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`
-
   const response = await drive.files.list({
-    q: query,
+    q: "mimeType = 'application/vnd.google-apps.folder' and trashed = false",
     fields: 'files(id, name)',
     orderBy: 'name',
     pageSize: 100,
   })
 
   return response.data.files || []
+}
+
+export async function createDriveFolder(userId: string, folderName: string) {
+  const drive = await getGoogleDriveClient(userId)
+
+  const response = await drive.files.create({
+    requestBody: {
+      name: folderName,
+      mimeType: 'application/vnd.google-apps.folder',
+    },
+    fields: 'id, name',
+  })
+
+  return { id: response.data.id!, name: response.data.name! }
 }
 
 export async function uploadToDrive(

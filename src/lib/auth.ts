@@ -59,7 +59,20 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
   },
   callbacks: {
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user, trigger, account }) {
+      // Update Google OAuth tokens in DB on every sign-in
+      if (account?.provider === 'google' && user?.id) {
+        await prisma.account.updateMany({
+          where: { userId: user.id, provider: 'google' },
+          data: {
+            access_token: account.access_token,
+            refresh_token: account.refresh_token,
+            expires_at: account.expires_at,
+            scope: account.scope,
+          },
+        })
+      }
+
       if (user) {
         token.id = user.id
         // Fetch profile completion status and admin flags

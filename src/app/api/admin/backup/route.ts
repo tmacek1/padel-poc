@@ -157,35 +157,98 @@ export async function GET(req: NextRequest) {
     const wsLeagues = XLSX.utils.json_to_sheet(leagueRows)
     XLSX.utils.book_append_sheet(wb, wsLeagues, 'Lige')
 
-    // --- Statistika (Standings) sheet ---
-    const standings = await prisma.seasonStanding.findMany({
-      include: {
-        user: { select: { name: true, email: true } },
-        season: { select: { name: true } },
-        leagueTeam: {
-          include: {
-            players: {
-              include: { user: { select: { name: true } } },
-            },
-          },
-        },
-      },
-      orderBy: { points: 'desc' },
+    // --- Statistika po igračima sheet ---
+    const allUsers = await prisma.user.findMany({
+      where: { isDeleted: false, isGuest: false },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: 'asc' },
     })
 
-    const standingRows = standings.map((s) => ({
-      Sezona: s.season?.name || '',
-      Igrač: s.user?.name || s.user?.email || '',
-      Par: s.leagueTeam?.players.map((p) => p.user.name).join(' / ') || '',
-      Bodovi: s.points,
-      'Odigrani matchevi': s.matchesPlayed,
-      Pobjede: s.wins,
-      Porazi: s.losses,
-      'Izgubljeni tiebreakovi': s.tiebreakLosses,
-    }))
+    const completedMatches = await prisma.match.findMany({
+      where: { status: 'completed', leagueId: null },
+      select: {
+        id: true,
+        pairRotation: true,
+        players: true,
+        sets: {
+          include: { setPlayers: true },
+        },
+      },
+    })
 
-    const wsStandings = XLSX.utils.json_to_sheet(standingRows)
-    XLSX.utils.book_append_sheet(wb, wsStandings, 'Statistika')
+    const statsRows = allUsers.map((u) => {
+      let regularWins = 0, regularLosses = 0, regularDraws = 0
+      let rotationSetsWon = 0, rotationSetsLost = 0, rotationSetsDrawn = 0
+      let totalSetsWon = 0, totalSetsLost = 0
+      let totalGamesWon = 0, totalGamesLost = 0
+
+      for (const match of completedMatches) {
+        const userPlayer = match.players.find((p) => p.userId === u.id)
+        if (!userPlayer) continue
+
+        const defaultTeam = userPlayer.team
+        let matchSetsWon = 0, matchSetsLost = 0, matchSetsDrawn = 0
+
+        for (const set of match.sets) {
+          const setPlayerRecord = set.setPlayers?.find((sp) => sp.userId === u.id)
+          const userTeam = setPlayerRecord ? setPlayerRecord.team : defaultTeam
+
+          if (userTeam === 1) {
+            totalGamesWon += set.team1Score
+            totalGamesLost += set.team2Score
+          } else {
+            totalGamesWon += set.team2Score
+            totalGamesLost += set.team1Score
+          }
+
+          const wonSet = (userTeam === 1 && set.team1Score > set.team2Score) ||
+                         (userTeam === 2 && set.team2Score > set.team1Score)
+          const draw = set.team1Score === set.team2Score
+
+          if (wonSet) { matchSetsWon++; totalSetsWon++ }
+          else if (draw) { matchSetsDrawn++ }
+          else { matchSetsLost++; totalSetsLost++ }
+        }
+
+        if (match.pairRotation) {
+          rotationSetsWon += matchSetsWon
+          rotationSetsLost += matchSetsLost
+          rotationSetsDrawn += matchSetsDrawn
+        } else {
+          if (matchSetsWon > matchSetsLost) regularWins++
+          else if (matchSetsLost > matchSetsWon) regularLosses++
+          else regularDraws++
+        }
+      }
+
+      const totalRegular = regularWins + regularLosses + regularDraws
+      const totalRotation = rotationSetsWon + rotationSetsLost + rotationSetsDrawn
+      const totalSets = totalSetsWon + totalSetsLost
+      const totalGames = totalGamesWon + totalGamesLost
+
+      return {
+        Igrač: u.name || u.email,
+        'Reg. matchevi': totalRegular,
+        'Reg. pobjede': regularWins,
+        'Reg. porazi': regularLosses,
+        'Reg. neriješeno': regularDraws,
+        'Reg. win%': totalRegular > 0 ? Math.round((regularWins / totalRegular) * 1000) / 10 : 0,
+        'Rot. setovi': totalRotation,
+        'Rot. dobiveni': rotationSetsWon,
+        'Rot. izgubljeni': rotationSetsLost,
+        'Rot. neriješeni': rotationSetsDrawn,
+        'Rot. win%': totalRotation > 0 ? Math.round((rotationSetsWon / totalRotation) * 1000) / 10 : 0,
+        'Ukupno setovi W': totalSetsWon,
+        'Ukupno setovi L': totalSetsLost,
+        'Set win%': totalSets > 0 ? Math.round((totalSetsWon / totalSets) * 1000) / 10 : 0,
+        'Ukupno gemovi W': totalGamesWon,
+        'Ukupno gemovi L': totalGamesLost,
+        'Gem win%': totalGames > 0 ? Math.round((totalGamesWon / totalGames) * 1000) / 10 : 0,
+      }
+    }).filter((row) => row['Reg. matchevi'] > 0 || row['Rot. setovi'] > 0)
+
+    const wsStats = XLSX.utils.json_to_sheet(statsRows)
+    XLSX.utils.book_append_sheet(wb, wsStats, 'Statistika')
   }
 
   // Generate buffer

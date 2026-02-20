@@ -20,10 +20,11 @@ export async function POST(req: NextRequest) {
   }
 
   const type = req.nextUrl.searchParams.get('type') || 'matches'
+  const folderId = req.nextUrl.searchParams.get('folderId') || undefined
 
   try {
     const { buffer, filename } = await generateBackupBuffer(type)
-    const result = await uploadToDrive(session.user.id, filename, buffer)
+    const result = await uploadToDrive(session.user.id, filename, buffer, folderId)
 
     return NextResponse.json({
       success: true,

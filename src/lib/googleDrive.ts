@@ -42,10 +42,28 @@ export async function getGoogleDriveClient(userId: string) {
   return google.drive({ version: 'v3', auth: oauth2Client })
 }
 
+export async function listDriveFolders(userId: string, parentId?: string) {
+  const drive = await getGoogleDriveClient(userId)
+
+  const query = parentId
+    ? `'${parentId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`
+    : `'root' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`
+
+  const response = await drive.files.list({
+    q: query,
+    fields: 'files(id, name)',
+    orderBy: 'name',
+    pageSize: 100,
+  })
+
+  return response.data.files || []
+}
+
 export async function uploadToDrive(
   userId: string,
   filename: string,
-  buffer: Buffer
+  buffer: Buffer,
+  folderId?: string
 ) {
   const drive = await getGoogleDriveClient(userId)
 
@@ -53,6 +71,7 @@ export async function uploadToDrive(
     requestBody: {
       name: filename,
       mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      ...(folderId ? { parents: [folderId] } : {}),
     },
     media: {
       mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

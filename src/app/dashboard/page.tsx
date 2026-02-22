@@ -158,53 +158,48 @@ export default function DashboardPage() {
           <p className="text-gray-600 dark:text-gray-400">Pregled tvojih matcheva i statistike</p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
-            <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">Ukupno matcheva</div>
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-              {stats?.totalMatches || 0}
-            </div>
-            {(stats?.regularStats || stats?.rotationStats) && (
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {stats?.regularStats?.matches || 0} regularnih + {stats?.rotationStats?.totalSets || 0} rotacijskih
-              </div>
-            )}
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
-            <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">Pobjede</div>
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-              {stats?.wins || 0}
-            </div>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
-            <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">Porazi</div>
-            <div className="text-3xl font-bold text-red-600 dark:text-red-400">
-              {stats?.losses || 0}
-            </div>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
-            <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">Postotak pobjeda</div>
-            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-              {stats?.winRate || 0}%
-            </div>
-          </div>
-        </div>
-
         {/* Quick Actions */}
-        <div className="flex gap-4 mb-8">
+        <div className="flex gap-3 mb-6">
           <Link
             href="/matches/new"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
+            className="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition font-semibold text-sm"
           >
             + Novi match
           </Link>
           <Link
             href="/matches"
-            className="bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 px-6 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition font-semibold border border-blue-600 dark:border-blue-400"
+            className="bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 px-5 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition font-semibold border border-blue-600 dark:border-blue-400 text-sm"
           >
             Svi matchevi
           </Link>
+        </div>
+
+        {/* Quick Stats - compact on mobile */}
+        <div className="grid grid-cols-4 gap-2 md:gap-4 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-3 md:p-6">
+            <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300 font-medium">Matchevi</div>
+            <div className="text-xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
+              {stats?.totalMatches || 0}
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-3 md:p-6">
+            <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300 font-medium">Pobjede</div>
+            <div className="text-xl md:text-3xl font-bold text-green-600 dark:text-green-400">
+              {stats?.wins || 0}
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-3 md:p-6">
+            <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300 font-medium">Porazi</div>
+            <div className="text-xl md:text-3xl font-bold text-red-600 dark:text-red-400">
+              {stats?.losses || 0}
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-3 md:p-6">
+            <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300 font-medium">Win%</div>
+            <div className="text-xl md:text-3xl font-bold text-purple-600 dark:text-purple-400">
+              {stats?.winRate || 0}%
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

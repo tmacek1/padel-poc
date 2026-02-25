@@ -148,11 +148,12 @@ export default function MatchDetailPage() {
     }
   }, [status, router])
 
+  const sessionUserId = session?.user?.id
   useEffect(() => {
-    if (session && matchId) {
+    if (sessionUserId && matchId) {
       fetchMatch()
     }
-  }, [session, matchId])
+  }, [sessionUserId, matchId])
 
   const fetchMatch = async () => {
     try {

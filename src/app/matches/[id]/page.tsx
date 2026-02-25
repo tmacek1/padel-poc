@@ -128,9 +128,40 @@ export default function MatchDetailPage() {
   const [savingPosition, setSavingPosition] = useState<string | null>(null)
   const [error, setError] = useState('')
 
-  // Edit form state
+  // Edit form state - restore from sessionStorage if available
+  const editStorageKey = `padelhub-edit-${matchId}`
   const [editStatus, setEditStatus] = useState('')
   const [editSets, setEditSets] = useState<MatchSet[]>([])
+  const [restoredFromStorage, setRestoredFromStorage] = useState(false)
+
+  // Restore editing state from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(editStorageKey)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        setEditing(true)
+        setEditSets(parsed.editSets)
+        setEditStatus(parsed.editStatus)
+        setRestoredFromStorage(true)
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }, [editStorageKey])
+
+  // Persist editing state to sessionStorage while editing
+  useEffect(() => {
+    if (editing && editSets.length > 0) {
+      try {
+        sessionStorage.setItem(editStorageKey, JSON.stringify({ editSets, editStatus }))
+      } catch {
+        // Ignore storage errors
+      }
+    } else {
+      sessionStorage.removeItem(editStorageKey)
+    }
+  }, [editing, editSets, editStatus, editStorageKey])
   const [editScheduledAt, setEditScheduledAt] = useState('')
   const [editingSchedule, setEditingSchedule] = useState(false)
   const [enablingRotation, setEnablingRotation] = useState(false)
@@ -162,6 +193,14 @@ export default function MatchDetailPage() {
 
       if (res.ok) {
         setMatch(data)
+
+        // Skip re-initializing edit state if restored from sessionStorage
+        if (restoredFromStorage) {
+          setRestoredFromStorage(false)
+          setLoading(false)
+          return
+        }
+
         setEditStatus(data.status)
 
         // Parse rotation schedule if available

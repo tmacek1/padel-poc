@@ -300,7 +300,7 @@ export default function DashboardPage() {
                     <tr className="border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
                       <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">#</th>
                       <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Igrač</th>
-                      <th className="text-center px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">W/L/D</th>
+                      <th className="text-center px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">W/D/L</th>
                       <th className="text-center px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">%</th>
                     </tr>
                   </thead>
@@ -328,14 +328,10 @@ export default function DashboardPage() {
                         </td>
                         <td className="px-4 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
                           <span className="text-green-700 dark:text-green-400 font-semibold">{player.wins}</span>
-                          <span className="text-gray-400 mx-1">/</span>
+                          <span className="text-gray-400 mx-0.5">/</span>
+                          <span className="text-gray-500 dark:text-gray-400 font-semibold">{player.draws}</span>
+                          <span className="text-gray-400 mx-0.5">/</span>
                           <span className="text-red-700 dark:text-red-400 font-semibold">{player.losses}</span>
-                          {player.draws > 0 && (
-                            <>
-                              <span className="text-gray-400 mx-1">/</span>
-                              <span className="text-gray-500 dark:text-gray-400 font-semibold">{player.draws}</span>
-                            </>
-                          )}
                         </td>
                         <td className="px-4 py-3 text-center">
                           <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${
@@ -368,7 +364,7 @@ export default function DashboardPage() {
                     <tr className="border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
                       <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">#</th>
                       <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Par</th>
-                      <th className="text-center px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">W/L</th>
+                      <th className="text-center px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">W/D/L</th>
                       <th className="text-center px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">%</th>
                     </tr>
                   </thead>
@@ -403,7 +399,9 @@ export default function DashboardPage() {
                           </td>
                           <td className="px-4 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
                             <span className="text-green-700 dark:text-green-400 font-semibold">{pair.wins}</span>
-                            <span className="text-gray-400 mx-1">/</span>
+                            <span className="text-gray-400 mx-0.5">/</span>
+                            <span className="text-gray-500 dark:text-gray-400 font-semibold">{pair.draws}</span>
+                            <span className="text-gray-400 mx-0.5">/</span>
                             <span className="text-red-700 dark:text-red-400 font-semibold">{pair.losses}</span>
                           </td>
                           <td className="px-4 py-3 text-center">

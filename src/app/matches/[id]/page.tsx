@@ -399,19 +399,20 @@ export default function MatchDetailPage() {
     }
   }
 
-  // Pretvori Google Drive URL u embed URL za iframe
+  // Pretvori URL u embed URL za iframe (samo YouTube podržava iframe embed)
   const getEmbedUrl = (url: string): string | null => {
-    // Google Drive: /file/d/FILE_ID/view... → /file/d/FILE_ID/preview
-    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/)
-    if (driveMatch) {
-      return `https://drive.google.com/file/d/${driveMatch[1]}/preview`
-    }
-    // YouTube: razne varijante
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/)
     if (ytMatch) {
       return `https://www.youtube.com/embed/${ytMatch[1]}`
     }
     return null
+  }
+
+  const isDriveUrl = (url: string): boolean => /drive\.google\.com/.test(url)
+
+  const getDriveViewUrl = (url: string): string => {
+    const match = url.match(/drive\.google\.com\/file\/d\/([^/]+)/)
+    return match ? `https://drive.google.com/file/d/${match[1]}/view` : url
   }
 
   const handleSaveVideoUrls = async (urls: string[]) => {
@@ -1689,6 +1690,23 @@ export default function MatchDetailPage() {
                           title={`Match video${match.videoUrls.length > 1 ? ` - dio ${idx + 1}` : ''}`}
                         />
                       </div>
+                    ) : isDriveUrl(url) ? (
+                      <a
+                        href={getDriveViewUrl(url)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block relative w-full rounded-lg overflow-hidden bg-gray-900 hover:bg-gray-800 transition group"
+                        style={{ paddingBottom: '56.25%' }}
+                      >
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <svg className="w-16 h-16 text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                          <span className="mt-3 text-white/70 group-hover:text-white/90 text-sm font-medium transition">
+                            Otvori na Google Driveu{match.videoUrls.length > 1 ? ` (dio ${idx + 1})` : ''}
+                          </span>
+                        </div>
+                      </a>
                     ) : (
                       <a
                         href={url}

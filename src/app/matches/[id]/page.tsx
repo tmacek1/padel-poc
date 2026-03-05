@@ -164,6 +164,9 @@ export default function MatchDetailPage() {
   }, [editing, editSets, editStatus, editStorageKey])
   const [editScheduledAt, setEditScheduledAt] = useState('')
   const [editingSchedule, setEditingSchedule] = useState(false)
+  const [editingLocation, setEditingLocation] = useState(false)
+  const [editLocationId, setEditLocationId] = useState('')
+  const [locationsList, setLocationsList] = useState<{ id: string; name: string; city?: string }[]>([])
   const [enablingRotation, setEnablingRotation] = useState(false)
   const [joiningMatch, setJoiningMatch] = useState(false)
   const [leavingMatch, setLeavingMatch] = useState(false)
@@ -317,6 +320,43 @@ export default function MatchDetailPage() {
       }
     } catch {
       setError('Greška pri spremanju termina')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const fetchLocations = async () => {
+    try {
+      const res = await fetch('/api/locations')
+      const data = await res.json()
+      if (Array.isArray(data)) {
+        setLocationsList(data)
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  const handleSaveLocation = async () => {
+    setSaving(true)
+    setError('')
+
+    try {
+      const res = await fetch(`/api/matches/${matchId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locationId: editLocationId || null }),
+      })
+
+      if (res.ok) {
+        await fetchMatch()
+        setEditingLocation(false)
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Greška pri spremanju')
+      }
+    } catch {
+      setError('Greška pri spremanju lokacije')
     } finally {
       setSaving(false)
     }
@@ -879,7 +919,6 @@ export default function MatchDetailPage() {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
-                        {match.location && ` - ${match.location.name}`}
                       </span>
                       {match.canEdit && (match.status === 'scheduled' || match.status === 'looking_for_players') && (
                         <button
@@ -891,6 +930,56 @@ export default function MatchDetailPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
                         </button>
+                      )}
+                    </div>
+                    <div className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      {editingLocation ? (
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={editLocationId}
+                            onChange={(e) => setEditLocationId(e.target.value)}
+                            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 dark:text-white dark:bg-gray-700"
+                          >
+                            <option value="">-- Bez lokacije --</option>
+                            {locationsList.map((loc) => (
+                              <option key={loc.id} value={loc.id}>
+                                {loc.name}{loc.city ? ` (${loc.city})` : ''}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={handleSaveLocation}
+                            disabled={saving}
+                            className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm"
+                          >
+                            {saving ? '...' : 'Spremi'}
+                          </button>
+                          <button
+                            onClick={() => setEditingLocation(false)}
+                            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+                          >
+                            Odustani
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <span>{match.location ? match.location.name : 'Lokacija nije postavljena'}</span>
+                          {match.canEdit && (match.status === 'scheduled' || match.status === 'looking_for_players') && (
+                            <button
+                              onClick={() => {
+                                setEditLocationId(match.location?.id || '')
+                                fetchLocations()
+                                setEditingLocation(true)
+                              }}
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm"
+                              title="Promijeni lokaciju"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              </svg>
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </>

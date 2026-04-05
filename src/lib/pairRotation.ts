@@ -14,10 +14,9 @@ export interface PairConfig {
  * 2. AC vs BD
  * 3. AD vs BC
  *
- * Za 5 setova, koristimo round-robin ciklus: nakon što se iscrpe sve 3
- * kombinacije, ciklus kreće ispočetka (set 4 = kombinacija 1, set 5 = kombinacija 2).
+ * Koristimo round-robin ciklus koji se ponavlja koliko god setova ima.
  */
-export function generatePairRotationSchedule(): PairConfig[] {
+export function generatePairRotationSchedule(numSets: number = 10): PairConfig[] {
   const baseCombinations: [team1: [number, number], team2: [number, number]][] = [
     [[0, 1], [2, 3]], // AB vs CD
     [[0, 2], [1, 3]], // AC vs BD
@@ -25,7 +24,7 @@ export function generatePairRotationSchedule(): PairConfig[] {
   ]
 
   const combinations: PairConfig[] = []
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < numSets; i++) {
     const combo = baseCombinations[i % 3]
     combinations.push({
       setNumber: i + 1,

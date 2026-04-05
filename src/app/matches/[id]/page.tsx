@@ -236,6 +236,17 @@ export default function MatchDetailPage() {
             // For rotation matches, use the rotation schedule
             if (rotationSchedule) {
               const setConfig = rotationSchedule.find(s => s.setNumber === set.setNumber)
+                ?? (rotationSchedule.length > 0 ? (() => {
+                  const base = rotationSchedule[0]
+                  const players = [...base.team1, ...base.team2]
+                  const combos = [
+                    { team1: [players[0], players[1]], team2: [players[2], players[3]] },
+                    { team1: [players[0], players[2]], team2: [players[1], players[3]] },
+                    { team1: [players[0], players[3]], team2: [players[1], players[2]] },
+                  ]
+                  const combo = combos[(set.setNumber - 1) % 3]
+                  return { setNumber: set.setNumber, team1: combo.team1, team2: combo.team2 }
+                })() : null)
               if (setConfig) {
                 const team1Players = setConfig.team1.map(p => ({ userId: p.odUserId, team: 1 }))
                 const team2Players = setConfig.team2.map(p => ({ userId: p.odUserId, team: 2 }))
@@ -533,9 +544,8 @@ export default function MatchDetailPage() {
     // Get default team composition from rotation schedule or original players
     let defaultSetPlayers: EditSetPlayer[] | undefined
 
-    const rotationSchedule = getParsedRotationSchedule()
-    if (rotationSchedule && rotationSchedule[newSetNumber - 1]) {
-      const setConfig = rotationSchedule[newSetNumber - 1]
+    const setConfig = match?.pairRotation ? getRotationConfigForSet(newSetNumber) : null
+    if (setConfig) {
       defaultSetPlayers = [
         ...setConfig.team1.map(p => ({ odUserId: p.odUserId, team: 1 })),
         ...setConfig.team2.map(p => ({ odUserId: p.odUserId, team: 2 })),
@@ -840,6 +850,27 @@ export default function MatchDetailPage() {
     return null
   }
 
+  // Dohvati rotation config za set - fallback za setove koji nisu u spremnome scheduleu (>5)
+  const getRotationConfigForSet = (setNumber: number): PairRotationSchedule | null => {
+    const schedule = getParsedRotationSchedule()
+    if (!schedule || schedule.length === 0) return null
+
+    const stored = schedule.find(s => s.setNumber === setNumber)
+    if (stored) return stored
+
+    // Fallback: izračunaj dinamički iz prvog seta schedule-a
+    // Redosljed igrača: set1.team1[0], set1.team1[1], set1.team2[0], set1.team2[1]
+    const base = schedule[0]
+    const players = [...base.team1, ...base.team2]
+    const combinations = [
+      { team1: [players[0], players[1]], team2: [players[2], players[3]] },
+      { team1: [players[0], players[2]], team2: [players[1], players[3]] },
+      { team1: [players[0], players[3]], team2: [players[1], players[2]] },
+    ]
+    const combo = combinations[(setNumber - 1) % 3]
+    return { setNumber, team1: combo.team1, team2: combo.team2 }
+  }
+
   if ((status === 'loading' && !match) || loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -1068,8 +1099,7 @@ export default function MatchDetailPage() {
                     const positions = getPlayerPositionsForSet(set)
 
                     // Za rotaciju: dohvati parove iz setPlayers ili rotation schedule
-                    const rotationSchedule = getParsedRotationSchedule()
-                    const setConfig = rotationSchedule?.find(s => s.setNumber === set.setNumber)
+                    const setConfig = match.pairRotation ? getRotationConfigForSet(set.setNumber) : null
                     const setPlayersData = (set.setPlayers || []) as SetPlayer[]
                     const hasSetPlayers = setPlayersData.length > 0
 

@@ -68,8 +68,10 @@ export default function DashboardPage() {
   const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([])
   const [recentMatches, setRecentMatches] = useState<Match[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
-  const [rankings, setRankings] = useState<RankedPlayer[]>([])
-  const [pairRankings, setPairRankings] = useState<RankedPair[]>([])
+  const [rankings, setRankings] = useState<{ regular: RankedPlayer[]; rotation: RankedPlayer[] }>({ regular: [], rotation: [] })
+  const [pairRankings, setPairRankings] = useState<{ regular: RankedPair[]; rotation: RankedPair[] }>({ regular: [], rotation: [] })
+  const [playersTab, setPlayersTab] = useState<'regular' | 'rotation'>('regular')
+  const [pairsTab, setPairsTab] = useState<'regular' | 'rotation'>('regular')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -115,15 +117,15 @@ export default function DashboardPage() {
       // Fetch rankings
       const rankingsRes = await fetch('/api/rankings')
       const rankingsData = await rankingsRes.json()
-      if (Array.isArray(rankingsData)) {
-        setRankings(rankingsData)
+      if (rankingsData.regular || rankingsData.rotation) {
+        setRankings({ regular: rankingsData.regular || [], rotation: rankingsData.rotation || [] })
       }
 
       // Fetch pair rankings
       const pairRankingsRes = await fetch('/api/rankings/pairs')
       const pairRankingsData = await pairRankingsRes.json()
-      if (Array.isArray(pairRankingsData)) {
-        setPairRankings(pairRankingsData)
+      if (pairRankingsData.regular || pairRankingsData.rotation) {
+        setPairRankings({ regular: pairRankingsData.regular || [], rotation: pairRankingsData.rotation || [] })
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -322,10 +324,24 @@ export default function DashboardPage() {
         {/* Rankings Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
           {/* Player Rankings */}
-          {rankings.length > 0 && (
+          {(rankings.regular.length > 0 || rankings.rotation.length > 0) && (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50">
-              <div className="p-6 border-b dark:border-gray-700">
+              <div className="p-4 border-b dark:border-gray-700 flex items-center justify-between gap-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Top 10 igrača</h2>
+                <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 shrink-0">
+                  <button
+                    onClick={() => setPlayersTab('regular')}
+                    className={`px-3 py-1.5 text-xs font-medium transition ${playersTab === 'regular' ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                  >
+                    Regularni
+                  </button>
+                  <button
+                    onClick={() => setPlayersTab('rotation')}
+                    className={`px-3 py-1.5 text-xs font-medium transition ${playersTab === 'rotation' ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                  >
+                    Rotacijski
+                  </button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -338,47 +354,44 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rankings.map((player, idx) => (
-                      <tr
-                        key={player.userId}
-                        className={`border-b dark:border-gray-700 last:border-0 ${
-                          player.userId === session?.user?.id ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                        }`}
-                      >
-                        <td className="px-4 py-3 text-sm font-bold text-gray-700 dark:text-gray-300">
-                          {idx + 1}.
-                        </td>
-                        <td className="px-4 py-3 text-sm font-medium">
-                          <Link
-                            href={`/stats?userId=${player.userId}`}
-                            className="text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 hover:underline"
-                          >
-                            {player.name}
-                          </Link>
-                          {player.userId === session?.user?.id && (
-                            <span className="ml-1 text-xs text-blue-600 dark:text-blue-400 font-normal">(ti)</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
-                          <span className="text-green-700 dark:text-green-400 font-semibold">{player.wins}</span>
-                          <span className="text-gray-400 mx-0.5">/</span>
-                          <span className="text-gray-500 dark:text-gray-400 font-semibold">{player.draws}</span>
-                          <span className="text-gray-400 mx-0.5">/</span>
-                          <span className="text-red-700 dark:text-red-400 font-semibold">{player.losses}</span>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${
-                            player.winRate >= 60
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                              : player.winRate >= 40
-                              ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
+                    {(playersTab === 'regular' ? rankings.regular : rankings.rotation).length === 0 ? (
+                      <tr><td colSpan={4} className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">Nema dovoljno podataka</td></tr>
+                    ) : (
+                      (playersTab === 'regular' ? rankings.regular : rankings.rotation).map((player, idx) => (
+                        <tr
+                          key={player.userId}
+                          className={`border-b dark:border-gray-700 last:border-0 ${
+                            player.userId === session?.user?.id ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          <td className="px-4 py-3 text-sm font-bold text-gray-700 dark:text-gray-300">{idx + 1}.</td>
+                          <td className="px-4 py-3 text-sm font-medium">
+                            <Link href={`/stats?userId=${player.userId}`} className="text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 hover:underline">
+                              {player.name}
+                            </Link>
+                            {player.userId === session?.user?.id && (
+                              <span className="ml-1 text-xs text-blue-600 dark:text-blue-400 font-normal">(ti)</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
+                            <span className="text-green-700 dark:text-green-400 font-semibold">{player.wins}</span>
+                            <span className="text-gray-400 mx-0.5">/</span>
+                            <span className="text-gray-500 dark:text-gray-400 font-semibold">{player.draws}</span>
+                            <span className="text-gray-400 mx-0.5">/</span>
+                            <span className="text-red-700 dark:text-red-400 font-semibold">{player.losses}</span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${
+                              player.winRate >= 60 ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                              : player.winRate >= 40 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                               : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                          }`}>
-                            {player.winRate}%
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                            }`}>
+                              {player.winRate}%
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -386,10 +399,24 @@ export default function DashboardPage() {
           )}
 
           {/* Pair Rankings */}
-          {pairRankings.length > 0 && (
+          {(pairRankings.regular.length > 0 || pairRankings.rotation.length > 0) && (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50">
-              <div className="p-6 border-b dark:border-gray-700">
+              <div className="p-4 border-b dark:border-gray-700 flex items-center justify-between gap-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Top 10 parova</h2>
+                <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 shrink-0">
+                  <button
+                    onClick={() => setPairsTab('regular')}
+                    className={`px-3 py-1.5 text-xs font-medium transition ${pairsTab === 'regular' ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                  >
+                    Regularni
+                  </button>
+                  <button
+                    onClick={() => setPairsTab('rotation')}
+                    className={`px-3 py-1.5 text-xs font-medium transition ${pairsTab === 'rotation' ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                  >
+                    Rotacijski
+                  </button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -402,55 +429,45 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {pairRankings.map((pair, idx) => {
-                      const isUserInPair = pair.player1Id === session?.user?.id || pair.player2Id === session?.user?.id
-                      return (
-                        <tr
-                          key={pair.pairKey}
-                          className={`border-b dark:border-gray-700 last:border-0 ${
-                            isUserInPair ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                          }`}
-                        >
-                          <td className="px-4 py-3 text-sm font-bold text-gray-700 dark:text-gray-300">
-                            {idx + 1}.
-                          </td>
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
-                            <div className="flex flex-col">
-                              <span>
-                                {pair.player1Name}
-                                {pair.player1Id === session?.user?.id && (
-                                  <span className="ml-1 text-xs text-blue-600 dark:text-blue-400 font-normal">(ti)</span>
-                                )}
-                              </span>
-                              <span>
-                                {pair.player2Name}
-                                {pair.player2Id === session?.user?.id && (
-                                  <span className="ml-1 text-xs text-blue-600 dark:text-blue-400 font-normal">(ti)</span>
-                                )}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
-                            <span className="text-green-700 dark:text-green-400 font-semibold">{pair.wins}</span>
-                            <span className="text-gray-400 mx-0.5">/</span>
-                            <span className="text-gray-500 dark:text-gray-400 font-semibold">{pair.draws}</span>
-                            <span className="text-gray-400 mx-0.5">/</span>
-                            <span className="text-red-700 dark:text-red-400 font-semibold">{pair.losses}</span>
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${
-                              pair.winRate >= 60
-                                ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                                : pair.winRate >= 40
-                                ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
+                    {(pairsTab === 'regular' ? pairRankings.regular : pairRankings.rotation).length === 0 ? (
+                      <tr><td colSpan={4} className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">Nema dovoljno podataka</td></tr>
+                    ) : (
+                      (pairsTab === 'regular' ? pairRankings.regular : pairRankings.rotation).map((pair, idx) => {
+                        const isUserInPair = pair.player1Id === session?.user?.id || pair.player2Id === session?.user?.id
+                        return (
+                          <tr
+                            key={pair.pairKey}
+                            className={`border-b dark:border-gray-700 last:border-0 ${
+                              isUserInPair ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                            }`}
+                          >
+                            <td className="px-4 py-3 text-sm font-bold text-gray-700 dark:text-gray-300">{idx + 1}.</td>
+                            <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+                              <div className="flex flex-col">
+                                <span>{pair.player1Name}{pair.player1Id === session?.user?.id && <span className="ml-1 text-xs text-blue-600 dark:text-blue-400 font-normal">(ti)</span>}</span>
+                                <span>{pair.player2Name}{pair.player2Id === session?.user?.id && <span className="ml-1 text-xs text-blue-600 dark:text-blue-400 font-normal">(ti)</span>}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
+                              <span className="text-green-700 dark:text-green-400 font-semibold">{pair.wins}</span>
+                              <span className="text-gray-400 mx-0.5">/</span>
+                              <span className="text-gray-500 dark:text-gray-400 font-semibold">{pair.draws}</span>
+                              <span className="text-gray-400 mx-0.5">/</span>
+                              <span className="text-red-700 dark:text-red-400 font-semibold">{pair.losses}</span>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${
+                                pair.winRate >= 60 ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                                : pair.winRate >= 40 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                                 : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                            }`}>
-                              {pair.winRate}%
-                            </span>
-                          </td>
-                        </tr>
-                      )
-                    })}
+                              }`}>
+                                {pair.winRate}%
+                              </span>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>

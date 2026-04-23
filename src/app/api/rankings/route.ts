@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/session'
 
-// GET /api/rankings - Get player rankings (top players by win rate)
+// GET /api/rankings - Get player rankings split by regular and rotation matches
 export async function GET() {
   try {
     const user = await getCurrentUser()
@@ -10,39 +10,27 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get all completed non-league matches with players and sets
     const matches = await prisma.match.findMany({
-      where: {
-        status: 'completed',
-        leagueId: null,
-      },
+      where: { status: 'completed', leagueId: null },
       select: {
         id: true,
         pairRotation: true,
         players: true,
-        sets: {
-          include: {
-            setPlayers: true,
-          },
-        },
+        sets: { include: { setPlayers: true } },
       },
     })
 
-    // Calculate stats per user
-    const userStats: Record<string, { wins: number; losses: number; draws: number }> = {}
+    const regularStats: Record<string, { wins: number; losses: number; draws: number }> = {}
+    const rotationStats: Record<string, { wins: number; losses: number; draws: number }> = {}
 
     for (const match of matches) {
       for (const player of match.players) {
         if (!player.userId) continue
 
-        if (!userStats[player.userId]) {
-          userStats[player.userId] = { wins: 0, losses: 0, draws: 0 }
-        }
-
         const defaultTeam = player.team
-        let userSetsWon = 0
-        let userSetsLost = 0
-        let userSetsDrawn = 0
+        let setsWon = 0
+        let setsLost = 0
+        let setsDrawn = 0
 
         for (const set of match.sets) {
           if (set.team1Score < 6 && set.team2Score < 6) continue
@@ -50,78 +38,57 @@ export async function GET() {
           const setPlayerRecord = set.setPlayers?.find(sp => sp.userId === player.userId)
           const userTeam = setPlayerRecord ? setPlayerRecord.team : defaultTeam
 
-          const won =
-            (userTeam === 1 && set.team1Score > set.team2Score) ||
-            (userTeam === 2 && set.team2Score > set.team1Score)
-          const lost =
-            (userTeam === 1 && set.team2Score > set.team1Score) ||
-            (userTeam === 2 && set.team1Score > set.team2Score)
-          const drawn = set.team1Score === set.team2Score
+          const won = (userTeam === 1 && set.team1Score > set.team2Score) || (userTeam === 2 && set.team2Score > set.team1Score)
+          const lost = (userTeam === 1 && set.team2Score > set.team1Score) || (userTeam === 2 && set.team1Score > set.team2Score)
 
-          if (won) userSetsWon++
-          else if (lost) userSetsLost++
-          else if (drawn) userSetsDrawn++
+          if (won) setsWon++
+          else if (lost) setsLost++
+          else setsDrawn++
         }
 
         if (match.pairRotation) {
-          userStats[player.userId].wins += userSetsWon
-          userStats[player.userId].losses += userSetsLost
-          userStats[player.userId].draws += userSetsDrawn
+          if (!rotationStats[player.userId]) rotationStats[player.userId] = { wins: 0, losses: 0, draws: 0 }
+          rotationStats[player.userId].wins += setsWon
+          rotationStats[player.userId].losses += setsLost
+          rotationStats[player.userId].draws += setsDrawn
         } else {
-          if (userSetsWon > userSetsLost) {
-            userStats[player.userId].wins++
-          } else if (userSetsLost > userSetsWon) {
-            userStats[player.userId].losses++
-          } else {
-            userStats[player.userId].draws++
-          }
+          if (!regularStats[player.userId]) regularStats[player.userId] = { wins: 0, losses: 0, draws: 0 }
+          if (setsWon > setsLost) regularStats[player.userId].wins++
+          else if (setsLost > setsWon) regularStats[player.userId].losses++
+          else regularStats[player.userId].draws++
         }
       }
     }
 
-    // Get user details for all players with stats
-    const userIds = Object.keys(userStats)
-    if (userIds.length === 0) {
-      return NextResponse.json([])
+    const allUserIds = new Set([...Object.keys(regularStats), ...Object.keys(rotationStats)])
+    if (allUserIds.size === 0) {
+      return NextResponse.json({ regular: [], rotation: [] })
     }
 
     const users = await prisma.user.findMany({
-      where: { id: { in: userIds } },
+      where: { id: { in: Array.from(allUserIds) } },
       select: { id: true, name: true },
     })
-
     const userMap = new Map(users.map(u => [u.id, u]))
 
-    // Build rankings
-    const rankings = userIds
-      .map(userId => {
-        const stats = userStats[userId]
-        const total = stats.wins + stats.losses + stats.draws
-        const winRate = total > 0 ? Math.round((stats.wins / total) * 1000) / 10 : 0
-        const user = userMap.get(userId)
-        return {
-          userId,
-          name: user?.name || 'Nepoznato',
-          wins: stats.wins,
-          losses: stats.losses,
-          draws: stats.draws,
-          totalMatches: total,
-          winRate,
-        }
-      })
-      .filter(r => r.totalMatches >= 5)
-      .sort((a, b) => {
-        if (b.winRate !== a.winRate) return b.winRate - a.winRate
-        return b.wins - a.wins
-      })
-      .slice(0, 10)
+    const buildRanking = (stats: Record<string, { wins: number; losses: number; draws: number }>) =>
+      Object.entries(stats)
+        .map(([userId, s]) => {
+          const total = s.wins + s.losses + s.draws
+          const winRate = total > 0 ? Math.round((s.wins / total) * 1000) / 10 : 0
+          const u = userMap.get(userId)
+          return { userId, name: u?.name || 'Nepoznato', wins: s.wins, losses: s.losses, draws: s.draws, totalMatches: total, winRate }
+        })
+        .filter(r => r.totalMatches >= 5)
+        .sort((a, b) => b.winRate !== a.winRate ? b.winRate - a.winRate : b.wins - a.wins)
+        .slice(0, 10)
 
-    return NextResponse.json(rankings)
+    return NextResponse.json({
+      regular: buildRanking(regularStats),
+      rotation: buildRanking(rotationStats),
+    })
   } catch (error) {
     console.error('Error fetching rankings:', error)
-    return NextResponse.json(
-      { error: 'Greska pri dohvacanju rankinga' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Greska pri dohvacanju rankinga' }, { status: 500 })
   }
 }

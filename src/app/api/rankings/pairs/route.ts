@@ -137,9 +137,8 @@ export async function GET() {
           winRate,
         }
       })
-      .filter(r => r.totalMatches > 0)
+      .filter(r => r.totalMatches >= 5)
       .sort((a, b) => {
-        // Sort by win rate desc, then by total wins desc
         if (b.winRate !== a.winRate) return b.winRate - a.winRate
         return b.wins - a.wins
       })

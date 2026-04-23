@@ -45,6 +45,8 @@ export async function GET() {
         let userSetsDrawn = 0
 
         for (const set of match.sets) {
+          if (set.team1Score < 6 && set.team2Score < 6) continue
+
           const setPlayerRecord = set.setPlayers?.find(sp => sp.userId === player.userId)
           const userTeam = setPlayerRecord ? setPlayerRecord.team : defaultTeam
 

@@ -40,6 +40,7 @@ export async function GET() {
       if (match.pairRotation) {
         // For rotation matches, check pairs per set
         for (const set of match.sets) {
+          if (set.team1Score < 6 && set.team2Score < 6) continue
           if (!set.setPlayers || set.setPlayers.length < 4) continue
 
           const team1Players = set.setPlayers.filter(sp => sp.team === 1).map(sp => sp.userId)
@@ -82,6 +83,7 @@ export async function GET() {
         let team2SetsWon = 0
 
         for (const set of match.sets) {
+          if (set.team1Score < 6 && set.team2Score < 6) continue
           if (set.team1Score > set.team2Score) team1SetsWon++
           else if (set.team2Score > set.team1Score) team2SetsWon++
         }

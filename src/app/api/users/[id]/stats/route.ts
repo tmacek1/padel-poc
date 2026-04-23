@@ -73,6 +73,9 @@ export async function GET(
       let userGamesLost = 0
 
       for (const set of match.sets) {
+        // Skip incomplete sets (padel set requires at least 6 games)
+        if (set.team1Score < 6 && set.team2Score < 6) continue
+
         // For rotation matches, check SetPlayer to get user's team for this specific set
         // If no SetPlayer record exists, fall back to original MatchPlayer team
         const setPlayerRecord = set.setPlayers?.find((sp) => sp.userId === id)

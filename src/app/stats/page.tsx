@@ -125,6 +125,7 @@ function StatsPageContent() {
   const [users, setUsers] = useState<User[]>([])
   const [viewingUserId, setViewingUserId] = useState('')
   const [viewingUserName, setViewingUserName] = useState('')
+  const [statsTab, setStatsTab] = useState<'regular' | 'rotation'>('regular')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -256,24 +257,64 @@ function StatsPageContent() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Hero Stats - compact 4-col grid */}
-            <div className="grid grid-cols-4 gap-2 md:gap-4">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-3 md:p-5 text-center">
-                <div className="text-xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.totalMatches}</div>
-                <div className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400">Matchevi</div>
+            {/* Hero Stats - tab switch regularni/rotacijski */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b dark:border-gray-700">
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Pregled</span>
+                <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600">
+                  <button
+                    onClick={() => setStatsTab('regular')}
+                    className={`px-3 py-1.5 text-xs font-medium transition ${statsTab === 'regular' ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                  >
+                    Regularni
+                  </button>
+                  <button
+                    onClick={() => setStatsTab('rotation')}
+                    className={`px-3 py-1.5 text-xs font-medium transition ${statsTab === 'rotation' ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                  >
+                    Rotacijski
+                  </button>
+                </div>
               </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-3 md:p-5 text-center">
-                <div className="text-xl md:text-3xl font-bold text-green-600 dark:text-green-400">{stats.wins}</div>
-                <div className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400">Pobjede</div>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-3 md:p-5 text-center">
-                <div className="text-xl md:text-3xl font-bold text-red-600 dark:text-red-400">{stats.losses}</div>
-                <div className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400">Porazi</div>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-3 md:p-5 text-center">
-                <div className="text-xl md:text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.winRate}%</div>
-                <div className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400">Win%</div>
-              </div>
+              {statsTab === 'regular' ? (
+                <div className="grid grid-cols-4 divide-x dark:divide-gray-700">
+                  <div className="p-3 md:p-5 text-center">
+                    <div className="text-xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.regularStats?.matches ?? 0}</div>
+                    <div className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400">Matchevi</div>
+                  </div>
+                  <div className="p-3 md:p-5 text-center">
+                    <div className="text-xl md:text-3xl font-bold text-green-600 dark:text-green-400">{stats.regularStats?.wins ?? 0}</div>
+                    <div className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400">Pobjede</div>
+                  </div>
+                  <div className="p-3 md:p-5 text-center">
+                    <div className="text-xl md:text-3xl font-bold text-red-600 dark:text-red-400">{stats.regularStats?.losses ?? 0}</div>
+                    <div className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400">Porazi</div>
+                  </div>
+                  <div className="p-3 md:p-5 text-center">
+                    <div className="text-xl md:text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.regularStats?.winRate ?? 0}%</div>
+                    <div className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400">Win%</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 divide-x dark:divide-gray-700">
+                  <div className="p-3 md:p-5 text-center">
+                    <div className="text-xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.rotationStats?.totalSets ?? 0}</div>
+                    <div className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400">Setovi</div>
+                  </div>
+                  <div className="p-3 md:p-5 text-center">
+                    <div className="text-xl md:text-3xl font-bold text-green-600 dark:text-green-400">{stats.rotationStats?.setsWon ?? 0}</div>
+                    <div className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400">Pobjede</div>
+                  </div>
+                  <div className="p-3 md:p-5 text-center">
+                    <div className="text-xl md:text-3xl font-bold text-red-600 dark:text-red-400">{stats.rotationStats?.setsLost ?? 0}</div>
+                    <div className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400">Porazi</div>
+                  </div>
+                  <div className="p-3 md:p-5 text-center">
+                    <div className="text-xl md:text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.rotationStats?.winRate ?? 0}%</div>
+                    <div className="text-[10px] md:text-sm text-gray-600 dark:text-gray-400">Win%</div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Breakdown: Regular + Rotation + Sets + Games in one card */}

@@ -33,6 +33,7 @@ interface Stats {
   rotationStats?: {
     setsWon: number
     setsLost: number
+    setsDrawn: number
     totalSets: number
     winRate: number
   }
@@ -174,30 +175,62 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Quick Stats - compact on mobile */}
-        <div className="grid grid-cols-4 gap-2 md:gap-4 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-3 md:p-6">
-            <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300 font-medium">Matchevi</div>
-            <div className="text-xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
-              {stats?.totalMatches || 0}
+        {/* Quick Stats */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 mb-8 overflow-hidden">
+          {/* Regularni matchevi */}
+          <div className="flex items-center gap-4 px-4 py-3 md:px-6 md:py-4 border-b dark:border-gray-700">
+            <div className="w-32 md:w-40 shrink-0">
+              <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Regularni</div>
+              <div className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {stats?.regularStats?.matches ?? 0}
+                <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">matcheva</span>
+              </div>
+            </div>
+            <div className="flex gap-3 md:gap-6 flex-1">
+              <div className="text-center">
+                <div className="text-xs text-gray-500 dark:text-gray-400">W</div>
+                <div className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400">{stats?.regularStats?.wins ?? 0}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gray-500 dark:text-gray-400">D</div>
+                <div className="text-lg md:text-2xl font-bold text-gray-500 dark:text-gray-400">{stats?.regularStats?.draws ?? 0}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gray-500 dark:text-gray-400">L</div>
+                <div className="text-lg md:text-2xl font-bold text-red-600 dark:text-red-400">{stats?.regularStats?.losses ?? 0}</div>
+              </div>
+            </div>
+            <div className="text-right shrink-0">
+              <div className="text-xs text-gray-500 dark:text-gray-400">Win%</div>
+              <div className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400">{stats?.regularStats?.winRate ?? 0}%</div>
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-3 md:p-6">
-            <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300 font-medium">Pobjede</div>
-            <div className="text-xl md:text-3xl font-bold text-green-600 dark:text-green-400">
-              {stats?.wins || 0}
+          {/* Rotacijski matchevi */}
+          <div className="flex items-center gap-4 px-4 py-3 md:px-6 md:py-4">
+            <div className="w-32 md:w-40 shrink-0">
+              <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Rotacijski</div>
+              <div className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {stats?.rotationStats?.totalSets ?? 0}
+                <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">setova</span>
+              </div>
             </div>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-3 md:p-6">
-            <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300 font-medium">Porazi</div>
-            <div className="text-xl md:text-3xl font-bold text-red-600 dark:text-red-400">
-              {stats?.losses || 0}
+            <div className="flex gap-3 md:gap-6 flex-1">
+              <div className="text-center">
+                <div className="text-xs text-gray-500 dark:text-gray-400">W</div>
+                <div className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400">{stats?.rotationStats?.setsWon ?? 0}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gray-500 dark:text-gray-400">D</div>
+                <div className="text-lg md:text-2xl font-bold text-gray-500 dark:text-gray-400">{stats?.rotationStats?.setsDrawn ?? 0}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gray-500 dark:text-gray-400">L</div>
+                <div className="text-lg md:text-2xl font-bold text-red-600 dark:text-red-400">{stats?.rotationStats?.setsLost ?? 0}</div>
+              </div>
             </div>
-          </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-3 md:p-6">
-            <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300 font-medium">Win%</div>
-            <div className="text-xl md:text-3xl font-bold text-purple-600 dark:text-purple-400">
-              {stats?.winRate || 0}%
+            <div className="text-right shrink-0">
+              <div className="text-xs text-gray-500 dark:text-gray-400">Win%</div>
+              <div className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400">{stats?.rotationStats?.winRate ?? 0}%</div>
             </div>
           </div>
         </div>
